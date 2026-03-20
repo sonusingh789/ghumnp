@@ -1,159 +1,156 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import AppShell from "@/components/layout/app-shell";
 import { useFavorites } from "@/context/favorites-context";
 import { contributionItems, places, userProfile } from "@/data/nepal";
-import { CameraIcon, HeartIcon, MapPinIcon, SettingsIcon, StarIcon } from "@/components/ui/icons";
 
 export default function ProfilePage() {
   const { favorites } = useFavorites();
-  const savedPlaces = places.filter((place) => favorites.includes(place.id)).slice(0, 4);
-  const recentReviews = places.flatMap((place) =>
-    (place.reviews || []).map((review) => ({ ...review, placeName: place.name }))
+  const savedPlaces = places.filter((p) => favorites.includes(p.id)).slice(0, 4);
+  const recentReviews = places.flatMap((p) =>
+    (p.reviews || []).map((r) => ({ ...r, placeName: p.name }))
   );
 
   return (
-    <AppShell contentClassName="px-0 pt-0">
-      <section className="bg-[linear-gradient(135deg,#16a34a,#0f7a39)] px-5 pb-24 pt-8 text-white">
-        <div className="flex items-start justify-between">
+    <AppShell noPadding>
+      {/* Hero banner */}
+      <div className="fade-up" style={{ background: "linear-gradient(135deg, var(--jade) 0%, #0d4a28 100%)", padding: "36px 20px 80px", position: "relative", overflow: "hidden" }}>
+        {/* decorative circles */}
+        <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+        <div style={{ position: "absolute", bottom: -20, left: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 0 }}>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-white/70">
-              Traveler Profile
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-tight">Profile</h1>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>Traveler Profile</div>
+            <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>My Profile</h1>
           </div>
-          <button
-            type="button"
-            className="flex size-11 items-center justify-center rounded-full bg-white/[0.16] backdrop-blur"
-            aria-label="Open settings"
-          >
-            <SettingsIcon className="size-5" />
+          <button type="button" style={{ width: 40, height: 40, borderRadius: "50%", border: "none", cursor: "pointer", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }} aria-label="Settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+              <path d="M12 8.5A3.5 3.5 0 1 0 12 15.5 3.5 3.5 0 1 0 12 8.5z" />
+              <path d="m19 12 1.7 1-1.6 2.8-2-.5a7.9 7.9 0 0 1-1.4 1.4l.5 2-2.8 1.6-1-1.7a7.8 7.8 0 0 1-2 0l-1 1.7-2.8-1.6.5-2a7.9 7.9 0 0 1-1.4-1.4l-2 .5L3.3 13 5 12a7.8 7.8 0 0 1 0-2l-1.7-1 1.6-2.8 2 .5a7.9 7.9 0 0 1 1.4-1.4l-.5-2L10.6 1.7l1 1.7a7.8 7.8 0 0 1 2 0l1-1.7 2.8 1.6-.5 2a7.9 7.9 0 0 1 1.4 1.4l2-.5L20.7 9 19 10a7.8 7.8 0 0 1 0 2Z" />
+            </svg>
           </button>
         </div>
-      </section>
+      </div>
 
-      <section className="-mt-16 px-5 pb-8">
-        <div className="rounded-[34px] bg-white p-5 shadow-[0_24px_54px_rgba(17,24,39,0.12)]">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="relative size-[5.5rem] overflow-hidden rounded-full">
-                <Image
-                  src={userProfile.avatar}
-                  alt={userProfile.name}
-                  fill
-                  sizes="88px"
-                  className="object-cover"
-                />
+      {/* Profile card */}
+      <div className="fade-up-1" style={{ margin: "0 16px", marginTop: -52, position: "relative", zIndex: 10 }}>
+        <div style={{ background: "var(--bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)", padding: "20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <div style={{ width: 72, height: 72, borderRadius: "50%", overflow: "hidden", border: "3px solid var(--jade-soft)", boxShadow: "0 4px 16px var(--jade-glow)", position: "relative" }}>
+                <Image src={userProfile.avatar} alt={userProfile.name} fill sizes="72px" className="object-cover" />
               </div>
-              <button
-                type="button"
-                className="absolute bottom-0 right-0 flex size-10 items-center justify-center rounded-full bg-primary text-white shadow-lg"
-                aria-label="Change avatar"
-              >
-                <CameraIcon className="size-5" />
+              <button type="button" style={{ position: "absolute", bottom: 0, right: 0, width: 24, height: 24, borderRadius: "50%", border: "2px solid var(--bg-card)", background: "var(--jade)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }} aria-label="Change photo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 11, height: 11 }}>
+                  <path d="M5 8h3l1.4-2h5.2L16 8h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" />
+                  <circle cx="12" cy="13" r="3.5" />
+                </svg>
               </button>
             </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
-                {userProfile.name}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-500">{userProfile.bio}</p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="display" style={{ fontSize: 20, fontWeight: 700, color: "var(--ink)", marginBottom: 3 }}>{userProfile.name}</div>
+              <div style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.5 }}>{userProfile.bio}</div>
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <StatCard label="Contributions" value={userProfile.stats.contributions} />
-            <StatCard label="Saved" value={favorites.length} />
-            <StatCard label="Reviews" value={userProfile.stats.reviews} />
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-[32px] bg-white p-5 shadow-[0_18px_42px_rgba(17,24,39,0.08)]">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-2xl font-semibold tracking-tight text-slate-950">My Contributions</h3>
-            <span className="text-sm font-semibold text-primary">View All</span>
-          </div>
-          <div className="space-y-3">
-            {contributionItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-3 rounded-[24px] bg-slate-50 px-4 py-4"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex size-11 items-center justify-center rounded-full bg-emerald-50 text-primary">
-                    <MapPinIcon className="size-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-slate-900">{item.name}</p>
-                    <p className="text-sm text-slate-500">
-                      {item.location} • {item.dateLabel}
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    item.status === "Published"
-                      ? "bg-emerald-50 text-emerald-700"
-                      : "bg-amber-50 text-amber-600"
-                  }`}
-                >
-                  {item.status}
-                </span>
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+            {[
+              { label: "Contributions", value: userProfile.stats.contributions, color: "var(--jade)" },
+              { label: "Saved", value: favorites.length, color: "#e53535" },
+              { label: "Reviews", value: userProfile.stats.reviews, color: "var(--gold)" },
+            ].map((s) => (
+              <div key={s.label} style={{ background: "var(--bg)", borderRadius: "var(--radius-md)", padding: "14px 10px", textAlign: "center" }}>
+                <div className="display" style={{ fontSize: 22, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: 11, color: "var(--ink-muted)", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
+      </div>
 
-        <div className="mt-6 rounded-[32px] bg-white p-5 shadow-[0_18px_42px_rgba(17,24,39,0.08)]">
-          <h3 className="text-2xl font-semibold tracking-tight text-slate-950">Saved Places</h3>
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {savedPlaces.map((place) => (
-              <div key={place.id} className="overflow-hidden rounded-[24px] bg-slate-50">
-                <div className="relative h-28">
-                  <Image src={place.image} alt={place.name} fill sizes="180px" className="object-cover" />
-                </div>
-                <div className="p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4 className="line-clamp-2 text-sm font-semibold text-slate-900">{place.name}</h4>
-                    <HeartIcon className="size-4 shrink-0 text-rose-500" filled />
-                  </div>
-                </div>
+      {/* Contributions */}
+      <div className="fade-up-2" style={{ margin: "16px 16px 0" }}>
+        <div style={{ background: "var(--bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", overflow: "hidden" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h2 className="display" style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)" }}>My Contributions</h2>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--jade)", cursor: "pointer" }}>View All →</span>
+          </div>
+          {contributionItems.map((item, i) => (
+            <div key={item.id} style={{ padding: "14px 20px", borderBottom: i < contributionItems.length - 1 ? "1px solid var(--border)" : "none", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: "var(--radius-sm)", background: "var(--jade-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18, color: "var(--jade)" }}>
+                  <path d="M12 21s6-5.8 6-11a6 6 0 1 0-12 0c0 5.2 6 11 6 11Z" /><circle cx="12" cy="10" r="2.3" />
+                </svg>
               </div>
-            ))}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</div>
+                <div style={{ fontSize: 12, color: "var(--ink-muted)", marginTop: 1 }}>{item.location} · {item.dateLabel}</div>
+              </div>
+              <span style={{
+                borderRadius: 999, padding: "3px 10px", fontSize: 11, fontWeight: 700, flexShrink: 0,
+                background: item.status === "Published" ? "var(--jade-soft)" : "var(--gold-soft)",
+                color: item.status === "Published" ? "var(--jade)" : "var(--gold)",
+              }}>
+                {item.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Saved places */}
+      {savedPlaces.length > 0 && (
+        <div className="fade-up-3" style={{ margin: "16px 16px 0" }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", overflow: "hidden" }}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <h2 className="display" style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)" }}>Saved Places</h2>
+              <Link href="/favorites" style={{ fontSize: 12, fontWeight: 700, color: "var(--jade)" }}>See all →</Link>
+            </div>
+            <div style={{ padding: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {savedPlaces.map((place) => (
+                <Link key={place.id} href={`/place/${place.id}`} style={{ borderRadius: "var(--radius-md)", overflow: "hidden", border: "1px solid var(--border)", display: "block" }}>
+                  <div style={{ position: "relative", height: 90 }}>
+                    <Image src={place.image} alt={place.name} fill sizes="180px" className="object-cover" />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(15,26,15,0.65) 0%, transparent 55%)" }} />
+                  </div>
+                  <div style={{ padding: "8px 10px", background: "var(--bg-card)" }}>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: "var(--ink)", lineHeight: 1.3 }} className="line-clamp-2">{place.name}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="mt-6 rounded-[32px] bg-white p-5 shadow-[0_18px_42px_rgba(17,24,39,0.08)]">
-          <h3 className="text-2xl font-semibold tracking-tight text-slate-950">Recent Reviews</h3>
-          <div className="mt-4 space-y-4">
-            {recentReviews.slice(0, 3).map((review) => (
-              <div key={review.id} className="rounded-[24px] bg-slate-50 px-4 py-4">
-                <div className="flex items-center justify-between gap-3">
+      {/* Reviews */}
+      {recentReviews.length > 0 && (
+        <div className="fade-up-4" style={{ margin: "16px 16px 24px" }}>
+          <div style={{ background: "var(--bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)", overflow: "hidden" }}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
+              <h2 className="display" style={{ fontSize: 18, fontWeight: 700, color: "var(--ink)" }}>Recent Reviews</h2>
+            </div>
+            {recentReviews.slice(0, 3).map((r, i) => (
+              <div key={r.id} style={{ padding: "14px 20px", borderBottom: i < 2 ? "1px solid var(--border)" : "none" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                   <div>
-                    <p className="font-semibold text-slate-900">{review.placeName}</p>
-                    <p className="text-sm text-slate-500">{review.author}</p>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)" }}>{r.placeName}</div>
+                    <div style={{ fontSize: 12, color: "var(--ink-muted)", marginTop: 1 }}>{r.author}</div>
                   </div>
-                  <div className="inline-flex items-center gap-1 text-amber-500">
-                    <StarIcon className="size-4" />
-                    <span className="text-sm font-semibold text-slate-900">{review.rating}.0</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 3, background: "var(--gold-soft)", borderRadius: 999, padding: "3px 10px", fontSize: 12, fontWeight: 700, color: "var(--gold)" }}>
+                    ★ {r.rating}.0
                   </div>
                 </div>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{review.comment}</p>
+                <p style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.6 }}>{r.comment}</p>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      )}
     </AppShell>
-  );
-}
-
-function StatCard({ label, value }) {
-  return (
-    <div className="rounded-[24px] bg-slate-50 px-3 py-5 text-center">
-      <p className="text-3xl font-semibold tracking-tight text-primary">{value}</p>
-      <p className="mt-2 text-sm text-slate-500">{label}</p>
-    </div>
   );
 }

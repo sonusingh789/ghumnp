@@ -1,102 +1,142 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import AppShell from "@/components/layout/app-shell";
 import DistrictCard from "@/components/cards/district-card";
 import { allDistricts, districts } from "@/data/nepal";
-import { GridIcon, MapPinIcon } from "@/components/ui/icons";
-import { cn } from "@/lib/utils";
 
-const detailedMap = new Map(districts.map((district) => [district.name.toLowerCase(), district]));
+const detailedMap = new Map(districts.map((d) => [d.name.toLowerCase(), d]));
 
 export default function DistrictsPage() {
   const [view, setView] = useState("grid");
+  const [search, setSearch] = useState("");
+  const filtered = allDistricts.filter((n) => n.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <AppShell>
-      <section className="flex items-end justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-600">
-            District Directory
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">All 77 Districts</h1>
-          <p className="mt-2 text-sm text-slate-500">Showing {allDistricts.length} districts</p>
+      {/* Header */}
+      <div style={{ padding: "24px 20px 0" }} className="fade-up">
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--jade)", marginBottom: 4 }}>
+          District Directory
         </div>
-        <div className="flex gap-2 rounded-full bg-white p-1 shadow-[0_14px_34px_rgba(17,24,39,0.08)]">
-          <button
-            type="button"
-            onClick={() => setView("grid")}
-            className={cn(
-              "flex size-10 items-center justify-center rounded-full transition",
-              view === "grid" ? "bg-primary text-white" : "text-slate-500"
-            )}
-            aria-label="Show grid view"
-          >
-            <GridIcon className="size-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("map")}
-            className={cn(
-              "flex size-10 items-center justify-center rounded-full transition",
-              view === "map" ? "bg-primary text-white" : "text-slate-500"
-            )}
-            aria-label="Show map view"
-          >
-            <MapPinIcon className="size-5" />
-          </button>
-        </div>
-      </section>
+        <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1, marginBottom: 4 }}>
+          All 77 Districts
+        </h1>
+        <p style={{ fontSize: 13, color: "var(--ink-muted)", marginBottom: 16 }}>
+          Every district of Nepal, from the Himalayan peaks to the Terai plains.
+        </p>
 
-      {view === "grid" ? (
-        <section className="mt-8 grid grid-cols-2 gap-4">
-          {allDistricts.map((districtName) => {
-            const detailed = detailedMap.get(districtName.toLowerCase());
-
-            if (detailed) {
-              return <DistrictCard key={districtName} district={detailed} />;
-            }
-
-            return (
-              <div
-                key={districtName}
-                className="flex min-h-44 flex-col justify-between rounded-[28px] border border-dashed border-slate-300 bg-white/60 p-4 text-slate-400"
+        {/* Search + Toggle */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <label style={{ position: "relative", flex: 1 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "var(--ink-faint)", pointerEvents: "none" }}>
+              <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+            </svg>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search districts..."
+              style={{ width: "100%", padding: "12px 14px 12px 40px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-strong)", background: "var(--bg-card)", fontSize: 14, color: "var(--ink)", outline: "none" }}
+            />
+          </label>
+          <div style={{ display: "flex", background: "var(--bg-card)", border: "1.5px solid var(--border-strong)", borderRadius: "var(--radius-md)", overflow: "hidden" }}>
+            {["grid", "list"].map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                style={{
+                  width: 44, height: 44, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                  background: view === v ? "var(--jade)" : "transparent",
+                  color: view === v ? "#fff" : "var(--ink-faint)",
+                  transition: "all 0.2s ease",
+                }}
+                aria-label={`${v} view`}
               >
-                <div className="rounded-[22px] bg-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                  Coming Soon
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-600">{districtName}</h2>
-                  <p className="mt-2 text-sm leading-6">
-                    Detailed tourism content for this district will be available in a future data release.
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-      ) : (
-        <section className="mt-10">
-          <div className="texture rounded-[34px] border border-black/5 px-6 py-16 text-center shadow-[0_18px_42px_rgba(17,24,39,0.06)]">
-            <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-white text-primary shadow-lg">
-              <MapPinIcon className="size-10" />
-            </div>
-            <h2 className="mt-6 text-3xl font-semibold tracking-tight text-slate-950">
-              Map View Coming Soon
-            </h2>
-            <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-slate-600">
-              The UI is ready for a province map or district polygon layer once you connect geographic data.
-            </p>
-            <Link
-              href="/explore"
-              className="mt-6 inline-flex rounded-full bg-primary px-5 py-3 font-semibold text-white"
-            >
-              Continue Exploring
-            </Link>
+                {v === "grid" ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}>
+                    <rect x="4" y="4" width="6.5" height="6.5" rx="1.2" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2" />
+                    <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}>
+                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+                  </svg>
+                )}
+              </button>
+            ))}
           </div>
-        </section>
-      )}
+        </div>
+        <div style={{ fontSize: 12, color: "var(--ink-faint)", marginTop: 10, marginBottom: 20 }}>
+          Showing {filtered.length} districts
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div style={{ padding: "0 20px 16px" }} className="fade-up-1">
+        {view === "grid" ? (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {filtered.map((name) => {
+              const detailed = detailedMap.get(name.toLowerCase());
+              if (detailed) return <DistrictCard key={name} district={detailed} />;
+              return (
+                <div key={name} style={{
+                  borderRadius: "var(--radius-lg)",
+                  border: "1.5px dashed var(--border-strong)",
+                  background: "var(--bg-card)",
+                  padding: "16px",
+                  minHeight: 140,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}>
+                  <span style={{ background: "var(--bg)", color: "var(--ink-faint)", borderRadius: 999, padding: "3px 10px", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", alignSelf: "flex-start" }}>
+                    Coming Soon
+                  </span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ink)", marginBottom: 4 }}>{name}</div>
+                    <div style={{ fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.5 }}>Content coming in a future release.</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {filtered.map((name) => {
+              const detailed = detailedMap.get(name.toLowerCase());
+              return (
+                <div key={name} style={{
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "14px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  boxShadow: "var(--shadow-sm)",
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ink)" }}>{name}</div>
+                    {detailed && (
+                      <div style={{ fontSize: 12, color: "var(--ink-muted)", marginTop: 2 }}>
+                        {detailed.province} · ★ {detailed.rating.toFixed(1)}
+                      </div>
+                    )}
+                  </div>
+                  {detailed ? (
+                    <a href={`/districts/${detailed.id}`} style={{ background: "var(--jade-soft)", color: "var(--jade)", borderRadius: 999, padding: "5px 14px", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+                      View →
+                    </a>
+                  ) : (
+                    <span style={{ fontSize: 11, color: "var(--ink-faint)", fontWeight: 600 }}>Coming soon</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </AppShell>
   );
 }

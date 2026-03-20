@@ -4,21 +4,21 @@ import ContributionForm from "@/components/forms/contribution-form";
 export default function AddPage() {
   return (
     <AppShell>
-      <section>
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-600">
-          Add Contribution
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
-          Help others discover Nepal
+      <div style={{ padding: "24px 20px 0" }} className="fade-up">
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--jade)", marginBottom: 4 }}>
+          Contribute
+        </div>
+        <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1, marginBottom: 8 }}>
+          Add a Place
         </h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          This front end is ready for your future submission API, moderation flow, and file upload backend.
+        <p style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.6, marginBottom: 24 }}>
+          Help fellow travelers discover Nepal's hidden corners. Your contribution gets reviewed and published.
         </p>
-      </section>
 
-      <section className="mt-8 rounded-[32px] bg-white p-5 shadow-[0_22px_48px_rgba(17,24,39,0.08)]">
-        <ContributionForm />
-      </section>
+        <div style={{ background: "var(--bg-card)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", padding: "20px", boxShadow: "var(--shadow-sm)" }} className="fade-up-1">
+          <ContributionForm />
+        </div>
+      </div>
     </AppShell>
   );
 }

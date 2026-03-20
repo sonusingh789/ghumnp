@@ -3,89 +3,110 @@
 import Link from "next/link";
 import { useDeferredValue, useState } from "react";
 import AppShell from "@/components/layout/app-shell";
-import SearchBar from "@/components/forms/search-bar";
 import DistrictCard from "@/components/cards/district-card";
 import { districts, provinces } from "@/data/nepal";
-import { ChevronRightIcon, SlidersIcon } from "@/components/ui/icons";
 
 export default function ExplorePage() {
   const [query, setQuery] = useState("");
+  const [activeProvince, setActiveProvince] = useState("All");
   const deferredQuery = useDeferredValue(query);
   const search = deferredQuery.trim().toLowerCase();
 
+  const allProvinces = ["All", ...provinces];
+
+  const filteredDistricts = districts.filter((d) => {
+    const matchSearch = !search || d.name.toLowerCase().includes(search) || d.tagline.toLowerCase().includes(search);
+    const matchProvince = activeProvince === "All" || d.province === activeProvince;
+    return matchSearch && matchProvince;
+  });
+
   return (
     <AppShell>
-      <section>
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-600">
-          Explore Nepal
+      {/* Header */}
+      <div style={{ padding: "24px 20px 0" }} className="fade-up">
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--jade)", marginBottom: 4 }}>Explore</div>
+        <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1, marginBottom: 8 }}>
+          Browse by Province
+        </h1>
+        <p style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.6, marginBottom: 16 }}>
+          Seven provinces, 77 districts, endless stories waiting to be discovered.
         </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">Browse by province</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
-          Discover all seven provinces through featured districts, culture, landscapes, and destination highlights.
-        </p>
-        <div className="mt-5 flex items-center gap-3">
-          <div className="flex-1">
-            <SearchBar value={query} onChange={setQuery} placeholder="Search districts..." />
-          </div>
-          <button
-            type="button"
-            className="flex size-14 items-center justify-center rounded-[22px] bg-primary text-white shadow-[0_18px_32px_rgba(22,163,74,0.28)]"
-            aria-label="Filter places"
-          >
-            <SlidersIcon className="size-6" />
-          </button>
+
+        {/* Search */}
+        <div style={{ display: "flex", gap: 10 }}>
+          <label style={{ position: "relative", flex: 1 }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "var(--ink-faint)", pointerEvents: "none" }}>
+              <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+            </svg>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search districts..." style={{ width: "100%", padding: "12px 14px 12px 40px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-strong)", background: "var(--bg-card)", fontSize: 14, color: "var(--ink)", outline: "none" }} />
+          </label>
+          <Link href="/districts" style={{ background: "var(--jade)", color: "#fff", borderRadius: "var(--radius-md)", padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", boxShadow: "0 4px 16px var(--jade-glow)" }}>
+            All 77
+          </Link>
         </div>
-      </section>
+      </div>
 
-      <section className="mt-8 space-y-5">
-        {provinces.map((province) => {
-          const provinceDistricts = districts.filter((district) => {
-            const matchesProvince = district.province === province;
-            const matchesSearch =
-              !search ||
-              district.name.toLowerCase().includes(search) ||
-              district.tagline.toLowerCase().includes(search);
+      {/* Province filter pills */}
+      <div className="fade-up-1 scrollbar-hide" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "16px 20px 0" }}>
+        {allProvinces.map((p) => (
+          <button key={p} type="button" onClick={() => setActiveProvince(p)} style={{
+            borderRadius: 999, padding: "7px 16px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", transition: "all 0.2s ease",
+            background: activeProvince === p ? "var(--jade)" : "var(--bg-card)",
+            color: activeProvince === p ? "#fff" : "var(--ink-muted)",
+            boxShadow: activeProvince === p ? "0 4px 16px var(--jade-glow)" : "var(--shadow-sm)",
+            border: activeProvince === p ? "none" : "1px solid var(--border)",
+          }}>
+            {p}
+          </button>
+        ))}
+      </div>
 
-            return matchesProvince && matchesSearch;
-          });
-
-          return (
-            <article
-              key={province}
-              className="rounded-[30px] border border-black/5 bg-white p-5 shadow-[0_18px_40px_rgba(17,24,39,0.06)]"
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                    Province
-                  </p>
-                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                    {province}
-                  </h2>
-                </div>
-                <Link
-                  href="/districts"
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
-                >
-                  View All
-                  <ChevronRightIcon className="size-4" />
-                </Link>
+      {/* Province sections */}
+      <div style={{ padding: "20px 20px 16px" }}>
+        {activeProvince === "All" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 28 }} className="fade-up-2">
+            {provinces.map((province) => {
+              const pDistricts = districts.filter((d) => {
+                const matchSearch = !search || d.name.toLowerCase().includes(search) || d.tagline.toLowerCase().includes(search);
+                return d.province === province && matchSearch;
+              });
+              if (!pDistricts.length) return null;
+              return (
+                <section key={province}>
+                  <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--jade)", marginBottom: 2 }}>Province</div>
+                      <h2 className="display" style={{ fontSize: 20, fontWeight: 700, color: "var(--ink)" }}>{province}</h2>
+                    </div>
+                    <Link href="/districts" style={{ fontSize: 12, fontWeight: 700, color: "var(--jade)", display: "flex", alignItems: "center" }}>
+                      View all →
+                    </Link>
+                  </div>
+                  <div className="scrollbar-hide" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
+                    {pDistricts.map((d) => <DistrictCard key={d.id} district={d} compact />)}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="fade-up-2">
+            <div style={{ fontSize: 13, color: "var(--ink-muted)", marginBottom: 16 }}>
+              {filteredDistricts.length} featured districts in {activeProvince}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {filteredDistricts.map((d) => <DistrictCard key={d.id} district={d} />)}
+            </div>
+            {!filteredDistricts.length && (
+              <div style={{ textAlign: "center", padding: "48px 24px", background: "var(--bg-card)", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)" }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
+                <div style={{ fontWeight: 700, fontSize: 16, color: "var(--ink)", marginBottom: 6 }}>No matches found</div>
+                <p style={{ fontSize: 13, color: "var(--ink-muted)" }}>Try a different search or province.</p>
               </div>
-              {provinceDistricts.length ? (
-                <div className="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
-                  {provinceDistricts.map((district) => (
-                    <DistrictCard key={district.id} district={district} compact />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[24px] bg-slate-50 px-4 py-6 text-sm leading-6 text-slate-500">
-                  We have not added featured districts for this province yet, but the shell is ready for expansion.
-                </div>
-              )}
-            </article>
-          );
-        })}
-      </section>
+            )}
+          </div>
+        )}
+      </div>
     </AppShell>
   );
 }

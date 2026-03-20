@@ -1,21 +1,28 @@
-import { Geist } from "next/font/google";
+import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
 
-const geist = Geist({
-  variable: "--font-geist",
+const playfair = Playfair_Display({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
 });
 
 export const metadata = {
   title: "Ghum Nepal",
-  description: "A mobile-first Nepal tourism exploration UI built for discovering districts, places, and local experiences.",
+  description: "Explore all 77 districts of Nepal — hidden gems, local foods, sacred places and mountain stories.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full">
+    <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
+      <body>
         <FavoritesProvider>{children}</FavoritesProvider>
       </body>
     </html>

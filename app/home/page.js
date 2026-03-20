@@ -1,93 +1,128 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useDeferredValue, useState } from "react";
 import AppShell from "@/components/layout/app-shell";
 import DistrictCard from "@/components/cards/district-card";
 import PlaceCard from "@/components/cards/place-card";
-import SearchBar from "@/components/forms/search-bar";
-import { districts, places } from "@/data/nepal";
-import { ChevronRightIcon, SparklesIcon } from "@/components/ui/icons";
+import { districts, places, userProfile } from "@/data/nepal";
+import { ChevronRightIcon } from "@/components/ui/icons";
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
-
   const search = deferredQuery.trim().toLowerCase();
+
   const featuredDistricts = districts.slice(0, 5);
   const visiblePlaces = search
     ? places.filter(
-        (place) =>
-          place.name.toLowerCase().includes(search) ||
-          place.description.toLowerCase().includes(search) ||
-          place.location.toLowerCase().includes(search)
+        (p) =>
+          p.name.toLowerCase().includes(search) ||
+          p.description.toLowerCase().includes(search) ||
+          p.location.toLowerCase().includes(search)
       )
-    : places.filter((place) => place.isFeatured).slice(0, 4);
-  const hiddenGems = places.filter((place) => place.isHidden).slice(0, 4);
+    : places.filter((p) => p.isFeatured).slice(0, 4);
+  const hiddenGems = places.filter((p) => p.isHidden).slice(0, 4);
 
   return (
-    <AppShell contentClassName="px-0 pt-0">
-      <section className="sticky top-0 z-20 bg-white/[0.86] px-5 pb-4 pt-6 backdrop-blur">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-600">
-          Welcome Explorer
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
-          Discover Nepal beautifully
-        </h1>
-        <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
-          Curated districts, memorable places, and local experiences designed for a polished first release.
-        </p>
-        <div className="mt-5">
-          <SearchBar
-            value={query}
-            onChange={setQuery}
-            placeholder="Search districts, places, foods..."
-          />
+    <AppShell>
+      {/* Top Bar */}
+      <header style={{ padding: "20px 20px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }} className="fade-up">
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--jade)", marginBottom: 2 }}>
+            Ghum Nepal
+          </div>
+          <div className="display" style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1 }}>
+            Discover Nepal
+          </div>
         </div>
-      </section>
+        <Link href="/profile">
+          <div style={{ width: 44, height: 44, borderRadius: "50%", overflow: "hidden", border: "2px solid var(--jade-soft)", boxShadow: "0 2px 12px var(--jade-glow)", position: "relative" }}>
+            <Image src={userProfile.avatar} alt={userProfile.name} fill sizes="44px" className="object-cover" />
+          </div>
+        </Link>
+      </header>
 
-      <div className="space-y-8 px-5 pt-5">
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-[1.9rem] font-semibold tracking-tight text-slate-950">
-              Featured Districts
-            </h2>
-            <Link href="/districts" className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
-              View All
-              <ChevronRightIcon className="size-4" />
+      {/* Search */}
+      <div style={{ padding: "16px 20px 0" }} className="fade-up-1">
+        <label style={{ position: "relative", display: "block" }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", width: 18, height: 18, color: "var(--ink-faint)", pointerEvents: "none" }}>
+            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search districts, places, foods..."
+            style={{
+              width: "100%",
+              padding: "14px 16px 14px 44px",
+              borderRadius: "var(--radius-md)",
+              border: "1.5px solid var(--border-strong)",
+              background: "var(--bg-card)",
+              fontSize: 14,
+              color: "var(--ink)",
+              outline: "none",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          />
+        </label>
+      </div>
+
+      <div style={{ padding: "24px 0 0" }}>
+        {/* Featured Districts */}
+        <section className="fade-up-2" style={{ marginBottom: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--jade)", marginBottom: 2 }}>Popular</div>
+              <h2 className="display" style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)" }}>Featured Districts</h2>
+            </div>
+            <Link href="/districts" style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 13, fontWeight: 600, color: "var(--jade)" }}>
+              All 77 <ChevronRightIcon className="size-4" />
             </Link>
           </div>
-          <div className="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
+          <div className="scrollbar-hide" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "4px 20px 8px" }}>
             {featuredDistricts.map((district) => (
               <DistrictCard key={district.id} district={district} compact />
             ))}
           </div>
         </section>
 
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-[1.9rem] font-semibold tracking-tight text-slate-950">
-              Most Visited Places in Nepal
-            </h2>
+        {/* Featured Places */}
+        <section className="fade-up-3" style={{ marginBottom: 32, padding: "0 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 2 }}>Must Visit</div>
+              <h2 className="display" style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)" }}>Top Places</h2>
+            </div>
           </div>
-          <div className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {visiblePlaces.map((place) => (
               <PlaceCard key={place.id} place={place} />
             ))}
           </div>
         </section>
 
-        <section>
-          <div className="mb-4 flex items-center gap-2">
-            <SparklesIcon className="size-5 text-primary" />
-            <h2 className="text-[1.9rem] font-semibold tracking-tight text-slate-950">Hidden Gems</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {hiddenGems.map((place) => (
-              <PlaceCard key={place.id} place={place} layout="grid" />
-            ))}
-          </div>
-        </section>
+        {/* Hidden Gems */}
+        {!search && (
+          <section className="fade-up-4" style={{ padding: "0 20px", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18, color: "var(--gold)" }}>
+                <path d="m12 3 1.3 3.7L17 8l-3.7 1.3L12 13l-1.3-3.7L7 8l3.7-1.3L12 3Z" />
+                <path d="m18.5 14.5.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" />
+              </svg>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--gold)" }}>Off the beaten path</div>
+                <h2 className="display" style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)" }}>Hidden Gems</h2>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {hiddenGems.map((place) => (
+                <PlaceCard key={place.id} place={place} layout="grid" />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </AppShell>
   );
