@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import DistrictDetailScreen from "@/components/screens/district-detail-screen";
-import { getApprovedPlacesByDistrictSlug, getDistrictBySlug } from "@/lib/content";
+import { getDistrictBySlug, getDistrictListingPlacesByDistrictSlug } from "@/lib/content";
 
 export default async function DistrictDetailPage({ params }) {
   const { districtId } = await params;
@@ -10,7 +10,7 @@ export default async function DistrictDetailPage({ params }) {
     notFound();
   }
 
-  const districtPlaces = await getApprovedPlacesByDistrictSlug(districtId);
+  const districtPlaces = await getDistrictListingPlacesByDistrictSlug(districtId);
 
   return <DistrictDetailScreen district={district} districtPlaces={districtPlaces} />;
 }
