@@ -12,6 +12,7 @@ const nextConfig = {
       },
     ],
   },
+  allowedDevOrigins: ['192.168.1.75'], // Add your mobile's IP here
 };
 
 export default nextConfig;

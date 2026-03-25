@@ -27,7 +27,7 @@ export default function LoginClient({ initialFrom = "/" }) {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
+        credentials: "include",
         cache: "no-store",
         body: JSON.stringify({ email, password }),
       });
