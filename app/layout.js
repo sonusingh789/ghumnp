@@ -1,7 +1,6 @@
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
-import { getFavoriteCollections } from "@/lib/content";
 
 const playfair = Playfair_Display({
   variable: "--font-display",
@@ -21,15 +20,10 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const favoriteCollections = await getFavoriteCollections();
-
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
       <body>
-        <FavoritesProvider
-          initialFavorites={favoriteCollections.favorites}
-          initialAuthenticated={favoriteCollections.authenticated}
-        >
+        <FavoritesProvider initialFavorites={[]} initialAuthenticated={false}>
           {children}
         </FavoritesProvider>
       </body>

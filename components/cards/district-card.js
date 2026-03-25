@@ -30,7 +30,7 @@ export default function DistrictCard({ district, compact = false }) {
         }
       }}
       className={cn(
-        "group block cursor-pointer touch-manipulation overflow-hidden rounded-[28px] border border-black/5 bg-white shadow-[0_18px_40px_rgba(17,24,39,0.08)] transition-transform duration-300 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
+        "group block cursor-pointer touch-auto overflow-hidden rounded-[28px] border border-black/5 bg-white shadow-[0_18px_40px_rgba(17,24,39,0.08)] transition-transform duration-300 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
         compact ? "w-[300px] shrink-0" : "w-full"
       )}
     >

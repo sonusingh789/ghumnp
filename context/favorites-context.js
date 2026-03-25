@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const STORAGE_KEY = "ghumnp-favorites";
-const defaultFavorites = ["pashupatinath", "boudhanath", "himalayan-java"];
+const defaultFavorites = [];
 
 const FavoritesContext = createContext({
   favorites: defaultFavorites,
@@ -25,7 +25,10 @@ export function FavoritesProvider({
 
     async function loadFavorites() {
       try {
-        const response = await fetch("/api/favorites", { cache: "no-store" });
+        const response = await fetch("/api/favorites", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
         const data = await response.json();
 
         if (cancelled) return;
@@ -71,11 +74,13 @@ export function FavoritesProvider({
       if (favorites.includes(id)) {
         await fetch(`/api/favorites?placeId=${encodeURIComponent(id)}`, {
           method: "DELETE",
+          credentials: "same-origin",
         });
       } else {
         await fetch("/api/favorites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
           body: JSON.stringify({ placeId: id }),
         });
       }
