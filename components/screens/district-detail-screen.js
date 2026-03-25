@@ -33,85 +33,86 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
   });
 
   return (
-    <AppShell className="bg-[#f4f8f5]" contentClassName="px-0 pt-0">
-      <section className="relative h-72 overflow-hidden">
-        <Image
-          src={district.image}
-          alt={district.name}
-          fill
-          sizes="430px"
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/25" />
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 pt-6">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex size-11 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-lg"
-            aria-label="Go back"
-          >
-            <ArrowLeftIcon className="size-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => toggleFavorite(districtFavoriteId)}
-            className={cn(
-              "flex size-11 items-center justify-center rounded-full shadow-lg transition",
-              isSaved ? "bg-rose-50 text-rose-500" : "bg-white/90 text-slate-800"
-            )}
-            aria-label={isSaved ? "Remove saved district" : "Save district"}
-          >
-            <HeartIcon filled={isSaved} className="size-5" />
-          </button>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 px-5 pb-6 text-white">
-          <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/[0.16] px-3 py-1 text-xs font-medium backdrop-blur">
-            <MapPinIcon className="size-4" />
-            {district.province}
-          </p>
-          <h1 className="max-w-xs text-4xl font-semibold tracking-tight">{district.name}</h1>
-          <p className="mt-2 max-w-sm text-sm leading-6 text-white/80">{district.tagline}</p>
-        </div>
-      </section>
-
-      <section className="-mt-7 rounded-t-[34px] bg-[#f4f8f5] px-5 pb-8 pt-6">
-        <div className="rounded-[28px] border border-black/5 bg-white p-4 shadow-[0_20px_44px_rgba(17,24,39,0.06)]">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500">District overview</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                Built for discovery
-              </h2>
-            </div>
-            <div className="rounded-full bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-600">
-              <span className="inline-flex items-center gap-1">
-                <StarIcon className="size-4" />
-                {district.rating.toFixed(1)}
-              </span>
+    <AppShell className="bg-[#f5f6f8]" contentClassName="pt-3 sm:pt-5">
+      <div className="mx-auto w-full max-w-5xl">
+        <section className="relative overflow-hidden rounded-[30px] border border-black/5 bg-white shadow-[0_20px_54px_rgba(15,23,42,0.08)]">
+          <div className="relative h-[300px] sm:h-[360px] lg:h-[430px]">
+            <Image
+              src={district.image}
+              alt={district.name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1100px"
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 sm:p-5">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="flex size-11 items-center justify-center rounded-full bg-white/92 text-slate-900 shadow-lg"
+                aria-label="Go back"
+              >
+                <ArrowLeftIcon className="size-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleFavorite(districtFavoriteId)}
+                className={cn(
+                  "flex size-11 items-center justify-center rounded-full shadow-lg transition",
+                  isSaved ? "bg-rose-50 text-rose-500" : "bg-white/92 text-slate-800"
+                )}
+                aria-label={isSaved ? "Remove saved district" : "Save district"}
+              >
+                <HeartIcon filled={isSaved} className="size-5" />
+              </button>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-500">
-            <span className="rounded-full bg-slate-100 px-3 py-1">
-              {districtPlaces.length} featured places
-            </span>
-            <span className="rounded-full bg-slate-100 px-3 py-1">
-              {formatVisitors(district.visitorsCount)}
-            </span>
-          </div>
-        </div>
 
-        <div className="scrollbar-hide mt-6 flex gap-3 overflow-x-auto pb-1">
+          <div className="relative -mt-8 rounded-t-[28px] bg-white px-4 pb-5 pt-5 sm:-mt-10 sm:px-6 sm:pb-6 sm:pt-6 lg:px-7">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="min-w-0">
+                <h1 className="text-[2rem] font-semibold tracking-tight text-slate-950 sm:text-[2.3rem]">
+                  {district.name}
+                </h1>
+                <p className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-500">
+                  <MapPinIcon className="size-4" />
+                  {district.province} Province
+                </p>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px]">
+                  {district.tagline}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3.5 py-2 font-semibold text-amber-600">
+                  <StarIcon className="size-4" />
+                  {district.rating.toFixed(1)}
+                </div>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3.5 py-2 font-medium text-slate-600">
+                  <MapPinIcon className="size-4" />
+                  {formatVisitors(district.visitorsCount)}
+                </div>
+                <div className="inline-flex items-center rounded-full bg-emerald-50 px-3.5 py-2 font-semibold text-emerald-700">
+                  {districtPlaces.length} places
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-1 pb-8 pt-5 sm:px-2 sm:pt-6">
+        <div className="scrollbar-hide mobile-h-scroll flex gap-2 rounded-full bg-slate-100 p-1.5">
           {tabs.map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "rounded-full px-4 py-2.5 text-sm font-semibold transition",
+                "min-w-[92px] rounded-full px-4 py-2.5 text-sm font-semibold transition",
                 activeTab === tab
-                  ? "bg-primary text-white shadow-[0_12px_24px_rgba(22,163,74,0.25)]"
-                  : "bg-white text-slate-500"
+                  ? "bg-white text-slate-950 shadow-[0_8px_20px_rgba(15,23,42,0.16)]"
+                  : "bg-transparent text-slate-500"
               )}
             >
               {tab}
@@ -119,7 +120,19 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           ))}
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                Explore
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                Must Visit
+              </h2>
+            </div>
+          </div>
+
+        <div className="space-y-4">
           {filteredPlaces.length ? (
             filteredPlaces.map((place) => <PlaceCard key={place.id} place={place} />)
           ) : (
@@ -138,7 +151,9 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
             </div>
           )}
         </div>
-      </section>
+        </div>
+        </section>
+      </div>
     </AppShell>
   );
 }

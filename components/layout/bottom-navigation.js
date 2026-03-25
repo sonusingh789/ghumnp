@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/icons";
 
 const navItems = [
-  { href: "/home", label: "Home", icon: HomeIcon },
+  { href: "/", label: "Home", icon: HomeIcon },
   { href: "/explore", label: "Explore", icon: CompassIcon },
   { href: "/add", label: "Add", icon: PlusCircleIcon },
   { href: "/favorites", label: "Favorites", icon: HeartIcon },
@@ -23,7 +23,7 @@ export default function BottomNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="glass-panel fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[78px] w-full items-center border-t border-black/5 px-2 pb-4 pt-2 md:bottom-5 md:max-w-[720px] md:rounded-full md:border md:px-3 md:pb-3 md:pt-3 md:shadow-[0_18px_40px_rgba(17,24,39,0.12)]">
+    <nav className="glass-panel fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[calc(78px+env(safe-area-inset-bottom))] w-full items-center border-t border-black/5 px-2 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 md:bottom-5 md:h-[78px] md:max-w-[720px] md:rounded-full md:border md:px-3 md:pb-3 md:pt-3 md:shadow-[0_18px_40px_rgba(17,24,39,0.12)]">
       {navItems.map(({ href, label, icon: Icon }) => {
         const active = pathname === href;
 

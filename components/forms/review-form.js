@@ -8,18 +8,16 @@ export default function ReviewForm({ onSubmit, onCancel }) {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    onSubmit({
-      id: `review-${Date.now()}`,
-      author: "You",
-      avatar: "https://i.pravatar.cc/80?img=48",
+    const success = await onSubmit({
       rating,
       comment: comment.trim() || "Beautiful experience worth sharing.",
-      date: new Date().toISOString(),
     });
-    setComment("");
-    setRating(5);
+    if (success !== false) {
+      setComment("");
+      setRating(5);
+    }
   }
 
   return (

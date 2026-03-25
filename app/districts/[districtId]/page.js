@@ -1,17 +1,18 @@
 import { notFound } from "next/navigation";
 import DistrictDetailScreen from "@/components/screens/district-detail-screen";
-import { districts, places } from "@/data/nepal";
-import { getDistrictById } from "@/lib/utils";
+import { getApprovedPlacesByDistrictSlug, getDistrictBySlug } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export default async function DistrictDetailPage({ params }) {
   const { districtId } = await params;
-  const district = getDistrictById(districts, districtId);
+  const district = await getDistrictBySlug(districtId);
 
   if (!district) {
     notFound();
   }
 
-  const districtPlaces = places.filter((place) => place.districtId === districtId);
+  const districtPlaces = await getApprovedPlacesByDistrictSlug(districtId);
 
   return <DistrictDetailScreen district={district} districtPlaces={districtPlaces} />;
 }

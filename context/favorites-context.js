@@ -1,43 +1,91 @@
 "use client";
 
-import { createContext, useContext, useSyncExternalStore } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const STORAGE_KEY = "ghumnp-favorites";
 const defaultFavorites = ["pashupatinath", "boudhanath", "himalayan-java"];
-const FAVORITES_EVENT = "ghumnp-favorites-change";
-const defaultFavoritesString = JSON.stringify(defaultFavorites);
-let cachedFavoritesString = defaultFavoritesString;
-let cachedFavorites = defaultFavorites;
 
 const FavoritesContext = createContext({
   favorites: defaultFavorites,
-  toggleFavorite: () => {},
   isFavorite: () => false,
+  toggleFavorite: async () => {},
+  authenticated: false,
 });
 
-export function FavoritesProvider({ children }) {
-  const favorites = useSyncExternalStore(
-    subscribeToFavorites,
-    getFavoritesSnapshot,
-    getServerSnapshot
-  );
+export function FavoritesProvider({
+  children,
+  initialFavorites = defaultFavorites,
+  initialAuthenticated = false,
+}) {
+  const [favorites, setFavorites] = useState(initialFavorites);
+  const [authenticated, setAuthenticated] = useState(initialAuthenticated);
 
-  function toggleFavorite(id) {
-    const current = readFavorites();
-    const next = current.includes(id)
-      ? current.filter((item) => item !== id)
-      : [...current, id];
+  useEffect(() => {
+    let cancelled = false;
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    window.dispatchEvent(new Event(FAVORITES_EVENT));
-  }
+    async function loadFavorites() {
+      try {
+        const response = await fetch("/api/favorites", { cache: "no-store" });
+        const data = await response.json();
+
+        if (cancelled) return;
+
+        if (data?.authenticated) {
+          setFavorites(data.favorites || []);
+          setAuthenticated(true);
+          return;
+        }
+      } catch {
+      }
+
+      if (cancelled) return;
+      const localFavorites = readLocalFavorites();
+      setFavorites(localFavorites);
+      setAuthenticated(false);
+    }
+
+    loadFavorites();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function isFavorite(id) {
     return favorites.includes(id);
   }
 
+  async function toggleFavorite(id) {
+    const next = favorites.includes(id)
+      ? favorites.filter((item) => item !== id)
+      : [...favorites, id];
+
+    setFavorites(next);
+
+    if (!authenticated) {
+      persistLocalFavorites(next);
+      return;
+    }
+
+    try {
+      if (favorites.includes(id)) {
+        await fetch(`/api/favorites?placeId=${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        });
+      } else {
+        await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ placeId: id }),
+        });
+      }
+    } catch {
+      setFavorites(favorites);
+    }
+  }
+
   return (
-    <FavoritesContext.Provider value={{ favorites, toggleFavorite, isFavorite }}>
+    <FavoritesContext.Provider value={{ favorites, isFavorite, toggleFavorite, authenticated }}>
       {children}
     </FavoritesContext.Provider>
   );
@@ -47,59 +95,26 @@ export function useFavorites() {
   return useContext(FavoritesContext);
 }
 
-function readFavorites() {
+function readLocalFavorites() {
   if (typeof window === "undefined") {
     return defaultFavorites;
   }
 
-  let saved = window.localStorage.getItem(STORAGE_KEY);
-
+  const saved = window.localStorage.getItem(STORAGE_KEY);
   if (!saved) {
-    window.localStorage.setItem(STORAGE_KEY, defaultFavoritesString);
-    saved = defaultFavoritesString;
-  }
-
-  if (saved === cachedFavoritesString) {
-    return cachedFavorites;
+    persistLocalFavorites(defaultFavorites);
+    return defaultFavorites;
   }
 
   try {
     const parsed = JSON.parse(saved);
-
-    if (Array.isArray(parsed)) {
-      cachedFavoritesString = saved;
-      cachedFavorites = parsed;
-      return cachedFavorites;
-    }
+    return Array.isArray(parsed) ? parsed : defaultFavorites;
   } catch {
-    window.localStorage.setItem(STORAGE_KEY, defaultFavoritesString);
+    return defaultFavorites;
   }
-
-  cachedFavoritesString = defaultFavoritesString;
-  cachedFavorites = defaultFavorites;
-  return cachedFavorites;
 }
 
-function subscribeToFavorites(callback) {
-  if (typeof window === "undefined") {
-    return () => {};
-  }
-
-  const onChange = () => callback();
-
-  window.addEventListener("storage", onChange);
-  window.addEventListener(FAVORITES_EVENT, onChange);
-
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener(FAVORITES_EVENT, onChange);
-  };
-}
-
-function getFavoritesSnapshot() {
-  return readFavorites();
-}
-
-function getServerSnapshot() {
-  return defaultFavorites;
+function persistLocalFavorites(favorites) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
 }

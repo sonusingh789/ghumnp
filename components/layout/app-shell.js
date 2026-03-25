@@ -12,7 +12,7 @@ export default function AppShell({
       <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_top,_rgba(22,163,74,0.16),_transparent_65%)]" />
       <main
         className={cn(
-          "relative mx-auto min-h-screen w-full max-w-[1200px] px-5 pb-28 pt-6 md:px-8 md:pb-32 lg:px-10",
+          "relative mx-auto min-h-screen w-full max-w-[1200px] px-1 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-6 md:px-1.5 md:pb-32 lg:px-2",
           contentClassName
         )}
       >

@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import PlaceDetailScreen from "@/components/screens/place-detail-screen";
-import { places } from "@/data/nepal";
-import { getPlaceById } from "@/lib/utils";
+import { getApprovedPlaceBySlug } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export default async function PlaceDetailPage({ params }) {
   const { placeId } = await params;
-  const place = getPlaceById(places, placeId);
+  const place = await getApprovedPlaceBySlug(placeId);
 
   if (!place) {
     notFound();
