@@ -1,6 +1,37 @@
 import AppShell from "@/components/layout/app-shell";
 import ContributionForm from "@/components/forms/contribution-form";
 
+export const metadata = {
+  title: "Add a Place - Ghum Nepal",
+  description:
+    "Contribute a new place to Ghum Nepal and help travelers discover hidden gems across Nepal's 77 districts.",
+  openGraph: {
+    title: "Add a Place - Ghum Nepal",
+    description:
+      "Contribute a new place to Ghum Nepal and help travelers discover hidden gems across Nepal's 77 districts.",
+    url: "https://ghumnepal.com/add",
+    siteName: "Ghum Nepal",
+    images: [
+      {
+        url: "https://ghumnepal.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Add a Place - Ghum Nepal",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Add a Place - Ghum Nepal",
+    description:
+      "Contribute a new place to Ghum Nepal and help travelers discover hidden gems across Nepal's 77 districts.",
+    images: ["https://ghumnepal.com/og-image.jpg"],
+    site: "@ghumnepal",
+  },
+};
+
 export default function AddPage() {
   return (
     <AppShell className="bg-[#f5f6f8]">
