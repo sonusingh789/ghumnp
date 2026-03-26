@@ -4,21 +4,21 @@ import { getFavoriteCollections } from "@/lib/content";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "My Favorites - Ghum Nepal",
+  title: "My Favorites - visitNepal77",
   description:
-    "View your favorite places and districts on Ghum Nepal. Save and organize your travel wishlist.",
+    "View your favorite places and districts on visitNepal77. Save and organize your travel wishlist.",
   openGraph: {
-    title: "My Favorites - Ghum Nepal",
+    title: "My Favorites - visitNepal77",
     description:
-      "View your favorite places and districts on Ghum Nepal. Save and organize your travel wishlist.",
-    url: "https://ghumnepal.com/favorites",
-    siteName: "Ghum Nepal",
+      "View your favorite places and districts on visitNepal77. Save and organize your travel wishlist.",
+    url: "https://visitnepal77.com/favorites",
+    siteName: "visitNepal77",
     images: [
       {
-        url: "https://ghumnepal.com/og-image.jpg",
+        url: "https://visitnepal77.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "My Favorites - Ghum Nepal",
+        alt: "My Favorites - visitNepal77",
       },
     ],
     locale: "en_US",
@@ -26,11 +26,11 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "My Favorites - Ghum Nepal",
+    title: "My Favorites - visitNepal77",
     description:
-      "View your favorite places and districts on Ghum Nepal. Save and organize your travel wishlist.",
-    images: ["https://ghumnepal.com/og-image.jpg"],
-    site: "@ghumnepal",
+      "View your favorite places and districts on visitNepal77. Save and organize your travel wishlist.",
+    images: ["https://visitnepal77.com/og-image.jpg"],
+    site: "@visitnepal77",
   },
 };
 

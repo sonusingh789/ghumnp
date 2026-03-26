@@ -6,21 +6,21 @@ import { buildLoginHref } from "@/utils/navigation";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "My Profile - Ghum Nepal",
+  title: "My Profile - visitNepal77",
   description:
-    "View and manage your Ghum Nepal profile, contributions, reviews, and favorite places.",
+    "View and manage your visitNepal77 profile, contributions, reviews, and favorite places.",
   openGraph: {
-    title: "My Profile - Ghum Nepal",
+    title: "My Profile - visitNepal77",
     description:
-      "View and manage your Ghum Nepal profile, contributions, reviews, and favorite places.",
-    url: "https://ghumnepal.com/profile",
-    siteName: "Ghum Nepal",
+      "View and manage your visitNepal77 profile, contributions, reviews, and favorite places.",
+    url: "https://visitnepal77.com/profile",
+    siteName: "visitNepal77",
     images: [
       {
-        url: "https://ghumnepal.com/og-image.jpg",
+        url: "https://visitnepal77.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "My Profile - Ghum Nepal",
+        alt: "My Profile - visitNepal77",
       },
     ],
     locale: "en_US",
@@ -28,11 +28,11 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "My Profile - Ghum Nepal",
+    title: "My Profile - visitNepal77",
     description:
-      "View and manage your Ghum Nepal profile, contributions, reviews, and favorite places.",
-    images: ["https://ghumnepal.com/og-image.jpg"],
-    site: "@ghumnepal",
+      "View and manage your visitNepal77 profile, contributions, reviews, and favorite places.",
+    images: ["https://visitnepal77.com/og-image.jpg"],
+    site: "@visitnepal77",
   },
 };
 

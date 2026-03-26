@@ -80,7 +80,7 @@ export default function HomePageClient({
               marginBottom: 2,
             }}
           >
-            Ghum Nepal
+            visitNepal77
           </div>
           <div
             className="display"

@@ -7,19 +7,19 @@ export async function generateMetadata({ params }) {
   const place = await getApprovedPlaceBySlug(placeId);
   if (!place) return {};
   return {
-    title: `${place.name} - Ghum Nepal`,
-    description: place.description || `Discover ${place.name} in Nepal on Ghum Nepal.`,
+    title: `${place.name} - visitNepal77`,
+    description: place.description || `Discover ${place.name} in Nepal on visitNepal77.`,
     openGraph: {
-      title: `${place.name} - Ghum Nepal`,
-      description: place.description || `Discover ${place.name} in Nepal on Ghum Nepal.`,
-      url: `https://ghumnepal.com/place/${place.slug}`,
-      siteName: "Ghum Nepal",
+      title: `${place.name} - visitNepal77`,
+      description: place.description || `Discover ${place.name} in Nepal on visitNepal77.`,
+      url: `https://visitnepal77.com/place/${place.slug}`,
+      siteName: "visitNepal77",
       images: [
         {
           url: place.image,
           width: 1200,
           height: 630,
-          alt: `${place.name} - Ghum Nepal`,
+          alt: `${place.name} - visitNepal77`,
         },
       ],
       locale: "en_US",
@@ -27,10 +27,10 @@ export async function generateMetadata({ params }) {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${place.name} - Ghum Nepal`,
-      description: place.description || `Discover ${place.name} in Nepal on Ghum Nepal.`,
+      title: `${place.name} - visitNepal77`,
+      description: place.description || `Discover ${place.name} in Nepal on visitNepal77.`,
       images: [place.image],
-      site: "@ghumnepal",
+      site: "@visitnepal77",
     },
   };
 }

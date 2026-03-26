@@ -3,21 +3,21 @@ import LoginClient from "./LoginClient";
 import { sanitizeReturnPath } from "@/utils/navigation";
 
 export const metadata = {
-  title: "Login - Ghum Nepal",
+  title: "Login - visitNepal77",
   description:
-    "Sign in to your Ghum Nepal account to access your profile, favorites, and contributions.",
+    "Sign in to your visitNepal77 account to access your profile, favorites, and contributions.",
   openGraph: {
-    title: "Login - Ghum Nepal",
+    title: "Login - visitNepal77",
     description:
-      "Sign in to your Ghum Nepal account to access your profile, favorites, and contributions.",
-    url: "https://ghumnepal.com/login",
-    siteName: "Ghum Nepal",
+      "Sign in to your visitNepal77 account to access your profile, favorites, and contributions.",
+    url: "https://visitnepal77.com/login",
+    siteName: "visitNepal77",
     images: [
       {
-        url: "https://ghumnepal.com/og-image.jpg",
+        url: "https://visitnepal77.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Login - Ghum Nepal",
+        alt: "Login - visitNepal77",
       },
     ],
     locale: "en_US",
@@ -25,11 +25,11 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Login - Ghum Nepal",
+    title: "Login - visitNepal77",
     description:
-      "Sign in to your Ghum Nepal account to access your profile, favorites, and contributions.",
-    images: ["https://ghumnepal.com/og-image.jpg"],
-    site: "@ghumnepal",
+      "Sign in to your visitNepal77 account to access your profile, favorites, and contributions.",
+    images: ["https://visitnepal77.com/og-image.jpg"],
+    site: "@visitnepal77",
   },
 };
 

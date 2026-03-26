@@ -3,21 +3,21 @@ import SignupClient from "./SignupClient";
 import { sanitizeReturnPath } from "@/utils/navigation";
 
 export const metadata = {
-  title: "Sign Up - Ghum Nepal",
+  title: "Sign Up - visitNepal77",
   description:
-    "Create your Ghum Nepal account to save favorite places, write reviews, and contribute to the travel community.",
+    "Create your visitNepal77 account to save favorite places, write reviews, and contribute to the travel community.",
   openGraph: {
-    title: "Sign Up - Ghum Nepal",
+    title: "Sign Up - visitNepal77",
     description:
-      "Create your Ghum Nepal account to save favorite places, write reviews, and contribute to the travel community.",
-    url: "https://ghumnepal.com/signup",
-    siteName: "Ghum Nepal",
+      "Create your visitNepal77 account to save favorite places, write reviews, and contribute to the travel community.",
+    url: "https://visitnepal77.com/signup",
+    siteName: "visitNepal77",
     images: [
       {
-        url: "https://ghumnepal.com/og-image.jpg",
+        url: "https://visitnepal77.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Sign Up - Ghum Nepal",
+        alt: "Sign Up - visitNepal77",
       },
     ],
     locale: "en_US",
@@ -25,11 +25,11 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sign Up - Ghum Nepal",
+    title: "Sign Up - visitNepal77",
     description:
-      "Create your Ghum Nepal account to save favorite places, write reviews, and contribute to the travel community.",
-    images: ["https://ghumnepal.com/og-image.jpg"],
-    site: "@ghumnepal",
+      "Create your visitNepal77 account to save favorite places, write reviews, and contribute to the travel community.",
+    images: ["https://visitnepal77.com/og-image.jpg"],
+    site: "@visitnepal77",
   },
 };
 
