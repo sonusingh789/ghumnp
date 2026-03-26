@@ -138,10 +138,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           ) : (
             <div className="rounded-[28px] border border-dashed border-slate-300 bg-white px-5 py-10 text-center">
               <p className="text-lg font-semibold text-slate-900">No places in this section yet</p>
-              <p className="mt-2 text-sm leading-6 text-slate-500">
-                This district layout is ready for backend data. You can plug in more attractions,
-                foods, and stays later without changing the design.
-              </p>
+              <p className="mt-2 text-sm text-slate-500"> You can contribute by adding new places!</p>
               <Link
                 href="/add"
                 className="mt-5 inline-flex rounded-full bg-primary px-4 py-2.5 font-semibold text-white"
