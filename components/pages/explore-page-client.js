@@ -45,12 +45,12 @@ export default function ExplorePageClient({ districts, provinces }) {
         </div>
       </div>
 
-      <div className="fade-up-1 scrollbar-hide mobile-h-scroll" style={{ display: "flex", gap: 8, padding: "16px 20px 0" }}>
+      <div className="fade-up-1 scrollbar-hide mobile-h-scroll" style={{ display: "flex", gap: 8, padding: "16px 20px 5px" }}>
         {allProvinces.map((province) => (
           <button key={province} type="button" onClick={() => setActiveProvince(province)} style={{
             borderRadius: 999, padding: "7px 16px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", transition: "all 0.2s ease",
             background: activeProvince === province ? "var(--jade)" : "var(--bg-card)",
-            color: activeProvince === province ? "#fff" : "var(--ink-muted)",
+            color: activeProvince === province ? "#9ad6ac" : "var(--ink-muted)",
             boxShadow: activeProvince === province ? "0 4px 16px var(--jade-glow)" : "var(--shadow-sm)",
           }}>
             {province}

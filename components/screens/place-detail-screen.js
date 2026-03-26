@@ -50,9 +50,9 @@ export default function PlaceDetailScreen({ place }) {
   }
 
   return (
-    <AppShell className="bg-[#f5f6f8]" contentClassName="pt-3 sm:pt-5">
+    <AppShell className="bg-[#f5f6f8]" contentClassName="pt-0 sm:pt-5">
       <div className="mx-auto w-full max-w-5xl">
-        <section className="relative overflow-hidden rounded-[30px] border border-black/5 bg-white shadow-[0_20px_54px_rgba(15,23,42,0.08)]">
+        <section className="relative overflow-hidden rounded-[0px] border border-black/5 bg-white shadow-[0_20px_54px_rgba(15,23,42,0.08)]">
           <div className="relative">
             <ImageCarousel images={place.images?.length ? place.images : [place.image]} alt={place.name} />
             <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 sm:p-5">
@@ -130,7 +130,7 @@ export default function PlaceDetailScreen({ place }) {
                     <MapPinIcon className="size-7" />
                   </div>
                   <p className="mt-3 text-base font-semibold text-slate-900">{place.location}</p>
-                  <p className="mt-1 text-sm text-slate-500">Map preview placeholder for backend integration</p>
+                  {/* <p className="mt-1 text-sm text-slate-500">Map preview placeholder for backend integration</p> */}
                 </div>
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function PlaceDetailScreen({ place }) {
                 reviews.map((review) => <ReviewCard key={review.id} review={review} />)
               ) : (
                 <div className="rounded-[28px] bg-white px-5 py-10 text-center text-sm text-slate-500 shadow-[0_14px_34px_rgba(17,24,39,0.06)]">
-                  No reviews yet. This UI is ready for live feedback once your backend is connected.
+                  No reviews yet.
                 </div>
               )}
             </div>

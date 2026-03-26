@@ -33,9 +33,9 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
   });
 
   return (
-    <AppShell className="bg-[#f5f6f8]" contentClassName="pt-3 sm:pt-5">
+    <AppShell className="bg-[#f5f6f8]" contentClassName="pt-0 sm:pt-5">
       <div className="mx-auto w-full max-w-5xl">
-        <section className="relative overflow-hidden rounded-[30px] border border-black/5 bg-white shadow-[0_20px_54px_rgba(15,23,42,0.08)]">
+        <section className="relative overflow-hidden  border border-black/5 bg-white shadow-[0_20px_54px_rgba(15,23,42,0.08)]">
           <div className="relative h-[300px] sm:h-[360px] lg:h-[430px]">
             <Image
               src={district.image}

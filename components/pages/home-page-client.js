@@ -70,24 +70,10 @@ export default function HomePageClient({
         className="fade-up"
       >
         <div>
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              color: "var(--jade)",
-              marginBottom: 2,
-            }}
-          >
-            visitNepal77
+          <div style={{ marginBottom: 4 }}>
+            <Image src="/logo.png" alt="visitNepal77 - logo" width={200} height={50} />
           </div>
-          <div
-            className="display"
-            style={{ fontSize: 22, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1 }}
-          >
-            Discover Nepal
-          </div>
+          
         </div>
         {authReady && authUser ? (
           <Link href="/profile">

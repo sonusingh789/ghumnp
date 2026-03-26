@@ -2,21 +2,21 @@ import AppShell from "@/components/layout/app-shell";
 import ContributionForm from "@/components/forms/contribution-form";
 
 export const metadata = {
-  title: "Add a Place - Ghum Nepal",
+  title: "Add a Place - visitNepal77",
   description:
-    "Contribute a new place to Ghum Nepal and help travelers discover hidden gems across Nepal's 77 districts.",
+    "Contribute visitNepal77 to help travelers discover hidden gems across Nepal's 77 districts.",
   openGraph: {
-    title: "Add a Place - Ghum Nepal",
+    title: "Contribute- visitNepal77",
     description:
-      "Contribute a new place to Ghum Nepal and help travelers discover hidden gems across Nepal's 77 districts.",
-    url: "https://ghumnepal.com/add",
-    siteName: "Ghum Nepal",
+      "Contribute a new place to visitNepal77 and help travelers discover hidden gems across Nepal's 77 districts.",
+    url: "https://visitnepal77.com/add",
+    siteName: "visitNepal77",
     images: [
       {
-        url: "https://ghumnepal.com/og-image.jpg",
+        url: "https://visitnepal77.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Add a Place - Ghum Nepal",
+        alt: "Contribute - visitNepal77",
       },
     ],
     locale: "en_US",
@@ -24,18 +24,18 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Add a Place - Ghum Nepal",
+    title: "Contribute - visitNepal77",
     description:
-      "Contribute a new place to Ghum Nepal and help travelers discover hidden gems across Nepal's 77 districts.",
-    images: ["https://ghumnepal.com/og-image.jpg"],
-    site: "@ghumnepal",
+      "Contribute a new place to visitNepal77 and help travelers discover hidden gems across Nepal's 77 districts.",
+    images: ["https://visitnepal77.com/og-image.jpg"],
+    site: "@visitnepal77",
   },
 };
 
 export default function AddPage() {
   return (
     <AppShell className="bg-[#f5f6f8]">
-      <div className="fade-up mx-auto w-full max-w-3xl px-2 pt-5 sm:px-3">
+      <div className="fade-up mx-auto w-full max-w-3xl pt-5 pb-4 px-3 sm:px-3">
         <div className="mb-6">
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--jade)", marginBottom: 4 }}>
             Contribute
@@ -44,7 +44,7 @@ export default function AddPage() {
             Add a Place
           </h1>
           <p style={{ fontSize: 14, color: "var(--ink-muted)", lineHeight: 1.7 }}>
-            Help fellow travelers discover Nepal&apos;s hidden corners. Your contribution gets reviewed before it goes live.
+            Help fellow travelers discover Nepal&apos;s hidden corners.
           </p>
         </div>
 

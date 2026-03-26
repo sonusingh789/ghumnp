@@ -414,6 +414,7 @@ export default function ContributionForm() {
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       <section className="rounded-[30px] border border-black/8 bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.05)] sm:p-5">
         <div className="flex items-start justify-between gap-4">
+          
           <div>
             <h2 className="text-[1.15rem] font-semibold tracking-tight text-slate-950">Place</h2>
             <p className="mt-1 text-sm text-slate-500">Main tourist destination or area</p>
@@ -428,20 +429,20 @@ export default function ContributionForm() {
         </div>
 
         {placeMode === "existing" ? (
-          <div className="mt-5 space-y-4">
+          <div className="mt-4 space-y-4">
             <div className="relative">
               <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search by place name, district, or location..."
-                className="w-full rounded-[22px] border border-black/6 bg-slate-50 py-4 pl-12 pr-4 text-[15px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-200 focus:bg-white"
+                className="w-full rounded-[22px] border border-black/6 bg-slate-50 py-3 pl-12 pr-4 text-[15px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-200 focus:bg-white"
               />
             </div>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <label className="block text-sm font-semibold text-slate-950">Search Results</label>
+                
                 {selectedExistingPlace ? (
                   <button
                     type="button"
@@ -493,7 +494,7 @@ export default function ContributionForm() {
 
                 {!loadingPlaces && !filteredPlaces.length ? (
                   <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                    No matching place found. Switch to “Add new” if this destination is not listed yet.
+                    Add new place if destination does not exist.
                   </div>
                 ) : null}
               </div>
@@ -501,13 +502,13 @@ export default function ContributionForm() {
 
             {selectedExistingPlace ? (
               <div className="rounded-[24px] bg-emerald-50 px-4 py-4 text-sm text-emerald-700">
-                Selected place ready. Upload new images or add nearby spots, then submit your contribution.
+                Next, add nearby  spots, eg HomeStay, Restaurants,Hotels etc.
               </div>
             ) : null}
           </div>
         ) : (
-          <div className="mt-5 rounded-[28px] bg-[#eef4ff] p-4 sm:p-5">
-            <h3 className="text-lg font-semibold text-slate-950">Add New Place</h3>
+          <div className="mt-5 rounded-[28px] bg-[#eef4ff] p-3 sm:p-5">
+            
 
             <div className="mt-5 space-y-4">
               <Field label="Upload Images">
@@ -593,7 +594,7 @@ export default function ContributionForm() {
             </div>
             <div>
               <h2 className="text-[1.15rem] font-semibold tracking-tight text-slate-950">Nearby Spots</h2>
-              <p className="mt-1 text-sm text-slate-500">Optional - Add hotels, restaurants, foods, etc.</p>
+      
             </div>
           </div>
           <button
@@ -603,7 +604,7 @@ export default function ContributionForm() {
               setShowSpotForm(true);
             }}
             disabled={!canAddSpot}
-            className={`inline-flex items-center gap-2 text-sm font-semibold ${
+            className={`inline-flex items-center gap-2 px-2 text-sm font-semibold ${
               canAddSpot ? "text-emerald-600" : "cursor-not-allowed text-slate-400"
             }`}
           >
@@ -703,7 +704,7 @@ export default function ContributionForm() {
               <button
                 type="button"
                 onClick={handleAddSpot}
-                className="flex-1 rounded-[20px] bg-[#08af3b] px-4 py-3 text-base font-semibold text-white"
+                className="flex-1 rounded-[20px] bg-emerald-600 px-4 py-3 text-base font-semibold text-white"
               >
                 Add Spot
               </button>
@@ -795,7 +796,7 @@ export default function ContributionForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-[24px] bg-[#08af3b] px-5 py-4 text-[1.1rem] font-semibold text-white shadow-[0_18px_32px_rgba(8,175,59,0.22)] transition hover:bg-[#079434]"
+          className="w-full rounded-[24px] bg-[#08af3b] px-5 py-3 text-[1.1rem] font-semibold text-white shadow-[0_18px_32px_rgba(8,175,59,0.22)] transition hover:bg-[#079434]"
         >
           {loading ? "Submitting..." : "Submit Contribution"}
         </button>
@@ -818,4 +819,4 @@ function Field({ label, children }) {
 }
 
 const inputClass =
-  "w-full rounded-[20px] border border-black/6 bg-white px-4 py-3.5 text-[15px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-200";
+  "w-full rounded-[20px] border border-black/6 bg-white px-4 py-3 text-[15px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-200";
