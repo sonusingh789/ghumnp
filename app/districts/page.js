@@ -3,7 +3,7 @@ import { getAllDistrictNames, getDistrictCards } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
-  title: "All Districts",
+  title: "All Districts | visitNepal77",
   description:
     "Explore all 77 districts of Nepal with quick access to places, ratings, and travel highlights.",
   path: "/districts",
