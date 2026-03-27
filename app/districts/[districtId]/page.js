@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
     title: `${district.name} District`,
     description,
     path: `/districts/${district.id}`,
-    image: `/districts/${district.id}/opengraph-image`,
+    image: district.image,
     imageAlt: `${district.name} District - visitNepal77`,
   });
 }
