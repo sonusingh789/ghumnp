@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getApprovedPlacesBySlugs } from "@/lib/content";
 import { getAuthFromRequest } from "@/lib/auth-request";
@@ -269,6 +270,15 @@ async function handleRequest(auth, data) {
     }
   }
 
+  revalidatePath("/add");
+  revalidatePath("/districts");
+  if (placeDistrictSlug) {
+    revalidatePath(`/districts/${placeDistrictSlug}`);
+  }
+  if (placeSlug) {
+    revalidatePath(`/places/${placeSlug}`);
+  }
+
   return NextResponse.json({
     ok: true,
     slug: placeSlug,
@@ -282,6 +292,13 @@ export async function POST(request) {
     return NextResponse.json({ error: "Please log in to submit a place." }, { status: 401 });
   }
 
-  const data = await parseRequestData(request);
-  return handleRequest(auth, data);
+  try {
+    const data = await parseRequestData(request);
+    return await handleRequest(auth, data);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error?.message || "Unable to submit contribution right now." },
+      { status: 500 }
+    );
+  }
 }

@@ -404,6 +404,8 @@ export default function ContributionForm() {
           router.refresh();
         }, 900);
       }
+    } catch (submitError) {
+      setError(submitError?.message || "Unable to submit contribution right now.");
     } finally {
       setLoading(false);
       setUploadingPhotos(false);
@@ -435,6 +437,11 @@ export default function ContributionForm() {
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                  }
+                }}
                 placeholder="Search by place name, district, or location..."
                 className="w-full rounded-[22px] border border-black/6 bg-slate-50 py-3 pl-12 pr-4 text-[15px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-200 focus:bg-white"
               />
