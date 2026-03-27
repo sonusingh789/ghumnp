@@ -2,19 +2,23 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
 import { useFavorites } from "@/context/favorites-context";
 import { cn, formatVisitors } from "@/lib/utils";
 
-export default function DistrictCard({ district, compact = false }) {
+export default function DistrictCard({ district, compact = false, imagePriority = false }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const router = useRouter();
+  const pointerStartRef = useRef(null);
+  const isDraggingRef = useRef(false);
   const districtFavoriteId = `district:${district.id}`;
   const saved = isFavorite(districtFavoriteId);
   const href = `/districts/${district.id}`;
 
   function openDistrict() {
+    if (isDraggingRef.current) return;
     router.push(href);
   }
 
@@ -22,6 +26,27 @@ export default function DistrictCard({ district, compact = false }) {
     <article
       role="link"
       tabIndex={0}
+      onPointerDown={(event) => {
+        pointerStartRef.current = { x: event.clientX, y: event.clientY };
+        isDraggingRef.current = false;
+      }}
+      onPointerMove={(event) => {
+        if (!pointerStartRef.current) return;
+
+        const deltaX = Math.abs(event.clientX - pointerStartRef.current.x);
+        const deltaY = Math.abs(event.clientY - pointerStartRef.current.y);
+
+        if (deltaX > 8 || deltaY > 8) {
+          isDraggingRef.current = true;
+        }
+      }}
+      onPointerUp={() => {
+        pointerStartRef.current = null;
+      }}
+      onPointerCancel={() => {
+        pointerStartRef.current = null;
+        isDraggingRef.current = false;
+      }}
       onClick={openDistrict}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -41,7 +66,7 @@ export default function DistrictCard({ district, compact = false }) {
           fill
           sizes={compact ? "248px" : "50vw"}
           className="object-cover transition duration-500 group-hover:scale-105"
-          priority={compact}
+          priority={imagePriority}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/[0.18] to-transparent" />
         <div className="absolute left-4 top-4 z-10">
@@ -67,12 +92,6 @@ export default function DistrictCard({ district, compact = false }) {
             {district.rating.toFixed(1)}
           </span>
         </div>
-        <Link
-          href={href}
-          onClick={(event) => event.stopPropagation()}
-          className="absolute inset-0"
-          aria-label={`Open ${district.name}`}
-        />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white">
           <h3 className="text-xl font-semibold tracking-tight">{district.name}</h3>
           <p className="mt-1 line-clamp-2 text-sm text-white/[0.84]">{district.tagline}</p>

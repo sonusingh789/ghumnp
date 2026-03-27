@@ -21,7 +21,11 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${dmSans.variable}`}>
+    <html
+      lang="en"
+      className={`${playfair.variable} ${dmSans.variable}`}
+      data-scroll-behavior="smooth"
+    >
       <body>
         <FavoritesProvider initialFavorites={[]} initialAuthenticated={false}>
           {children}

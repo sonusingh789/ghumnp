@@ -1,10 +1,26 @@
+import { redirect } from "next/navigation";
 import AppShell from "@/components/layout/app-shell";
 import ContributionForm from "@/components/forms/contribution-form";
+import { getCurrentUser } from "@/lib/content";
+import { buildLoginHref } from "@/utils/navigation";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Add a Place - visitNepal77",
   description:
     "Contribute visitNepal77 to help travelers discover hidden gems across Nepal's 77 districts.",
+  alternates: {
+    canonical: "https://visitnepal77.com/add",
+  },
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
   openGraph: {
     title: "Contribute- visitNepal77",
     description:
@@ -32,7 +48,13 @@ export const metadata = {
   },
 };
 
-export default function AddPage() {
+export default async function AddPage() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(buildLoginHref("/add"));
+  }
+
   return (
     <AppShell className="bg-[#f5f6f8]">
       <div className="fade-up mx-auto w-full max-w-3xl pt-5 pb-4 px-3 sm:px-3">

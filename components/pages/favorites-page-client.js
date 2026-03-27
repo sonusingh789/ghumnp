@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/layout/app-shell";
 import PlaceCard from "@/components/cards/place-card";
@@ -10,13 +10,20 @@ import { useFavorites } from "@/context/favorites-context";
 export default function FavoritesPageClient({
   initialFavoritePlaces = [],
   initialFavoriteDistricts = [],
+  initialSuggestions = [],
 }) {
   const { favorites } = useFavorites();
   const [favPlaces, setFavPlaces] = useState(initialFavoritePlaces);
   const [favDistricts, setFavDistricts] = useState(initialFavoriteDistricts);
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions] = useState(initialSuggestions);
+  const hasHydratedRef = useRef(false);
 
   useEffect(() => {
+    if (!hasHydratedRef.current) {
+      hasHydratedRef.current = true;
+      return;
+    }
+
     let cancelled = false;
 
     async function loadFavorites() {
@@ -30,18 +37,7 @@ export default function FavoritesPageClient({
       }
     }
 
-    async function loadSuggestions() {
-      const response = await fetch("/api/places?ids=pashupatinath,boudhanath,phewa-lake", {
-        cache: "no-store",
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!cancelled) {
-        setSuggestions(data.places || []);
-      }
-    }
-
     loadFavorites();
-    loadSuggestions();
 
     return () => {
       cancelled = true;

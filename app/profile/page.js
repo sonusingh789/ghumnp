@@ -9,6 +9,17 @@ export const metadata = {
   title: "My Profile - visitNepal77",
   description:
     "View and manage your visitNepal77 profile, contributions, reviews, and favorite places.",
+  alternates: {
+    canonical: "https://visitnepal77.com/profile",
+  },
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
   openGraph: {
     title: "My Profile - visitNepal77",
     description:

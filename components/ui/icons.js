@@ -200,3 +200,74 @@ export function SparklesIcon({ className }) {
     </Icon>
   );
 }
+
+export function PencilIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-4-1L4 19v1Z" />
+      <path d="m13.5 5.5 5 5" />
+    </Icon>
+  );
+}
+
+export function TrashIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <path d="M4 7h16" />
+      <path d="M9 7V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V7" />
+      <path d="M6.2 7 7 20a1.5 1.5 0 0 0 1.5 1.4h7A1.5 1.5 0 0 0 17 20l.8-13" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </Icon>
+  );
+}
+
+export function LogOutIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <path d="M10 5H6.8A1.8 1.8 0 0 0 5 6.8v10.4A1.8 1.8 0 0 0 6.8 19H10" />
+      <path d="M14 16l5-4-5-4" />
+      <path d="M8 12h11" />
+    </Icon>
+  );
+}
+
+export function MailIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m4 7 8 6 8-6" />
+    </Icon>
+  );
+}
+
+export function BookmarkIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <path d="M7 4.5h10a1.5 1.5 0 0 1 1.5 1.5v14l-6.5-3-6.5 3V6A1.5 1.5 0 0 1 7 4.5Z" />
+    </Icon>
+  );
+}
+
+export function FileTextIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <path d="M8 3.5h6l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 7 19V5A1.5 1.5 0 0 1 8.5 3.5Z" />
+      <path d="M14 3.5V8h4" />
+      <path d="M10 12h4" />
+      <path d="M10 15h4" />
+    </Icon>
+  );
+}
+
+export function ShareIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="m8.3 10.8 7.4-4.3" />
+      <path d="m8.3 13.2 7.4 4.3" />
+    </Icon>
+  );
+}

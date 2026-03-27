@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import FavoritesPageClient from "@/components/pages/favorites-page-client";
-import { getFavoriteCollections } from "@/lib/content";
+import { getApprovedPlacesBySlugs, getCurrentUser, getFavoriteCollections } from "@/lib/content";
+import { buildLoginHref } from "@/utils/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +9,17 @@ export const metadata = {
   title: "My Favorites - visitNepal77",
   description:
     "View your favorite places and districts on visitNepal77. Save and organize your travel wishlist.",
+  alternates: {
+    canonical: "https://visitnepal77.com/favorites",
+  },
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
   openGraph: {
     title: "My Favorites - visitNepal77",
     description:
@@ -35,12 +48,22 @@ export const metadata = {
 };
 
 export default async function FavoritesPage() {
-  const favoriteCollections = await getFavoriteCollections();
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(buildLoginHref("/favorites"));
+  }
+
+  const [favoriteCollections, suggestions] = await Promise.all([
+    getFavoriteCollections(),
+    getApprovedPlacesBySlugs(["pashupatinath", "boudhanath", "phewa-lake"]),
+  ]);
 
   return (
     <FavoritesPageClient
       initialFavoritePlaces={favoriteCollections.favoritePlaces}
       initialFavoriteDistricts={favoriteCollections.favoriteDistricts}
+      initialSuggestions={suggestions}
     />
   );
 }

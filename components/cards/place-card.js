@@ -10,6 +10,7 @@ export default function PlaceCard({
   place,
   layout = "horizontal",
   showFavorite = true,
+  imagePriority = false,
 }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(place.id);
@@ -26,6 +27,7 @@ export default function PlaceCard({
             alt={place.name}
             fill
             sizes="50vw"
+            priority={imagePriority}
             className="object-cover transition duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -56,6 +58,7 @@ export default function PlaceCard({
             alt={place.name}
             fill
             sizes="112px"
+            priority={imagePriority}
             className="object-cover"
           />
         </Link>

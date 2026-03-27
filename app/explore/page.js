@@ -1,10 +1,22 @@
 import ExplorePageClient from "@/components/pages/explore-page-client";
-import { getDistrictCards, getProvinceNames } from "@/lib/content";
+import { getDistrictCards } from "@/lib/content";
+
+export const revalidate = 300;
 
 export const metadata = {
   title: "Explore Nepal - visitNepal77",
   description:
     "Browse all districts and provinces of Nepal. Find your next adventure with visitNepal77's explore page.",
+  keywords: [
+    "explore Nepal",
+    "Nepal provinces",
+    "Nepal districts",
+    "Nepal travel destinations",
+    "visit Nepal districts",
+  ],
+  alternates: {
+    canonical: "https://visitnepal77.com/explore",
+  },
   openGraph: {
     title: "Explore Nepal - visitNepal77",
     description:
@@ -32,11 +44,42 @@ export const metadata = {
   },
 };
 
-export default async function ExplorePage() {
-  const [districts, provinces] = await Promise.all([
-    getDistrictCards(),
-    getProvinceNames(),
-  ]);
+export default async function ExplorePage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const districts = await getDistrictCards();
+  const provinces = Array.from(new Set(districts.map((district) => district.province).filter(Boolean)));
+  const districtsByProvince = Object.fromEntries(
+    provinces.map((province) => [
+      province,
+      districts.filter((district) => district.province === province),
+    ])
+  );
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Explore Nepal",
+    url: "https://visitnepal77.com/explore",
+    description:
+      "Browse all districts and provinces of Nepal. Find your next adventure with visitNepal77's explore page.",
+    hasPart: provinces.map((province) => ({
+      "@type": "ItemList",
+      name: province,
+      numberOfItems: districtsByProvince[province]?.length || 0,
+    })),
+  };
 
-  return <ExplorePageClient districts={districts} provinces={provinces} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <ExplorePageClient
+        districts={districts}
+        provinces={provinces}
+        districtsByProvince={districtsByProvince}
+        initialQuery={String(resolvedSearchParams?.q || "")}
+      />
+    </>
+  );
 }

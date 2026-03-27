@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
 import { allDistricts } from "@/data/nepal";
 import {
   MapPinIcon,
@@ -50,10 +50,7 @@ export default function ContributionForm() {
     imageFiles: [],
     imagePreviews: [],
   });
-
-  const filteredPlaces = useMemo(() => {
-    return existingPlaces;
-  }, [existingPlaces]);
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const canAddSpot =
     placeMode === "new" ? true : Boolean(selectedExistingPlace);
 
@@ -75,11 +72,16 @@ export default function ContributionForm() {
     let cancelled = false;
 
     async function loadPlaces() {
+      const search = deferredSearchQuery.trim();
+      if (search.length < 2) {
+        setExistingPlaces([]);
+        setLoadingPlaces(false);
+        return;
+      }
+
       setLoadingPlaces(true);
       const params = new URLSearchParams();
-      if (searchQuery.trim()) {
-        params.set("search", searchQuery.trim());
-      }
+      params.set("search", search);
 
       try {
         const response = await fetch(`/api/places?${params.toString()}`, {
@@ -102,7 +104,7 @@ export default function ContributionForm() {
     return () => {
       cancelled = true;
     };
-  }, [placeMode, searchQuery]);
+  }, [deferredSearchQuery, placeMode]);
 
   useEffect(() => {
     return () => {
@@ -461,8 +463,8 @@ export default function ContributionForm() {
                 ) : null}
               </div>
 
-              <div className="space-y-2">
-                {filteredPlaces.map((place) => {
+            <div className="space-y-2">
+                {existingPlaces.map((place) => {
                   const isSelected = selectedExistingPlace === place.id;
 
                   return (
@@ -499,7 +501,19 @@ export default function ContributionForm() {
                   </div>
                 ) : null}
 
-                {!loadingPlaces && !filteredPlaces.length ? (
+                {!loadingPlaces && !deferredSearchQuery.trim() ? (
+                  <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
+                    Start typing at least 2 letters to search existing places.
+                  </div>
+                ) : null}
+
+                {!loadingPlaces && deferredSearchQuery.trim() && deferredSearchQuery.trim().length < 2 ? (
+                  <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
+                    Type 2 or more letters to search existing places.
+                  </div>
+                ) : null}
+
+                {!loadingPlaces && deferredSearchQuery.trim().length >= 2 && !existingPlaces.length ? (
                   <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
                     Add new place if destination does not exist.
                   </div>

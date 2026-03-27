@@ -1,9 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { buildSignupHref, sanitizeReturnPath } from "@/utils/navigation";
+import { ArrowLeftIcon } from "@/components/ui/icons";
+
+const AUTH_PAGES = new Set(["/login", "/signup"]);
+const PROTECTED_BACK_PATHS = ["/profile", "/favorites", "/add"];
 
 export default function LoginClient({ initialFrom = "/" }) {
   const router = useRouter();
@@ -17,6 +22,39 @@ export default function LoginClient({ initialFrom = "/" }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function handleBack() {
+    if (typeof window === "undefined") {
+      router.push("/");
+      return;
+    }
+
+    const referrer = document.referrer;
+    if (referrer) {
+      try {
+        const referrerUrl = new URL(referrer);
+        const currentUrl = new URL(window.location.href);
+        const referrerPath = `${referrerUrl.pathname}${referrerUrl.search}${referrerUrl.hash}`;
+
+        if (
+          referrerUrl.origin === currentUrl.origin &&
+          referrerPath !== `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}` &&
+          !AUTH_PAGES.has(referrerUrl.pathname)
+        ) {
+          router.push(referrerPath);
+          return;
+        }
+      } catch {
+      }
+    }
+
+    if (from && !AUTH_PAGES.has(from) && !PROTECTED_BACK_PATHS.some((path) => from.startsWith(path))) {
+      router.push(from);
+      return;
+    }
+
+    router.push("/");
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -49,6 +87,21 @@ export default function LoginClient({ initialFrom = "/" }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30 px-4">
       <div className="w-full max-w-md">
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={handleBack}
+            aria-label="Go back"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700"
+          >
+            <ArrowLeftIcon className="size-5" />
+          </button>
+        </div>
+
+        <div className="mb-5 flex justify-center">
+          <Image src="/logo.png" alt="visitNepal77 - logo" width={200} height={50} priority />
+        </div>
+
         {/* Card - matches the white card style from the contribution interface */}
         <div className="rounded-2xl border border-slate-200 bg-[linear-gradient(145deg,#d9f0de,#dbe7f7)] p-8 shadow-sm">
           <div className="mb-6 flex items-center gap-2 border-b border-slate-100 pb-4">

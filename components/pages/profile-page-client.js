@@ -7,6 +7,16 @@ import { useRouter } from "next/navigation";
 import AppShell from "@/components/layout/app-shell";
 import { useFavorites } from "@/context/favorites-context";
 import { buildLoginHref } from "@/utils/navigation";
+import {
+  BookmarkIcon,
+  CameraIcon,
+  FileTextIcon,
+  LogOutIcon,
+  MailIcon,
+  PencilIcon,
+  StarIcon,
+  TrashIcon,
+} from "@/components/ui/icons";
 
 const fallbackAvatar = "";
 
@@ -44,6 +54,7 @@ export default function ProfilePageClient({ initialProfile }) {
   const router = useRouter();
   const { favorites } = useFavorites();
   const fileInputRef = useRef(null);
+  const hasHydratedRef = useRef(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -82,17 +93,31 @@ export default function ProfilePageClient({ initialProfile }) {
     });
   }, [initialProfile]);
 
+  async function fetchLatestProfile() {
+    const response = await fetch("/api/profile", { cache: "no-store" });
+    const data = await response.json().catch(() => null);
+
+    if (!data) return null;
+
+    if (response.status === 401 || data.authenticated === false) {
+      router.replace(buildLoginHref("/profile"));
+      return null;
+    }
+
+    return data;
+  }
+
   useEffect(() => {
+    if (!hasHydratedRef.current) {
+      hasHydratedRef.current = true;
+      return;
+    }
+
     let cancelled = false;
 
     async function refreshProfile() {
-      const response = await fetch("/api/profile", { cache: "no-store" });
-      const data = await response.json().catch(() => null);
-
-      if (cancelled || !data) return;
-
-      if (response.status === 401 || data.authenticated === false) {
-        router.replace(buildLoginHref("/profile"));
+      const data = await fetchLatestProfile();
+      if (cancelled || !data) {
         return;
       }
 
@@ -112,7 +137,7 @@ export default function ProfilePageClient({ initialProfile }) {
     return () => {
       cancelled = true;
     };
-  }, [favorites.length, isEditing, router]);
+  }, [favorites.length, router]);
 
   function handleFieldChange(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -247,7 +272,8 @@ export default function ProfilePageClient({ initialProfile }) {
       return;
     }
 
-    const refreshed = await fetch("/api/profile", { cache: "no-store" }).then((res) => res.json());
+    const refreshed = await fetchLatestProfile();
+    if (!refreshed) return;
     setProfile(refreshed);
     setEditingContributionId("");
     setSuccess("Contribution updated successfully.");
@@ -271,7 +297,8 @@ export default function ProfilePageClient({ initialProfile }) {
       return;
     }
 
-    const refreshed = await fetch("/api/profile", { cache: "no-store" }).then((res) => res.json());
+    const refreshed = await fetchLatestProfile();
+    if (!refreshed) return;
     setProfile(refreshed);
     setEditingContributionId("");
     setSuccess("Contribution deleted.");
@@ -304,7 +331,8 @@ export default function ProfilePageClient({ initialProfile }) {
       return;
     }
 
-    const refreshed = await fetch("/api/profile", { cache: "no-store" }).then((res) => res.json());
+    const refreshed = await fetchLatestProfile();
+    if (!refreshed) return;
     setProfile(refreshed);
     setEditingReviewId("");
     setSuccess("Review updated successfully.");
@@ -328,7 +356,8 @@ export default function ProfilePageClient({ initialProfile }) {
       return;
     }
 
-    const refreshed = await fetch("/api/profile", { cache: "no-store" }).then((res) => res.json());
+    const refreshed = await fetchLatestProfile();
+    if (!refreshed) return;
     setProfile(refreshed);
     setEditingReviewId("");
     setSuccess("Review deleted.");
@@ -336,46 +365,61 @@ export default function ProfilePageClient({ initialProfile }) {
   }
 
   const { userProfile, contributionItems, recentReviews, favoritePlaces } = profile;
+  const profileStats = [
+    {
+      label: "Contributions",
+      value: userProfile.stats.contributions,
+      tone: "bg-emerald-50 text-emerald-700",
+      icon: FileTextIcon,
+    },
+    {
+      label: "Saved Places",
+      value: favoritePlaces.length || favorites.length,
+      tone: "bg-rose-50 text-rose-600",
+      icon: BookmarkIcon,
+    },
+    {
+      label: "Reviews",
+      value: userProfile.stats.reviews,
+      tone: "bg-amber-50 text-amber-600",
+      icon: StarIcon,
+    },
+  ];
 
   return (
   <AppShell className="bg-[#f5f6f8]">
     <div className="mx-auto w-full max-w-6xl pb-6 pt-2 md:pb-8 md:pt-3">
-      {/* Hero Section - Optimized for mobile */}
-      <section className="relative overflow-hidden rounded-2xl md:rounded-[34px] border border-black/5 bg-[linear-gradient(135deg,#0f9f58_0%,#0d6e42_55%,#103f2d_100%)] px-4 pb-12 pt-4 shadow-[0_24px_60px_rgba(15,23,42,0.12)] md:px-7 md:pb-20 md:pt-6">
+      <section className="relative overflow-hidden rounded-2xl md:rounded-[34px] border border-black/5 bg-[linear-gradient(135deg,#0f9f58_0%,#0d6e42_55%,#103f2d_100%)] px-4 pb-7 pt-4 shadow-[0_24px_60px_rgba(15,23,42,0.12)] md:px-7 md:pb-10 md:pt-6">
         <div className="absolute -right-10 top-0 size-32 md:size-44 rounded-full bg-white/10 blur-2xl" />
         <div className="absolute bottom-0 left-0 h-20 w-32 md:h-28 md:w-40 rounded-tr-[80px] md:rounded-tr-[120px] bg-white/6" />
+        <div className="absolute right-5 top-5 flex items-center gap-3">
+          <HeroChip
+            icon={LogOutIcon}
+            label={loggingOut ? "Logging out..." : "Logout"}
+            onClick={handleLogout}
+            disabled={loggingOut}
+          />
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            disabled={deletingAccount}
+            aria-label={deletingAccount ? "Deleting account" : "Delete account"}
+            className="inline-flex size-11 items-center justify-center rounded-full border border-white/14 bg-red-500/15 text-white backdrop-blur transition hover:bg-red-500/25 disabled:opacity-60"
+          >
+            <TrashIcon className="size-5" />
+          </button>
+        </div>
         
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="text-center md:text-left">
+        <div className="flex flex-col gap-5">
+          <div className="pr-28 text-left md:pr-40">
             <p className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.2em] md:tracking-[0.24em] text-white/60">
               Account Settings
             </p>
             <h1 className="mt-2 text-[1.75rem] md:text-[2.4rem] font-semibold tracking-tight text-white">
               My Profile
             </h1>
-            <p className="mt-2 md:mt-3 text-xs md:text-sm leading-5 md:leading-6 text-white/75 max-w-2xl">
-              Update your traveler details, refresh your profile photo, and keep your public identity polished.
-            </p>
           </div>
-          
-          <div className="flex flex-col gap-3 md:flex-row md:items-start">
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="rounded-full border border-white/18 bg-white/12 px-4 py-2.5 md:py-2 text-sm font-semibold text-white backdrop-blur disabled:opacity-70 w-full md:w-auto"
-            >
-              {loggingOut ? "Logging out..." : "Logout"}
-            </button>
-            <button
-              type="button"
-              onClick={handleDeleteAccount}
-              disabled={deletingAccount}
-              className="rounded-full border border-red-200 bg-red-50 px-4 py-2.5 md:py-2 text-sm font-semibold text-red-600 disabled:opacity-70 w-full md:w-auto"
-            >
-              {deletingAccount ? "Deleting account..." : "Delete Account"}
-            </button>
-          </div>
+
         </div>
       </section>
 
@@ -407,8 +451,9 @@ export default function ProfilePageClient({ initialProfile }) {
                 }
                 setIsEditing((current) => !current);
               }}
-              className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2.5 md:py-2 text-sm font-semibold text-emerald-700 w-full md:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2.5 md:py-2 text-sm font-semibold text-emerald-700 md:w-auto"
             >
+              <PencilIcon className="size-4" />
               {isEditing ? "Cancel" : "Edit Profile"}
             </button>
           </div>
@@ -433,10 +478,20 @@ export default function ProfilePageClient({ initialProfile }) {
               </div>
               
               <div className="min-w-0 flex-1 text-center md:text-left">
-                <h3 className="text-base md:text-lg font-semibold text-slate-950">
-                  {isEditing ? "Profile Photo" : userProfile.name}
-                </h3>
-                <p className="mt-1 text-xs md:text-sm leading-5 md:leading-6 text-slate-500">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h3 className="text-base md:text-lg font-semibold text-slate-950">
+                      {isEditing ? "Profile Photo" : userProfile.name}
+                    </h3>
+                    {!isEditing ? (
+                      <div className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                        <MailIcon className="size-4" />
+                        {userProfile.email || "No email"}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+                <p className="mt-2 text-xs md:text-sm leading-5 md:leading-6 text-slate-500">
                   {isEditing
                     ? "Upload a square portrait for the cleanest look across the app."
                     : userProfile.bio}
@@ -455,8 +510,9 @@ export default function ProfilePageClient({ initialProfile }) {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="rounded-full bg-[#0f9f58] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(15,159,88,0.22)]"
+                        className="inline-flex items-center gap-2 rounded-full bg-[#0f9f58] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(15,159,88,0.22)]"
                       >
+                        <CameraIcon className="size-4" />
                         {uploadingAvatar ? "Uploading..." : "Upload New Photo"}
                       </button>
                       <span className="text-xs md:text-sm font-medium text-slate-500">
@@ -474,8 +530,8 @@ export default function ProfilePageClient({ initialProfile }) {
                   </>
                 ) : (
                   <div className="mt-3 md:mt-4 grid gap-2 md:gap-3 sm:grid-cols-2">
-                    <InfoTile label="Email" value={userProfile.email || "Not added"} />
-                    <InfoTile label="Bio" value={userProfile.bio || "No bio added yet"} />
+                    <InfoTile label="Email" value={userProfile.email || "Not added"} icon={MailIcon} />
+                    <InfoTile label="Bio" value={userProfile.bio || "No bio added yet"} icon={PencilIcon} />
                   </div>
                 )}
               </div>
@@ -518,8 +574,9 @@ export default function ProfilePageClient({ initialProfile }) {
                   <button
                     type="submit"
                     disabled={saving || uploadingAvatar}
-                    className="rounded-full bg-[#0f9f58] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(15,159,88,0.22)] disabled:opacity-70 w-full md:w-auto"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0f9f58] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(15,159,88,0.22)] disabled:opacity-70 md:w-auto"
                   >
+                    <PencilIcon className="size-4" />
                     {saving ? "Saving..." : "Save Changes"}
                   </button>
                   <span className="text-xs md:text-sm text-slate-500 text-center md:text-left">
@@ -553,20 +610,8 @@ export default function ProfilePageClient({ initialProfile }) {
               Profile Overview
             </h2>
             <div className="mt-4 md:mt-5 space-y-2 md:space-y-3">
-              {[
-                { label: "Contributions", value: userProfile.stats.contributions, tone: "bg-emerald-50 text-emerald-700" },
-                { label: "Saved Places", value: favoritePlaces.length || favorites.length, tone: "bg-rose-50 text-rose-600" },
-                { label: "Reviews", value: userProfile.stats.reviews, tone: "bg-amber-50 text-amber-600" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="flex items-center justify-between rounded-xl md:rounded-[22px] bg-slate-50 px-3 md:px-4 py-3 md:py-4"
-                >
-                  <span className="text-xs md:text-sm font-medium text-slate-600">{stat.label}</span>
-                  <span className={`rounded-full px-2.5 md:px-3 py-1 text-xs md:text-sm font-semibold ${stat.tone}`}>
-                    {stat.value}
-                  </span>
-                </div>
+              {profileStats.map((stat) => (
+                <StatCard key={stat.label} {...stat} />
               ))}
             </div>
           </section>
@@ -635,21 +680,7 @@ export default function ProfilePageClient({ initialProfile }) {
                         </div>
                         <div className="mt-1 text-xs text-slate-500">{item.location} · {item.dateLabel}</div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => beginContributionEdit(item)}
-                          className="rounded-full bg-slate-100 px-2.5 py-1.5 md:py-1 text-xs font-semibold text-slate-700"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleContributionDelete(item.slug || item.id)}
-                          className="rounded-full bg-red-50 px-2.5 py-1.5 md:py-1 text-xs font-semibold text-red-600"
-                        >
-                          Delete
-                        </button>
+                      <div className="flex items-center gap-2 self-start md:self-auto">
                         <span
                           className={`rounded-full px-2.5 py-1.5 md:py-1 text-xs font-semibold ${
                             item.status === "Published"
@@ -659,6 +690,17 @@ export default function ProfilePageClient({ initialProfile }) {
                         >
                           {item.status}
                         </span>
+                        <IconActionButton
+                          label="Edit contribution"
+                          onClick={() => beginContributionEdit(item)}
+                          icon={PencilIcon}
+                        />
+                        <IconActionButton
+                          label="Delete contribution"
+                          onClick={() => handleContributionDelete(item.slug || item.id)}
+                          icon={TrashIcon}
+                          tone="danger"
+                        />
                       </div>
                     </div>
                     
@@ -704,8 +746,9 @@ export default function ProfilePageClient({ initialProfile }) {
                           <button
                             type="button"
                             onClick={() => handleContributionSave(item.slug || item.id)}
-                            className="rounded-full bg-emerald-600 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-white"
+                            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-white"
                           >
+                            <PencilIcon className="size-4" />
                             Save
                           </button>
                           <button
@@ -751,24 +794,21 @@ export default function ProfilePageClient({ initialProfile }) {
                         <div className="text-sm md:text-base font-semibold text-slate-950">{review.placeName}</div>
                         <div className="mt-1 text-xs text-slate-500">{review.author}</div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 self-start md:self-auto">
                         <div className="rounded-full bg-amber-50 px-2.5 py-1.5 md:py-1 text-xs font-semibold text-amber-700">
                           ★ {review.rating}.0
                         </div>
-                        <button
-                          type="button"
+                        <IconActionButton
+                          label="Edit review"
                           onClick={() => beginReviewEdit(review)}
-                          className="rounded-full bg-slate-100 px-2.5 py-1.5 md:py-1 text-xs font-semibold text-slate-700"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
+                          icon={PencilIcon}
+                        />
+                        <IconActionButton
+                          label="Delete review"
                           onClick={() => handleReviewDelete(review.reviewId || review.id)}
-                          className="rounded-full bg-red-50 px-2.5 py-1.5 md:py-1 text-xs font-semibold text-red-600"
-                        >
-                          Delete
-                        </button>
+                          icon={TrashIcon}
+                          tone="danger"
+                        />
                       </div>
                     </div>
                     <p className="text-xs md:text-sm leading-5 md:leading-6 text-slate-600">{review.comment}</p>
@@ -799,8 +839,9 @@ export default function ProfilePageClient({ initialProfile }) {
                           <button
                             type="button"
                             onClick={() => handleReviewSave(review.reviewId || review.id)}
-                            className="rounded-full bg-emerald-600 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-white"
+                            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-white"
                           >
+                            <PencilIcon className="size-4" />
                             Save
                           </button>
                           <button
@@ -838,10 +879,60 @@ function Field({ label, children }) {
   );
 }
 
-function InfoTile({ label, value }) {
+function HeroChip({ icon: IconComponent, label, onClick, disabled = false }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/12 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur disabled:opacity-70"
+    >
+      <IconComponent className="size-4" />
+      {label}
+    </button>
+  );
+}
+
+function StatCard({ label, value, tone, icon: IconComponent }) {
+  return (
+    <div className="flex items-center justify-between rounded-xl md:rounded-[22px] bg-slate-50 px-3 md:px-4 py-3 md:py-4">
+      <div className="inline-flex items-center gap-3">
+        <span className="inline-flex size-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-[0_8px_18px_rgba(15,23,42,0.06)]">
+          <IconComponent className="size-4" />
+        </span>
+        <span className="text-xs md:text-sm font-medium text-slate-600">{label}</span>
+      </div>
+      <span className={`rounded-full px-2.5 md:px-3 py-1 text-xs md:text-sm font-semibold ${tone}`}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function IconActionButton({ label, onClick, icon: IconComponent, tone = "neutral" }) {
+  const toneClass =
+    tone === "danger"
+      ? "bg-red-50 text-red-600 hover:bg-red-100"
+      : "bg-slate-100 text-slate-700 hover:bg-slate-200";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={`inline-flex size-9 items-center justify-center rounded-full transition ${toneClass}`}
+    >
+      <IconComponent className="size-4" />
+    </button>
+  );
+}
+
+function InfoTile({ label, value, icon: IconComponent }) {
   return (
     <div className="rounded-[22px] bg-white/80 px-4 py-3">
-      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+        {IconComponent ? <IconComponent className="size-4" /> : null}
         {label}
       </div>
       <div className="mt-2 text-sm leading-6 text-slate-700">{value}</div>

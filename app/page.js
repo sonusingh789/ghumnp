@@ -1,10 +1,23 @@
 import HomePageClient from "@/components/pages/home-page-client";
-import { getApprovedPlaces, getDistrictCards } from "@/lib/content";
+import { getDistrictCards, getHomePageCollections } from "@/lib/content";
+
+export const revalidate = 300;
 
 export const metadata = {
   title: "visitNepal77 - Explore All 77 Districts",
   description:
     "Discover Nepal's 77 districts: hidden gems, local foods, sacred places, and mountain stories. Plan your next adventure with Ghum Nepal.",
+  keywords: [
+    "Nepal travel",
+    "Nepal districts",
+    "visit Nepal",
+    "hidden gems Nepal",
+    "Nepal places",
+    "travel Nepal guide",
+  ],
+  alternates: {
+    canonical: "https://visitnepal77.com/",
+  },
   openGraph: {
     title: "visitNepal77 - Explore All 77 Districts",
     description:
@@ -32,23 +45,39 @@ export const metadata = {
   },
 };
 
-export default async function HomePage() {
-  const [districts, places] = await Promise.all([
+export default async function HomePage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const initialQuery =
+    typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q.trim() : "";
+  const [districts, homeCollections] = await Promise.all([
     getDistrictCards(),
-    getApprovedPlaces(),
+    getHomePageCollections(),
   ]);
-
-  const userProfile = {
-    name: "Traveler",
-    avatar: "https://i.pravatar.cc/160?img=14",
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "visitNepal77",
+    url: "https://visitnepal77.com/",
+    description:
+      "Discover Nepal's 77 districts: hidden gems, local foods, sacred places, and mountain stories.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://visitnepal77.com/?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
   };
 
   return (
-    <HomePageClient
-      featuredDistricts={districts.slice(0, 5)}
-      allPlaces={places}
-      userProfile={userProfile}
-      initialAuthUser={null}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <HomePageClient
+        featuredDistricts={districts.slice(0, 5)}
+        topPlaces={homeCollections.topPlaces}
+        initialQuery={initialQuery}
+      />
+    </>
   );
 }

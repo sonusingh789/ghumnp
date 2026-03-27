@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/layout/app-shell";
@@ -13,6 +13,7 @@ import {
   HeartIcon,
   MapPinIcon,
   PlusCircleIcon,
+  ShareIcon,
   StarIcon,
 } from "@/components/ui/icons";
 
@@ -21,8 +22,44 @@ export default function PlaceDetailScreen({ place }) {
   const [showForm, setShowForm] = useState(false);
   const [reviews, setReviews] = useState(place.reviews || []);
   const [error, setError] = useState("");
+  const [shareFeedback, setShareFeedback] = useState("");
+  const shareTimerRef = useRef(null);
   const router = useRouter();
   const favorite = isFavorite(place.id);
+
+  function setTemporaryShareFeedback(message) {
+    if (shareTimerRef.current) {
+      clearTimeout(shareTimerRef.current);
+    }
+
+    setShareFeedback(message);
+    shareTimerRef.current = setTimeout(() => {
+      setShareFeedback("");
+    }, 2000);
+  }
+
+  async function handleShare() {
+    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+    const shareData = {
+      title: place.name,
+      text: `Check out ${place.name} on visitNepal77`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setTemporaryShareFeedback("Shared");
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      setTemporaryShareFeedback("Link copied");
+    } catch (shareError) {
+      if (shareError?.name === "AbortError") return;
+      setTemporaryShareFeedback("Unable to share");
+    }
+  }
 
   async function handleReviewSubmit(review) {
     setError("");
@@ -64,17 +101,32 @@ export default function PlaceDetailScreen({ place }) {
               >
                 <ArrowLeftIcon className="size-5" />
               </button>
-              <button
-                type="button"
-                onClick={() => toggleFavorite(place.id)}
-                className={`flex size-11 items-center justify-center rounded-full shadow-lg ${
-                  favorite ? "bg-rose-50 text-rose-500" : "bg-white/[0.92] text-slate-900"
-                }`}
-                aria-label={favorite ? "Remove favorite" : "Save place"}
-              >
-                <HeartIcon className="size-5" filled={favorite} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="flex size-11 items-center justify-center rounded-full bg-white/[0.92] text-slate-900 shadow-lg"
+                  aria-label="Share place"
+                >
+                  <ShareIcon className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(place.id)}
+                  className={`flex size-11 items-center justify-center rounded-full shadow-lg ${
+                    favorite ? "bg-rose-50 text-rose-500" : "bg-white/[0.92] text-slate-900"
+                  }`}
+                  aria-label={favorite ? "Remove favorite" : "Save place"}
+                >
+                  <HeartIcon className="size-5" filled={favorite} />
+                </button>
+              </div>
             </div>
+            {shareFeedback ? (
+              <div className="absolute right-4 top-[4.8rem] rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-lg sm:right-5">
+                {shareFeedback}
+              </div>
+            ) : null}
           </div>
 
           <div className="relative -mt-8 rounded-t-[28px] bg-white px-4 pb-5 pt-5 sm:-mt-10 sm:px-6 sm:pb-6 sm:pt-6 lg:px-7">

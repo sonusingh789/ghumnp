@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import {
   ArrowLeftIcon,
   HeartIcon,
   MapPinIcon,
+  ShareIcon,
   StarIcon,
 } from "@/components/ui/icons";
 import { cn, formatVisitors } from "@/lib/utils";
@@ -19,8 +20,10 @@ const tabs = ["All", "Attractions", "Food", "Stays"];
 
 export default function DistrictDetailScreen({ district, districtPlaces }) {
   const [activeTab, setActiveTab] = useState("All");
+  const [shareFeedback, setShareFeedback] = useState("");
   const { isFavorite, toggleFavorite } = useFavorites();
   const router = useRouter();
+  const shareTimerRef = useRef(null);
   const districtFavoriteId = `district:${district.id}`;
   const isSaved = isFavorite(districtFavoriteId);
 
@@ -31,6 +34,40 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
     if (activeTab === "Stays") return place.category === "hotel" || place.category === "stay";
     return true;
   });
+
+  function setTemporaryShareFeedback(message) {
+    if (shareTimerRef.current) {
+      clearTimeout(shareTimerRef.current);
+    }
+
+    setShareFeedback(message);
+    shareTimerRef.current = setTimeout(() => {
+      setShareFeedback("");
+    }, 2000);
+  }
+
+  async function handleShare() {
+    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+    const shareData = {
+      title: district.name,
+      text: `Check out ${district.name} district on visitNepal77`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setTemporaryShareFeedback("Shared");
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareUrl);
+      setTemporaryShareFeedback("Link copied");
+    } catch (shareError) {
+      if (shareError?.name === "AbortError") return;
+      setTemporaryShareFeedback("Unable to share");
+    }
+  }
 
   return (
     <AppShell className="bg-[#f5f6f8]" contentClassName="pt-0 sm:pt-5">
@@ -55,18 +92,33 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               >
                 <ArrowLeftIcon className="size-5" />
               </button>
-              <button
-                type="button"
-                onClick={() => toggleFavorite(districtFavoriteId)}
-                className={cn(
-                  "flex size-11 items-center justify-center rounded-full shadow-lg transition",
-                  isSaved ? "bg-rose-50 text-rose-500" : "bg-white/92 text-slate-800"
-                )}
-                aria-label={isSaved ? "Remove saved district" : "Save district"}
-              >
-                <HeartIcon filled={isSaved} className="size-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="flex size-11 items-center justify-center rounded-full bg-white/92 text-slate-800 shadow-lg"
+                  aria-label="Share district"
+                >
+                  <ShareIcon className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(districtFavoriteId)}
+                  className={cn(
+                    "flex size-11 items-center justify-center rounded-full shadow-lg transition",
+                    isSaved ? "bg-rose-50 text-rose-500" : "bg-white/92 text-slate-800"
+                  )}
+                  aria-label={isSaved ? "Remove saved district" : "Save district"}
+                >
+                  <HeartIcon filled={isSaved} className="size-5" />
+                </button>
+              </div>
             </div>
+            {shareFeedback ? (
+              <div className="absolute right-4 top-[4.8rem] rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-lg sm:right-5">
+                {shareFeedback}
+              </div>
+            ) : null}
           </div>
 
           <div className="relative -mt-8 rounded-t-[28px] bg-white px-4 pb-5 pt-5 sm:-mt-10 sm:px-6 sm:pb-6 sm:pt-6 lg:px-7">
