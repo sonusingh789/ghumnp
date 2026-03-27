@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/icons";
 import { cn, formatVisitors } from "@/lib/utils";
 
-const tabs = ["All", "Attractions", "Food", "Stays"];
+const tabs = ["All", "Tourist Attraction", "Local Food", "Restaurant", "Hotel", "Local Stay"];
 
 async function copyTextFallback(text) {
   if (typeof document === "undefined") return false;
@@ -97,10 +97,19 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
 
   const filteredPlaces = districtPlaces.filter((place) => {
     if (activeTab === "All") return true;
-    if (activeTab === "Attractions") return place.category === "attraction";
-    if (activeTab === "Food") return place.category === "food" || place.category === "restaurant";
-    if (activeTab === "Stays") return place.category === "hotel" || place.category === "stay";
-    return true;
+
+    const normalizedCategory = String(place.category || "").trim().toLowerCase();
+    const normalizedTab = activeTab.trim().toLowerCase();
+
+    const categoryAliases = {
+      "tourist attraction": ["tourist attraction", "attraction"],
+      "local food": ["local food", "food"],
+      restaurant: ["restaurant"],
+      hotel: ["hotel"],
+      "local stay": ["local stay", "stay"],
+    };
+
+    return (categoryAliases[normalizedTab] || [normalizedTab]).includes(normalizedCategory);
   });
 
   useEffect(() => {
@@ -376,8 +385,13 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                   </span>
                 </button>
 
-                {showKnowMore ? (
-                  <div className="mt-5 space-y-4">
+                <div
+                  className={cn(
+                    "relative mt-5 overflow-hidden transition-all duration-300 ease-out",
+                    showKnowMore ? "max-h-[5000px]" : "max-h-[190px]"
+                  )}
+                >
+                  <div className="space-y-4 sm:space-y-5">
                     {seo.intro ? (
                       <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
@@ -489,8 +503,28 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                         </div>
                       </div>
                     ) : null}
+
+                    {!showKnowMore ? (
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowKnowMore(true)}
+                          className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700"
+                        >
+                          Read full travel guide
+                          <ChevronRightIcon className="size-4" />
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+
+                  {!showKnowMore ? (
+                    <>
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-white via-white/96 to-white/0" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-5 bg-white" />
+                    </>
+                  ) : null}
+                </div>
               </div>
             ) : null}
           </div>
@@ -504,7 +538,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               type="button"
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "min-w-[92px] rounded-full px-4 py-2.5 text-sm font-semibold transition",
+                "shrink-0 whitespace-nowrap rounded-full px-5 py-2.5 text-[13px] font-semibold transition sm:text-sm",
                 activeTab === tab
                   ? "bg-white text-slate-950 shadow-[0_8px_20px_rgba(15,23,42,0.16)]"
                   : "bg-transparent text-slate-500"

@@ -8,16 +8,31 @@ export async function generateMetadata({ params }) {
   const district = await getDistrictBySlug(districtId);
   if (!district) return {};
   const seo = district.seoContent || {};
-  const description =
+  const descriptionSource =
+    seo.intro ||
     district.tagline ||
-    seo.intro?.slice(0, 155) ||
     `Explore ${district.name} district in Nepal on visitNepal77.`;
+  const description =
+    descriptionSource
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 158);
   return buildMetadata({
     title: `${district.name} District`,
     description,
     path: `/districts/${district.id}`,
     image: district.image,
     imageAlt: `${district.name} District - visitNepal77`,
+    type: "article",
+    keywords: [
+      `${district.name} district`,
+      `${district.name} Nepal`,
+      `${district.name} travel guide`,
+      `${district.name} places to visit`,
+      `${district.province} province`,
+      `things to do in ${district.name}`,
+      `best time to visit ${district.name}`,
+    ],
   });
 }
 
@@ -29,6 +44,7 @@ export default async function DistrictDetailPage({ params }) {
     notFound();
   }
 
+  const seo = district.seoContent || {};
   const districtPlaces = await getDistrictListingPlacesByDistrictSlug(districtId);
   const faqItems = (district.seoContent?.faqs || [])
     .map((item) => {
@@ -49,9 +65,35 @@ export default async function DistrictDetailPage({ params }) {
   const schemaItems = [
     {
       "@context": "https://schema.org",
+      "@type": "TouristDestination",
+      name: `${district.name} District`,
+      description:
+        seo.intro || district.tagline || `Travel guide for ${district.name}, Nepal.`,
+      url: `${SITE_URL}/districts/${district.id}`,
+      image: district.image,
+      touristType: "District travel guide",
+      address: {
+        "@type": "PostalAddress",
+        addressRegion: district.province,
+        addressCountry: "NP",
+      },
+      ...(district.rating > 0
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: district.rating.toFixed(1),
+              bestRating: 5,
+              worstRating: 1,
+            },
+          }
+        : {}),
+    },
+    {
+      "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: `${district.name} District`,
-      description: district.tagline || `Explore places in ${district.name}, Nepal.`,
+      description:
+        seo.intro || district.tagline || `Explore places in ${district.name}, Nepal.`,
       url: `${SITE_URL}/districts/${district.id}`,
       image: district.image,
       mainEntity: {

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
+const AUTH_COOKIE_NAME = "prescriptoai_token";
 const STORAGE_KEY = "ghumnp-favorites";
 const defaultFavorites = [];
 
@@ -24,6 +25,23 @@ export function FavoritesProvider({
     let cancelled = false;
 
     async function loadFavorites() {
+      const localFavorites = readLocalFavorites();
+
+      if (!cancelled) {
+        setFavorites(localFavorites);
+        setAuthenticated(false);
+      }
+
+      const hasAuthCookie =
+        typeof document !== "undefined" &&
+        document.cookie
+          .split(";")
+          .some((cookie) => cookie.trim().startsWith(`${AUTH_COOKIE_NAME}=`));
+
+      if (!initialAuthenticated && !hasAuthCookie) {
+        return;
+      }
+
       try {
         const response = await fetch("/api/favorites", {
           cache: "no-store",
@@ -40,11 +58,6 @@ export function FavoritesProvider({
         }
       } catch {
       }
-
-      if (cancelled) return;
-      const localFavorites = readLocalFavorites();
-      setFavorites(localFavorites);
-      setAuthenticated(false);
     }
 
     loadFavorites();
@@ -52,7 +65,7 @@ export function FavoritesProvider({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialAuthenticated]);
 
   function isFavorite(id) {
     return favorites.includes(id);

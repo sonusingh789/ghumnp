@@ -2,21 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CirclePlus, Compass, Heart, House, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  CompassIcon,
-  HeartIcon,
-  HomeIcon,
-  PlusCircleIcon,
-  UserIcon,
-} from "@/components/ui/icons";
 
 const navItems = [
-  { href: "/", label: "Home", icon: HomeIcon },
-  { href: "/explore", label: "Explore", icon: CompassIcon },
-  { href: "/add", label: "Add", icon: PlusCircleIcon },
-  { href: "/favorites", label: "Favorites", icon: HeartIcon },
-  { href: "/profile", label: "Profile", icon: UserIcon },
+  { href: "/", label: "Home", icon: House },
+  { href: "/explore", label: "Explore", icon: Compass },
+  { href: "/add", label: "Add", icon: CirclePlus },
+  { href: "/favorites", label: "Favorites", icon: Heart },
+  { href: "/profile", label: "Profile", icon: User },
 ];
 
 export default function BottomNavigation() {
@@ -42,7 +36,7 @@ export default function BottomNavigation() {
                 active ? "bg-primary-soft text-primary" : "bg-transparent"
               )}
             >
-              <Icon className="size-5" filled={active} />
+              <Icon className="size-5" strokeWidth={2} fill={active && href === "/favorites" ? "currentColor" : "none"} />
             </span>
             <span>{label}</span>
           </Link>

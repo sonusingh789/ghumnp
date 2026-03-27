@@ -1,5 +1,5 @@
 import DistrictsPageClient from "@/components/pages/districts-page-client";
-import { getAllDistrictNames, getDistrictCards } from "@/lib/content";
+import { getDistrictCards } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -11,10 +11,8 @@ export const metadata = buildMetadata({
 });
 
 export default async function DistrictsPage() {
-  const [allDistricts, districts] = await Promise.all([
-    getAllDistrictNames(),
-    getDistrictCards(),
-  ]);
+  const districts = await getDistrictCards();
+  const allDistricts = districts.map((district) => district.name);
 
   return <DistrictsPageClient allDistricts={allDistricts} districts={districts} />;
 }

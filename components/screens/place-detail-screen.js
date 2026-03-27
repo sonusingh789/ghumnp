@@ -307,8 +307,13 @@ export default function PlaceDetailScreen({ place }) {
                   </span>
                 </button>
 
-                {showKnowMore ? (
-                  <div className="mt-5 space-y-4">
+                <div
+                  className={cn(
+                    "relative mt-5 overflow-hidden transition-all duration-300 ease-out",
+                    showKnowMore ? "max-h-[5000px]" : "max-h-[190px]"
+                  )}
+                >
+                  <div className="space-y-4 sm:space-y-5">
                     {seo.longDescription ? (
                       <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
@@ -419,8 +424,28 @@ export default function PlaceDetailScreen({ place }) {
                         </div>
                       </div>
                     ) : null}
+
+                    {!showKnowMore ? (
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowKnowMore(true)}
+                          className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700"
+                        >
+                          Read full travel guide
+                          <ChevronRightIcon className="size-4" />
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+
+                  {!showKnowMore ? (
+                    <>
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-white via-white/96 to-white/0" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-5 bg-white" />
+                    </>
+                  ) : null}
+                </div>
               </div>
             ) : null}
 
