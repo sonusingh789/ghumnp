@@ -1,36 +1,14 @@
 import DistrictsPageClient from "@/components/pages/districts-page-client";
 import { getAllDistrictNames, getDistrictCards } from "@/lib/content";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "All Districts - Ghum Nepal",
+export const metadata = buildMetadata({
+  title: "All Districts",
   description:
-    "See all 77 districts of Nepal. Find information, places, and travel tips for every district on Ghum Nepal.",
-  openGraph: {
-    title: "All Districts - Ghum Nepal",
-    description:
-      "See all 77 districts of Nepal. Find information, places, and travel tips for every district on Ghum Nepal.",
-    url: "https://ghumnepal.com/districts",
-    siteName: "Ghum Nepal",
-    images: [
-      {
-        url: "https://ghumnepal.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "All Districts - Ghum Nepal",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "All Districts - Ghum Nepal",
-    description:
-      "See all 77 districts of Nepal. Find information, places, and travel tips for every district on Ghum Nepal.",
-    images: ["https://ghumnepal.com/og-image.jpg"],
-    site: "@ghumnepal",
-  },
-};
+    "Explore all 77 districts of Nepal with quick access to places, ratings, and travel highlights.",
+  path: "/districts",
+  keywords: ["Nepal districts", "all districts of Nepal", "Nepal travel districts"],
+});
 
 export default async function DistrictsPage() {
   const [allDistricts, districts] = await Promise.all([

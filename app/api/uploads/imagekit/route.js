@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { getAuthFromRequest } from "@/lib/auth-request";
 import { uploadFileToImageKit } from "@/lib/imagekit";
 
+const SUPPORTED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+]);
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
 function slugify(value) {
   return String(value || "")
     .toLowerCase()
@@ -23,6 +31,21 @@ export async function POST(request) {
 
   if (!file || typeof file !== "object" || !("arrayBuffer" in file) || !file.size) {
     return NextResponse.json({ error: "Select an image file first." }, { status: 400 });
+  }
+
+  const fileType = String(file.type || "").trim().toLowerCase();
+  if (!SUPPORTED_IMAGE_TYPES.has(fileType)) {
+    return NextResponse.json(
+      { error: `${file.name || "This file"} must be a JPG, PNG, or WEBP image.` },
+      { status: 400 }
+    );
+  }
+
+  if (Number(file.size || 0) > MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      { error: `${file.name || "This image"} is still too large after processing. Please try a smaller image.` },
+      { status: 400 }
+    );
   }
 
   try {

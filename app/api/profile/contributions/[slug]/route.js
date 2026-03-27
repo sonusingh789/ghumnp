@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getAuthFromRequest } from "@/lib/auth-request";
 import { query } from "@/lib/db";
@@ -60,6 +61,22 @@ export async function DELETE(request, { params }) {
   }
 
   const { slug } = await params;
+  const placeResult = await query(
+    `SELECT TOP 1 p.slug, d.slug AS district_slug
+     FROM Places p
+     INNER JOIN Districts d ON d.id = p.district_id
+     WHERE p.slug = @slug AND p.created_by_user_id = @userId`,
+    {
+      slug,
+      userId: Number(auth.id),
+    }
+  );
+  const place = placeResult.recordset[0];
+
+  if (!place) {
+    return NextResponse.json({ error: "Contribution not found." }, { status: 404 });
+  }
+
   const deleteResult = await query(
     `DELETE FROM Places
      WHERE slug = @slug AND created_by_user_id = @userId`,
@@ -71,6 +88,17 @@ export async function DELETE(request, { params }) {
 
   if (!deleteResult.rowsAffected?.[0]) {
     return NextResponse.json({ error: "Contribution not found." }, { status: 404 });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/explore");
+  revalidatePath("/allplaces");
+  revalidatePath("/districts");
+  revalidatePath("/favorites");
+  revalidatePath("/profile");
+  revalidatePath(`/place/${place.slug}`);
+  if (place.district_slug) {
+    revalidatePath(`/districts/${place.district_slug}`);
   }
 
   return NextResponse.json({ ok: true });

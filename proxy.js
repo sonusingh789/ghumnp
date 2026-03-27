@@ -41,6 +41,10 @@ function isProtectedApi(request) {
     return request.method === "POST";
   }
 
+  if (pathname.startsWith("/api/districts/") && pathname.endsWith("/ratings")) {
+    return request.method === "POST";
+  }
+
   if (pathname.startsWith("/api/places/") && pathname.endsWith("/reviews")) {
     return request.method === "POST";
   }
@@ -101,6 +105,7 @@ export const config = {
     "/api/profile/:path*",
     "/api/uploads/:path*",
     "/api/favorites/:path*",
+    "/api/districts/:path*",
     "/api/places/:path*",
   ],
 };

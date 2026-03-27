@@ -1,32 +1,12 @@
 import ForgotPasswordClient from "./ForgotPasswordClient";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Forgot Password - Ghum Nepal",
-  description: "Reset your Ghum Nepal account password. Enter your email to receive a password reset link.",
-  openGraph: {
-    title: "Forgot Password - Ghum Nepal",
-    description: "Reset your Ghum Nepal account password. Enter your email to receive a password reset link.",
-    url: "https://ghumnepal.com/forgot-password",
-    siteName: "Ghum Nepal",
-    images: [
-      {
-        url: "https://ghumnepal.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Forgot Password - Ghum Nepal",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Forgot Password - Ghum Nepal",
-    description: "Reset your Ghum Nepal account password. Enter your email to receive a password reset link.",
-    images: ["https://ghumnepal.com/og-image.jpg"],
-    site: "@ghumnepal",
-  },
-};
+export const metadata = buildMetadata({
+  title: "Forgot Password",
+  description: "Reset your visitNepal77 account password and request a secure password reset link.",
+  path: "/forgot-password",
+  noIndex: true,
+});
 
 export default function ForgotPasswordPage() {
   return <ForgotPasswordClient />;

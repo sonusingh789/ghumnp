@@ -1,12 +1,14 @@
 import ExplorePageClient from "@/components/pages/explore-page-client";
 import { getDistrictCards } from "@/lib/content";
+import { buildMetadata, SITE_URL } from "@/lib/seo";
 
 export const revalidate = 300;
 
-export const metadata = {
-  title: "Explore Nepal - visitNepal77",
+export const metadata = buildMetadata({
+  title: "Explore Nepal",
   description:
-    "Browse all districts and provinces of Nepal. Find your next adventure with visitNepal77's explore page.",
+    "Browse Nepal by province and district to find destinations, travel ideas, and local highlights.",
+  path: "/explore",
   keywords: [
     "explore Nepal",
     "Nepal provinces",
@@ -14,35 +16,7 @@ export const metadata = {
     "Nepal travel destinations",
     "visit Nepal districts",
   ],
-  alternates: {
-    canonical: "https://visitnepal77.com/explore",
-  },
-  openGraph: {
-    title: "Explore Nepal - visitNepal77",
-    description:
-      "Browse all districts and provinces of Nepal. Find your next adventure with visitNepal77's explore page.",
-    url: "https://visitnepal77.com/explore",
-    siteName: "visitNepal77",
-    images: [
-      {
-        url: "https://visitnepal77.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Explore Nepal - visitNepal77",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Explore Nepal - visitNepal77",
-    description:
-      "Browse all districts and provinces of Nepal. Find your next adventure with visitNepal77's explore page.",
-    images: ["https://visitnepal77.com/og-image.jpg"],
-    site: "@visitnepal77",
-  },
-};
+});
 
 export default async function ExplorePage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
@@ -58,9 +32,9 @@ export default async function ExplorePage({ searchParams }) {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: "Explore Nepal",
-    url: "https://visitnepal77.com/explore",
+    url: `${SITE_URL}/explore`,
     description:
-      "Browse all districts and provinces of Nepal. Find your next adventure with visitNepal77's explore page.",
+      "Browse Nepal by province and district to find destinations, travel ideas, and local highlights.",
     hasPart: provinces.map((province) => ({
       "@type": "ItemList",
       name: province,

@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/layout/app-shell";
 import ReviewCard from "@/components/cards/review-card";
@@ -10,22 +11,83 @@ import ImageCarousel from "@/components/sections/image-carousel";
 import { useFavorites } from "@/context/favorites-context";
 import {
   ArrowLeftIcon,
+  ChevronRightIcon,
   HeartIcon,
   MapPinIcon,
   PlusCircleIcon,
   ShareIcon,
   StarIcon,
 } from "@/components/ui/icons";
+import { cn } from "@/lib/utils";
+
+async function copyTextFallback(text) {
+  if (typeof document === "undefined") return false;
+
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  textArea.style.pointerEvents = "none";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  textArea.setSelectionRange(0, text.length);
+
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+
+  document.body.removeChild(textArea);
+  return copied;
+}
+
+async function tryNativeShare(payloads) {
+  if (typeof navigator === "undefined" || typeof navigator.share !== "function") {
+    return false;
+  }
+
+  for (const payload of payloads) {
+    try {
+      if (typeof navigator.canShare === "function" && !navigator.canShare(payload)) {
+        continue;
+      }
+
+      await navigator.share(payload);
+      return true;
+    } catch (error) {
+      if (error?.name === "AbortError") {
+        throw error;
+      }
+    }
+  }
+
+  return false;
+}
 
 export default function PlaceDetailScreen({ place }) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const [showKnowMore, setShowKnowMore] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [reviews, setReviews] = useState(place.reviews || []);
   const [error, setError] = useState("");
   const [shareFeedback, setShareFeedback] = useState("");
   const shareTimerRef = useRef(null);
+  const reviewsSectionRef = useRef(null);
   const router = useRouter();
   const favorite = isFavorite(place.id);
+  const seo = place.seoContent || {};
+  const hasExtendedInfo =
+    Boolean(seo.longDescription) ||
+    Boolean(seo.highlights?.length) ||
+    Boolean(seo.practicalTips) ||
+    Boolean(seo.bestSeason) ||
+    Boolean(seo.entryAccessInfo) ||
+    Boolean(seo.nearbyAttractions?.length) ||
+    Boolean(seo.faqs?.length);
 
   function setTemporaryShareFeedback(message) {
     if (shareTimerRef.current) {
@@ -38,26 +100,76 @@ export default function PlaceDetailScreen({ place }) {
     }, 2000);
   }
 
+  useEffect(() => {
+    return () => {
+      if (shareTimerRef.current) {
+        clearTimeout(shareTimerRef.current);
+      }
+    };
+  }, []);
+
+  function scrollToReviews({ openForm = false } = {}) {
+    if (openForm) {
+      setShowForm(true);
+    }
+
+    window.requestAnimationFrame(() => {
+      reviewsSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }
+
   async function handleShare() {
     const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-    const shareData = {
-      title: place.name,
-      text: `Check out ${place.name} on visitNepal77`,
-      url: shareUrl,
-    };
+    const sharePayloads = [
+      {
+        title: place.name,
+        text: `Check out ${place.name} on visitNepal77`,
+        url: shareUrl,
+      },
+      {
+        title: place.name,
+        url: shareUrl,
+      },
+      {
+        text: `Check out ${place.name} on visitNepal77`,
+        url: shareUrl,
+      },
+      {
+        url: shareUrl,
+      },
+    ];
 
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
+      const openedNativeShare = await tryNativeShare(sharePayloads);
+      if (openedNativeShare) {
         setTemporaryShareFeedback("Shared");
         return;
       }
 
-      await navigator.clipboard.writeText(shareUrl);
-      setTemporaryShareFeedback("Link copied");
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        setTemporaryShareFeedback("Link copied");
+        return;
+      }
+
+      const copied = await copyTextFallback(shareUrl);
+      setTemporaryShareFeedback(copied ? "Link copied" : "Open browser share");
     } catch (shareError) {
       if (shareError?.name === "AbortError") return;
-      setTemporaryShareFeedback("Unable to share");
+
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+          setTemporaryShareFeedback("Link copied");
+          return;
+        }
+      } catch {}
+
+      const copied = await copyTextFallback(shareUrl);
+      setTemporaryShareFeedback(copied ? "Link copied" : "Open browser share");
     }
   }
 
@@ -152,9 +264,13 @@ export default function PlaceDetailScreen({ place }) {
                   <StarIcon className="size-4" />
                   {place.rating.toFixed(1)}
                 </div>
-                <div className="inline-flex items-center rounded-full bg-slate-100 px-3.5 py-2 font-medium text-slate-600">
+                <button
+                  type="button"
+                  onClick={() => scrollToReviews()}
+                  className="inline-flex items-center rounded-full bg-slate-100 px-3.5 py-2 font-medium text-slate-600 transition hover:bg-slate-200"
+                >
                   {reviews.length} reviews
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -162,6 +278,152 @@ export default function PlaceDetailScreen({ place }) {
 
         <section className="grid gap-6 px-1 pb-8 pt-5 sm:px-2 sm:pt-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start">
           <div className="space-y-6">
+            {hasExtendedInfo ? (
+              <div className="rounded-[28px] border border-black/5 bg-white p-4 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-5">
+                <button
+                  type="button"
+                  onClick={() => setShowKnowMore((current) => !current)}
+                  className="flex w-full items-center justify-between gap-4 text-left"
+                  aria-expanded={showKnowMore}
+                >
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                      Know More
+                    </p>
+                    <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                      Travel Guide For {place.name}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                      Why visit, best season, tips, access info, nearby attractions, and FAQs.
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "flex size-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition",
+                      showKnowMore ? "rotate-90" : ""
+                    )}
+                  >
+                    <ChevronRightIcon className="size-5" />
+                  </span>
+                </button>
+
+                {showKnowMore ? (
+                  <div className="mt-5 space-y-4">
+                    {seo.longDescription ? (
+                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                          Destination Guide
+                        </p>
+                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                          Why Visit {place.name}
+                        </h2>
+                        <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-[15px]">
+                          {seo.longDescription.split(/\n{2,}/).map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {seo.highlights?.length ? (
+                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                          Highlights
+                        </p>
+                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                          What Makes It Special
+                        </h2>
+                        <div className="mt-4 grid gap-3">
+                          {seo.highlights.map((item) => (
+                            <div
+                              key={item}
+                              className="rounded-[22px] border border-black/5 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-700"
+                            >
+                              {item}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {(seo.practicalTips || seo.bestSeason || seo.entryAccessInfo) ? (
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {seo.practicalTips ? (
+                          <InfoSectionCard
+                            eyebrow="Travel Tips"
+                            title="Practical Tips"
+                            content={seo.practicalTips}
+                          />
+                        ) : null}
+                        {seo.bestSeason ? (
+                          <InfoSectionCard
+                            eyebrow="Season"
+                            title="Best Season To Visit"
+                            content={seo.bestSeason}
+                          />
+                        ) : null}
+                        {seo.entryAccessInfo ? (
+                          <div className="md:col-span-2">
+                            <InfoSectionCard
+                              eyebrow="Access"
+                              title="Entry And Access Info"
+                              content={seo.entryAccessInfo}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {seo.nearbyAttractions?.length ? (
+                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                          Around Here
+                        </p>
+                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                          Nearby Attractions
+                        </h2>
+                        <div className="mt-4 flex flex-wrap gap-2.5">
+                          {seo.nearbyAttractions.map((item) => (
+                            <span
+                              key={item}
+                              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {seo.faqs?.length ? (
+                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                          FAQ
+                        </p>
+                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                          Helpful To Know
+                        </h2>
+                        <div className="mt-4 space-y-3">
+                          {seo.faqs.map((item, index) => {
+                            const [question, ...rest] = item.split("::");
+                            const answer = rest.join("::").trim();
+                            return (
+                              <div key={`${question}-${index}`} className="rounded-[22px] border border-black/5 bg-white px-4 py-4">
+                                <p className="text-sm font-semibold text-slate-900">{question}</p>
+                                {answer ? (
+                                  <p className="mt-1.5 text-sm leading-6 text-slate-600">{answer}</p>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
             <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)]">
               <div className="flex items-center justify-between">
                 <div>
@@ -208,9 +470,11 @@ export default function PlaceDetailScreen({ place }) {
                       className="flex gap-4 rounded-[24px] border border-black/5 bg-slate-50 p-3"
                     >
                       <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[18px] bg-white">
-                        <img
+                        <Image
                           src={spot.image || place.image}
                           alt={spot.name}
+                          width={96}
+                          height={96}
                           className="h-full w-full object-cover"
                         />
                       </div>
@@ -230,9 +494,10 @@ export default function PlaceDetailScreen({ place }) {
                 )}
               </div>
             </div>
+
           </div>
 
-          <div className="space-y-4">
+          <div ref={reviewsSectionRef} className="space-y-4 scroll-mt-24">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
@@ -244,11 +509,11 @@ export default function PlaceDetailScreen({ place }) {
               </div>
               <button
                 type="button"
-                onClick={() => setShowForm((current) => !current)}
+                onClick={() => scrollToReviews({ openForm: !showForm })}
                 className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-4 py-2 text-sm font-semibold text-primary"
               >
                 <PlusCircleIcon className="size-4" />
-                Add Review
+                {showForm ? "Hide Review" : "Add Review"}
               </button>
             </div>
             {error ? (
@@ -270,5 +535,17 @@ export default function PlaceDetailScreen({ place }) {
         </section>
       </div>
     </AppShell>
+  );
+}
+
+function InfoSectionCard({ eyebrow, title, content }) {
+  return (
+    <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+        {eyebrow}
+      </p>
+      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-slate-600">{content}</p>
+    </div>
   );
 }

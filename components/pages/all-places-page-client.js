@@ -38,10 +38,10 @@ export default function AllPlacesPageClient({ places = [] }) {
           Place Directory
         </div>
         <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1, marginBottom: 6 }}>
-          All Recent Places
+          All Places
         </h1>
         <p style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.6, marginBottom: 16 }}>
-          Browse the latest approved places added across Nepal.
+          Browse places across Nepal.
         </p>
 
         <label style={{ position: "relative", display: "block" }}>

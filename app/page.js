@@ -1,49 +1,23 @@
 import HomePageClient from "@/components/pages/home-page-client";
 import { getDistrictCards, getHomePageCollections } from "@/lib/content";
+import { buildMetadata, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 export const revalidate = 300;
 
-export const metadata = {
-  title: "visitNepal77 - Explore All 77 Districts",
+export const metadata = buildMetadata({
+  title: "Explore All 77 Districts",
   description:
-    "Discover Nepal's 77 districts: hidden gems, local foods, sacred places, and mountain stories. Plan your next adventure with Ghum Nepal.",
+    "Discover Nepal's 77 districts, local places, food spots, and travel ideas. Plan your next trip with visitNepal77.",
+  path: "/",
   keywords: [
     "Nepal travel",
     "Nepal districts",
     "visit Nepal",
-    "hidden gems Nepal",
     "Nepal places",
     "travel Nepal guide",
+    "district travel Nepal",
   ],
-  alternates: {
-    canonical: "https://visitnepal77.com/",
-  },
-  openGraph: {
-    title: "visitNepal77 - Explore All 77 Districts",
-    description:
-      "Discover Nepal's 77 districts: hidden gems, local foods, sacred places, and mountain stories.",
-    url: "https://visitnepal77.com/",
-    siteName: "visitNepal77",
-    images: [
-      {
-        url: "https://visitnepal77.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "visitNepal77 - Explore All 77 Districts",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "visitNepal77 - Explore All 77 Districts",
-    description:
-      "Discover Nepal's 77 districts: hidden gems, local foods, sacred places, and mountain stories.",
-    images: ["https://visitnepal77.com/og-image.jpg"],
-    site: "@visitnepal77",
-  },
-};
+});
 
 export default async function HomePage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
@@ -56,13 +30,13 @@ export default async function HomePage({ searchParams }) {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "visitNepal77",
-    url: "https://visitnepal77.com/",
+    name: SITE_NAME,
+    url: `${SITE_URL}/`,
     description:
-      "Discover Nepal's 77 districts: hidden gems, local foods, sacred places, and mountain stories.",
+      "Discover Nepal's 77 districts, local places, food spots, and travel ideas.",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://visitnepal77.com/?q={search_term_string}",
+      target: `${SITE_URL}/?q={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };
@@ -75,6 +49,7 @@ export default async function HomePage({ searchParams }) {
       />
       <HomePageClient
         featuredDistricts={districts.slice(0, 5)}
+        popularDistricts={homeCollections.popularDistricts}
         topPlaces={homeCollections.topPlaces}
         initialQuery={initialQuery}
       />

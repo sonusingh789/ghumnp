@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
 import { allDistricts } from "@/data/nepal";
 import {
+  ChevronRightIcon,
   MapPinIcon,
   PlusCircleIcon,
   SearchIcon,
@@ -19,6 +21,102 @@ const spotCategories = [
   "Hotel",
   "Local Stay",
 ];
+
+const MAX_UPLOAD_DIMENSION = 1400;
+const JPEG_QUALITY = 0.76;
+const IMAGE_INPUT_ACCEPT = "image/jpeg,image/jpg,image/png,image/webp";
+const SUPPORTED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+]);
+const SUPPORTED_IMAGE_EXTENSIONS = new Map([
+  ["jpg", "image/jpeg"],
+  ["jpeg", "image/jpeg"],
+  ["png", "image/png"],
+  ["webp", "image/webp"],
+]);
+
+function getNormalizedImageType(file) {
+  const rawType = String(file?.type || "").trim().toLowerCase();
+  if (rawType) {
+    return rawType;
+  }
+
+  const extension = String(file?.name || "")
+    .split(".")
+    .pop()
+    ?.trim()
+    .toLowerCase();
+
+  return SUPPORTED_IMAGE_EXTENSIONS.get(extension) || "";
+}
+
+async function optimizeImageFile(file) {
+  if (typeof window === "undefined") return file;
+  const normalizedType = getNormalizedImageType(file);
+
+  if (!normalizedType.startsWith("image/")) {
+    throw new Error(`${file.name} is not a supported image. Please use JPG, PNG, or WEBP.`);
+  }
+
+  if (!SUPPORTED_IMAGE_TYPES.has(normalizedType)) {
+    throw new Error(`${file.name} uses an unsupported image format. Please use JPG, PNG, or WEBP.`);
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await loadImage(objectUrl);
+    const largestDimension = Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height);
+    const shouldResize = largestDimension > MAX_UPLOAD_DIMENSION;
+
+    if (!shouldResize && file.size <= 2 * 1024 * 1024) {
+      return file;
+    }
+
+    const scale = shouldResize ? MAX_UPLOAD_DIMENSION / largestDimension : 1;
+    const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+    const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return file;
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+    const targetType = normalizedType === "image/png" ? "image/png" : "image/jpeg";
+    const blob = await new Promise((resolve) => {
+      canvas.toBlob(resolve, targetType, targetType === "image/jpeg" ? JPEG_QUALITY : undefined);
+    });
+
+    if (!blob) {
+      return file;
+    }
+
+    const extension = targetType === "image/png" ? "png" : "jpg";
+    const baseName = file.name.replace(/\.[^.]+$/, "") || `upload-${Date.now()}`;
+    return new File([blob], `${baseName}.${extension}`, {
+      type: targetType,
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Unable to process this image file."));
+    image.src = src;
+  });
+}
 
 export default function ContributionForm() {
   const router = useRouter();
@@ -37,6 +135,7 @@ export default function ContributionForm() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExistingPlace, setSelectedExistingPlace] = useState("");
   const [showSpotForm, setShowSpotForm] = useState(false);
+  const [showMorePlaceDetails, setShowMorePlaceDetails] = useState(false);
   const [nearbySpots, setNearbySpots] = useState([]);
   const [existingPlaces, setExistingPlaces] = useState([]);
   const [loadingPlaces, setLoadingPlaces] = useState(false);
@@ -134,11 +233,20 @@ export default function ContributionForm() {
     setSelectedExistingPlace(placeId);
   }
 
-  function handlePlaceFilesChange(event) {
+  async function handlePlaceFilesChange(event) {
     const nextFiles = Array.from(event.target.files || []);
     if (!nextFiles.length) return;
 
-    const previewItems = nextFiles.map((file) => ({
+    let optimizedFiles;
+    try {
+      optimizedFiles = await Promise.all(nextFiles.map((file) => optimizeImageFile(file)));
+    } catch (fileError) {
+      setError(fileError?.message || "One of the selected images could not be processed.");
+      event.target.value = "";
+      return;
+    }
+
+    const previewItems = optimizedFiles.map((file) => ({
       id: `${file.name}-${file.size}-${Date.now()}`,
       name: file.name,
       previewUrl: URL.createObjectURL(file),
@@ -160,11 +268,20 @@ export default function ContributionForm() {
     setPlaceFiles((current) => current.filter((preview) => preview.id !== previewId));
   }
 
-  function handleSpotFileChange(event) {
+  async function handleSpotFileChange(event) {
     const nextFiles = Array.from(event.target.files || []);
     if (!nextFiles.length) return;
 
-    const nextItems = nextFiles.map((file) => ({
+    let optimizedFiles;
+    try {
+      optimizedFiles = await Promise.all(nextFiles.map((file) => optimizeImageFile(file)));
+    } catch (fileError) {
+      setError(fileError?.message || "One of the selected spot images could not be processed.");
+      event.target.value = "";
+      return;
+    }
+
+    const nextItems = optimizedFiles.map((file) => ({
       id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       name: file.name,
       previewUrl: URL.createObjectURL(file),
@@ -283,10 +400,15 @@ export default function ContributionForm() {
       const fileItem = fileItems[index];
       setUploadLabel(`${labelPrefix} ${fileItem.name}`);
 
-      const result = await uploadSingleFile(fileItem.file, folderHint, (filePercent) => {
-        const overallPercent = Math.round(((index + filePercent / 100) / fileItems.length) * 100);
-        setUploadProgress(overallPercent);
-      });
+      let result;
+      try {
+        result = await uploadSingleFile(fileItem.file, folderHint, (filePercent) => {
+          const overallPercent = Math.round(((index + filePercent / 100) / fileItems.length) * 100);
+          setUploadProgress(overallPercent);
+        });
+      } catch (uploadError) {
+        throw new Error(uploadError?.message || `Upload failed for ${fileItem.name}.`);
+      }
 
       uploadedUrls.push(result.url);
       setUploadProgress(Math.round(((index + 1) / fileItems.length) * 100));
@@ -350,6 +472,19 @@ export default function ContributionForm() {
           district: String(formData.get("district") || ""),
           location: String(formData.get("location") || ""),
           description: String(formData.get("description") || ""),
+          placeLongDescription: String(formData.get("placeLongDescription") || ""),
+          placeHighlights: String(formData.get("placeHighlights") || ""),
+          placePracticalTips: String(formData.get("placePracticalTips") || ""),
+          placeBestSeason: String(formData.get("placeBestSeason") || ""),
+          placeEntryAccessInfo: String(formData.get("placeEntryAccessInfo") || ""),
+          placeNearbyAttractions: String(formData.get("placeNearbyAttractions") || ""),
+          placeFaqs: String(formData.get("placeFaqs") || ""),
+          districtIntro: String(formData.get("districtIntro") || ""),
+          districtTopThingsToDo: String(formData.get("districtTopThingsToDo") || ""),
+          districtBestTimeToVisit: String(formData.get("districtBestTimeToVisit") || ""),
+          districtHowToReach: String(formData.get("districtHowToReach") || ""),
+          districtLocalFoodsCulture: String(formData.get("districtLocalFoodsCulture") || ""),
+          districtFaqs: String(formData.get("districtFaqs") || ""),
           nearbySpots: nearbySpotsWithUploads,
           uploadedImageUrls,
         }),
@@ -536,7 +671,7 @@ export default function ContributionForm() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_INPUT_ACCEPT}
                   multiple
                   hidden
                   onChange={handlePlaceFilesChange}
@@ -547,10 +682,13 @@ export default function ContributionForm() {
                       key={preview.id}
                       className="relative h-[118px] w-[118px] overflow-hidden rounded-[24px] bg-[linear-gradient(145deg,#d9f0de,#dbe7f7)]"
                     >
-                      <img
+                      <Image
                         src={preview.previewUrl}
                         alt={preview.name}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="118px"
+                        unoptimized
+                        className="object-cover"
                       />
                       <button
                         type="button"
@@ -571,6 +709,7 @@ export default function ContributionForm() {
                     Upload
                   </button>
                 </div>
+                <p className="mt-3 text-xs text-slate-500">Use JPG, PNG, or WEBP images for the best upload results.</p>
               </Field>
 
               <Field label="Place Name">
@@ -602,6 +741,98 @@ export default function ContributionForm() {
                   placeholder="Share details about this place..."
                 />
               </Field>
+
+              <div className="rounded-[24px] border border-black/6 bg-white/70 p-5 sm:p-6">
+                <button
+                  type="button"
+                  onClick={() => setShowMorePlaceDetails((current) => !current)}
+                  className="flex w-full items-center justify-between gap-5 text-left"
+                  aria-expanded={showMorePlaceDetails}
+                >
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-950">Add More Details</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      Optional guide content for the place page.
+                    </p>
+                  </div>
+                  <span
+                    className={`flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition ${
+                      showMorePlaceDetails ? "rotate-90" : ""
+                    }`}
+                  >
+                    <ChevronRightIcon className="size-5" />
+                  </span>
+                </button>
+
+                {showMorePlaceDetails ? (
+                  <div className="mt-6 space-y-4">
+                    <Field label="Place Long Description">
+                      <textarea
+                        name="placeLongDescription"
+                        rows={5}
+                        className={`${inputClass} resize-none py-4`}
+                        placeholder="Write a detailed description of the place..."
+                      />
+                    </Field>
+
+                    <Field label="Place Highlights">
+                      <textarea
+                        name="placeHighlights"
+                        rows={4}
+                        className={`${inputClass} resize-none py-4`}
+                        placeholder={"Add one highlight per line\nBeautiful sunrise views\nPeaceful monastery atmosphere"}
+                      />
+                    </Field>
+
+                    <Field label="Practical Tips">
+                      <textarea
+                        name="placePracticalTips"
+                        rows={4}
+                        className={`${inputClass} resize-none py-4`}
+                        placeholder="Helpful tips for visitors..."
+                      />
+                    </Field>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Best Season / Time">
+                        <textarea
+                          name="placeBestSeason"
+                          rows={3}
+                          className={`${inputClass} resize-none py-4`}
+                          placeholder="Best season or time to visit..."
+                        />
+                      </Field>
+
+                      <Field label="Entry / Access Info">
+                        <textarea
+                          name="placeEntryAccessInfo"
+                          rows={3}
+                          className={`${inputClass} resize-none py-4`}
+                          placeholder="Tickets, permits, timings, or access info..."
+                        />
+                      </Field>
+                    </div>
+
+                    <Field label="Nearby Attractions">
+                      <textarea
+                        name="placeNearbyAttractions"
+                        rows={4}
+                        className={`${inputClass} resize-none py-4`}
+                        placeholder={"Add one nearby attraction per line\nPhewa Lake\nWorld Peace Pagoda"}
+                      />
+                    </Field>
+
+                    <Field label="Place FAQs">
+                      <textarea
+                        name="placeFaqs"
+                        rows={4}
+                        className={`${inputClass} resize-none py-4`}
+                        placeholder={"Use one FAQ per line in this format:\nBest time to visit?::October to December.\nIs parking available?::Yes, near the main gate."}
+                      />
+                    </Field>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
         )}
@@ -649,7 +880,7 @@ export default function ContributionForm() {
                 <input
                   ref={spotFileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_INPUT_ACCEPT}
                   multiple
                   hidden
                   onChange={handleSpotFileChange}
@@ -660,10 +891,13 @@ export default function ContributionForm() {
                       key={image.id}
                       className="relative h-[118px] w-[118px] overflow-hidden rounded-[24px] bg-white"
                     >
-                      <img
+                      <Image
                         src={image.previewUrl}
                         alt={image.name || "Spot preview"}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="118px"
+                        unoptimized
+                        className="object-cover"
                       />
                       <button
                         type="button"
@@ -684,6 +918,7 @@ export default function ContributionForm() {
                     Upload
                   </button>
                 </div>
+                <p className="mt-3 text-xs text-slate-500">Use JPG, PNG, or WEBP images for nearby spots too.</p>
               </Field>
 
               <Field label="Spot Name">
@@ -753,11 +988,14 @@ export default function ContributionForm() {
                   {spot.imagePreviews?.length ? (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {spot.imagePreviews.map((image) => (
-                        <div key={image.id} className="h-20 w-20 overflow-hidden rounded-[18px] bg-white">
-                          <img
+                        <div key={image.id} className="relative h-20 w-20 overflow-hidden rounded-[18px] bg-white">
+                          <Image
                             src={image.previewUrl}
                             alt={spot.name}
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="80px"
+                            unoptimized
+                            className="object-cover"
                           />
                         </div>
                       ))}

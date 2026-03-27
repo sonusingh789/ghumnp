@@ -13,6 +13,86 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function parseLineArray(value) {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function hasSeoValue(seoContent) {
+  return Boolean(
+    seoContent &&
+      Object.values(seoContent).some((value) =>
+        Array.isArray(value) ? value.length > 0 : Boolean(String(value || "").trim())
+      )
+  );
+}
+
+async function upsertPlaceSeoContent(placeId, seoContent) {
+  if (!placeId || !hasSeoValue(seoContent)) return;
+
+  await query(
+    `MERGE PlaceSeoContent AS target
+     USING (SELECT @placeId AS place_id) AS source
+     ON target.place_id = source.place_id
+     WHEN MATCHED THEN
+       UPDATE SET
+         long_description = @longDescription,
+         highlights = @highlights,
+         practical_tips = @practicalTips,
+         best_season = @bestSeason,
+         entry_access_info = @entryAccessInfo,
+         nearby_attractions = @nearbyAttractions,
+         faqs = @faqs,
+         updated_at = SYSUTCDATETIME()
+     WHEN NOT MATCHED THEN
+       INSERT (place_id, long_description, highlights, practical_tips, best_season, entry_access_info, nearby_attractions, faqs)
+       VALUES (@placeId, @longDescription, @highlights, @practicalTips, @bestSeason, @entryAccessInfo, @nearbyAttractions, @faqs);`,
+    {
+      placeId,
+      longDescription: seoContent.longDescription || null,
+      highlights: seoContent.highlights?.length ? JSON.stringify(seoContent.highlights) : null,
+      practicalTips: seoContent.practicalTips || null,
+      bestSeason: seoContent.bestSeason || null,
+      entryAccessInfo: seoContent.entryAccessInfo || null,
+      nearbyAttractions: seoContent.nearbyAttractions?.length ? JSON.stringify(seoContent.nearbyAttractions) : null,
+      faqs: seoContent.faqs?.length ? JSON.stringify(seoContent.faqs) : null,
+    }
+  );
+}
+
+async function upsertDistrictSeoContent(districtId, seoContent) {
+  if (!districtId || !hasSeoValue(seoContent)) return;
+
+  await query(
+    `MERGE DistrictSeoContent AS target
+     USING (SELECT @districtId AS district_id) AS source
+     ON target.district_id = source.district_id
+     WHEN MATCHED THEN
+       UPDATE SET
+         intro_text = @intro,
+         top_things_to_do = @topThingsToDo,
+         best_time_to_visit = @bestTimeToVisit,
+         how_to_reach = @howToReach,
+         local_foods_culture = @localFoodsCulture,
+         faqs = @faqs,
+         updated_at = SYSUTCDATETIME()
+     WHEN NOT MATCHED THEN
+       INSERT (district_id, intro_text, top_things_to_do, best_time_to_visit, how_to_reach, local_foods_culture, faqs)
+       VALUES (@districtId, @intro, @topThingsToDo, @bestTimeToVisit, @howToReach, @localFoodsCulture, @faqs);`,
+    {
+      districtId,
+      intro: seoContent.intro || null,
+      topThingsToDo: seoContent.topThingsToDo?.length ? JSON.stringify(seoContent.topThingsToDo) : null,
+      bestTimeToVisit: seoContent.bestTimeToVisit || null,
+      howToReach: seoContent.howToReach || null,
+      localFoodsCulture: seoContent.localFoodsCulture || null,
+      faqs: seoContent.faqs?.length ? JSON.stringify(seoContent.faqs) : null,
+    }
+  );
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const ids = searchParams.get("ids");
@@ -73,6 +153,23 @@ async function parseRequestData(request) {
       districtSlug: String(formData.get("district") || "").trim(),
       location: String(formData.get("location") || "").trim(),
       description: String(formData.get("description") || "").trim(),
+      placeSeoContent: {
+        longDescription: String(formData.get("placeLongDescription") || "").trim(),
+        highlights: parseLineArray(formData.get("placeHighlights")),
+        practicalTips: String(formData.get("placePracticalTips") || "").trim(),
+        bestSeason: String(formData.get("placeBestSeason") || "").trim(),
+        entryAccessInfo: String(formData.get("placeEntryAccessInfo") || "").trim(),
+        nearbyAttractions: parseLineArray(formData.get("placeNearbyAttractions")),
+        faqs: parseLineArray(formData.get("placeFaqs")),
+      },
+      districtSeoContent: {
+        intro: String(formData.get("districtIntro") || "").trim(),
+        topThingsToDo: parseLineArray(formData.get("districtTopThingsToDo")),
+        bestTimeToVisit: String(formData.get("districtBestTimeToVisit") || "").trim(),
+        howToReach: String(formData.get("districtHowToReach") || "").trim(),
+        localFoodsCulture: String(formData.get("districtLocalFoodsCulture") || "").trim(),
+        faqs: parseLineArray(formData.get("districtFaqs")),
+      },
       files: formData.getAll("photos").filter(
         (entry) => entry && typeof entry === "object" && "arrayBuffer" in entry && entry.size > 0
       ),
@@ -89,6 +186,23 @@ async function parseRequestData(request) {
     districtSlug: String(body?.district || "").trim(),
     location: String(body?.location || "").trim(),
     description: String(body?.description || "").trim(),
+    placeSeoContent: {
+      longDescription: String(body?.placeLongDescription || "").trim(),
+      highlights: parseLineArray(body?.placeHighlights),
+      practicalTips: String(body?.placePracticalTips || "").trim(),
+      bestSeason: String(body?.placeBestSeason || "").trim(),
+      entryAccessInfo: String(body?.placeEntryAccessInfo || "").trim(),
+      nearbyAttractions: parseLineArray(body?.placeNearbyAttractions),
+      faqs: parseLineArray(body?.placeFaqs),
+    },
+    districtSeoContent: {
+      intro: String(body?.districtIntro || "").trim(),
+      topThingsToDo: parseLineArray(body?.districtTopThingsToDo),
+      bestTimeToVisit: String(body?.districtBestTimeToVisit || "").trim(),
+      howToReach: String(body?.districtHowToReach || "").trim(),
+      localFoodsCulture: String(body?.districtLocalFoodsCulture || "").trim(),
+      faqs: parseLineArray(body?.districtFaqs),
+    },
     files: [],
     nearbySpots: Array.isArray(body?.nearbySpots) ? body.nearbySpots : [],
     uploadedImageUrls: Array.isArray(body?.uploadedImageUrls)
@@ -107,16 +221,20 @@ async function handleRequest(auth, data) {
     description,
     files,
     nearbySpots,
+    placeSeoContent,
+    districtSeoContent,
   } = data;
   let { uploadedImageUrls } = data;
+  const hasPlaceSeoContent = hasSeoValue(placeSeoContent);
+  const hasDistrictSeoContent = hasSeoValue(districtSeoContent);
 
   if (mode === "existing") {
     if (!selectedExistingPlace) {
       return NextResponse.json({ error: "Select an existing place first." }, { status: 400 });
     }
-    if (!files.length && !nearbySpots.length && !uploadedImageUrls.length) {
+    if (!files.length && !nearbySpots.length && !uploadedImageUrls.length && !hasPlaceSeoContent && !hasDistrictSeoContent) {
       return NextResponse.json(
-        { error: "Add at least one photo or nearby spot for the existing place." },
+        { error: "Add photos, nearby spots, or SEO details for the existing place." },
         { status: 400 }
       );
     }
@@ -142,11 +260,12 @@ async function handleRequest(auth, data) {
 
   let placeId;
   let placeSlug;
+  let placeDistrictId;
   let placeDistrictSlug;
 
   if (mode === "existing") {
     const placeResult = await query(
-      `SELECT p.id, p.slug, d.slug AS district_slug
+      `SELECT p.id, p.slug, d.id AS district_id, d.slug AS district_slug
        FROM Places p
        INNER JOIN Districts d ON d.id = p.district_id
        WHERE p.status = 'approved' AND p.slug = @slug`,
@@ -160,6 +279,7 @@ async function handleRequest(auth, data) {
 
     placeId = place.id;
     placeSlug = place.slug;
+    placeDistrictId = place.district_id;
     placeDistrictSlug = place.district_slug;
   } else {
     const districtResult = await query(
@@ -173,6 +293,7 @@ async function handleRequest(auth, data) {
     }
 
     placeSlug = `${slugify(name)}-${Date.now()}`;
+    placeDistrictId = district.id;
 
     const insertResult = await query(
       `INSERT INTO Places (
@@ -270,13 +391,16 @@ async function handleRequest(auth, data) {
     }
   }
 
+  await upsertPlaceSeoContent(placeId, placeSeoContent);
+  await upsertDistrictSeoContent(placeDistrictId, districtSeoContent);
+
   revalidatePath("/add");
   revalidatePath("/districts");
   if (placeDistrictSlug) {
     revalidatePath(`/districts/${placeDistrictSlug}`);
   }
   if (placeSlug) {
-    revalidatePath(`/places/${placeSlug}`);
+    revalidatePath(`/place/${placeSlug}`);
   }
 
   return NextResponse.json({
