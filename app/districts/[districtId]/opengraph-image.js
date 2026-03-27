@@ -8,25 +8,12 @@ export const size = {
 };
 
 export const contentType = "image/png";
+export const alt = "visitNepal77 district preview";
 
 function clampText(value = "", maxLength = 120) {
   const text = String(value || "").trim();
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength - 1).trim()}…`;
-}
-
-export async function generateImageMetadata({ params }) {
-  const { districtId } = await params;
-  const district = await getDistrictBySlug(districtId);
-
-  return [
-    {
-      id: district?.id || districtId,
-      alt: district ? `${district.name} District - ${SITE_NAME}` : `${SITE_NAME} district preview`,
-      size,
-      contentType,
-    },
-  ];
 }
 
 export default async function DistrictOpenGraphImage({ params }) {
