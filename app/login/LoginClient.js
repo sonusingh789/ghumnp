@@ -45,6 +45,7 @@ export default function LoginClient({ initialFrom = "/" }) {
           return;
         }
       } catch {
+        // Ignore URL parsing errors
       }
     }
 
@@ -74,12 +75,20 @@ export default function LoginClient({ initialFrom = "/" }) {
 
       if (!res.ok) {
         setError(data.error || "Login failed");
+        setLoading(false);
         return;
       }
 
-      router.replace(from);
-      router.refresh();
-    } finally {
+      // Store the redirect path
+      const redirectPath = from;
+      
+      // Use window.location for a reliable redirect
+      // This ensures a full page navigation and avoids any router conflicts
+      window.location.href = redirectPath;
+      
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
   }
@@ -119,15 +128,19 @@ export default function LoginClient({ initialFrom = "/" }) {
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 border border-red-100">
-                <i className="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                <svg className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 <span>{error}</span>
               </div>
             )}
 
-            {/* Email field - matches the input style from the image sample (clean border, focus ring) */}
+            {/* Email field */}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                <i className="fas fa-envelope mr-1.5 text-slate-400 text-xs"></i>
+                <svg className="mr-1.5 inline h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
                 Email Address
               </label>
               <input
@@ -143,7 +156,9 @@ export default function LoginClient({ initialFrom = "/" }) {
             {/* Password field */}
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                <i className="fas fa-lock mr-1.5 text-slate-400 text-xs"></i>
+                <svg className="mr-1.5 inline h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6-4h12a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6a2 2 0 012-2zm10-4V6a4 4 0 00-8 0v4h8z" />
+                </svg>
                 Password
               </label>
               <input
@@ -156,14 +171,18 @@ export default function LoginClient({ initialFrom = "/" }) {
               />
             </div>
 
-            {/* Forgot password link - subtle like the "Nearby Spots" secondary text */}
+            {/* Forgot password link */}
             <div className="flex justify-end">
-              <button type="button" className="text-xs text-slate-500 hover:text-[#566ffd] transition-colors">
+              <button 
+                type="button" 
+                onClick={() => router.push("/forgot-password")}
+                className="text-xs text-slate-500 hover:text-[#566ffd] transition-colors"
+              >
                 Forgot password?
               </button>
             </div>
 
-            {/* Submit button - matches the gradient from image sample (purple/blue/teal) */}
+            {/* Submit button */}
             <button
               type="submit"
               disabled={loading}
@@ -180,7 +199,9 @@ export default function LoginClient({ initialFrom = "/" }) {
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-arrow-right-to-bracket text-sm"></i>
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
                     Sign In
                   </>
                 )}
@@ -188,20 +209,22 @@ export default function LoginClient({ initialFrom = "/" }) {
             </button>
           </form>
 
-          {/* Sign up link - styled like the "Submit Contribution" section but minimal */}
+          {/* Sign up link */}
           <div className="mt-8 pt-2 text-center">
             <p className="text-sm text-emerald-600">
               Don't have an account?{' '}
-              <a href={buildSignupHref(from)} className="font-medium text-[#566ffd] hover:text-[#c169d8] transition-colors inline-flex items-center gap-1">
+              <a 
+                href={buildSignupHref(from)} 
+                className="font-medium text-[#566ffd] hover:text-[#c169d8] transition-colors inline-flex items-center gap-1"
+              >
                 Join as contributor
-                <i className="fas fa-arrow-right text-xs"></i>
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </a>
             </p>
-            
           </div>
         </div>
-
-      
       </div>
     </div>
   );
