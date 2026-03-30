@@ -7,7 +7,6 @@ import { startTransition, useDeferredValue, useEffect, useRef, useState } from "
 import { allDistricts } from "@/data/nepal";
 import {
   ChevronRightIcon,
-  MapPinIcon,
   PlusCircleIcon,
   SearchIcon,
   UploadIcon,
@@ -120,7 +119,6 @@ function loadImage(src) {
 
 export default function ContributionForm() {
   const router = useRouter();
-  const formRef = useRef(null);
   const fileInputRef = useRef(null);
   const spotFileInputRef = useRef(null);
   const previewItemsRef = useRef([]);
@@ -493,7 +491,6 @@ export default function ContributionForm() {
         return;
       }
 
-      formRef.current?.reset();
       setSelectedExistingPlace("");
       setSearchQuery("");
       nearbySpots.forEach((spot) => {
@@ -546,124 +543,156 @@ export default function ContributionForm() {
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-      <section className="rounded-[30px] border border-black/8 bg-white p-4 shadow-[0_16px_34px_rgba(15,23,42,0.05)] sm:p-5">
-        <div className="flex items-start justify-between gap-4">
-          
-          <div>
-            <h2 className="text-[1.15rem] font-semibold tracking-tight text-slate-950">Place</h2>
-            <p className="mt-1 text-sm text-slate-500">Main tourist destination or area</p>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+      {/* ── MODE TOGGLE ────────────────────────────────────── */}
+      <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid #e2e8f0", padding: 5, display: "flex", gap: 4, boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
+        {[
+          { mode: "existing", label: "📍 Add to Existing Place" },
+          { mode: "new",      label: "✨ Add New Place" },
+        ].map(({ mode, label }) => {
+          const active = placeMode === mode;
+          return (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setPlaceMode(mode)}
+              style={{
+                flex: 1,
+                padding: "10px 12px",
+                borderRadius: 13,
+                border: "none",
+                cursor: "pointer",
+                fontSize: 13,
+                fontWeight: 700,
+                transition: "all 0.15s ease",
+                background: active ? "#059669" : "transparent",
+                color: active ? "#fff" : "#64748b",
+                boxShadow: active ? "0 4px 12px rgba(5,150,105,0.25)" : "none",
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── PLACE SECTION ──────────────────────────────────── */}
+      <div style={{ background: "#fff", borderRadius: 24, border: "1.5px solid #e2e8f0", overflow: "hidden", boxShadow: "0 4px 20px rgba(15,23,42,0.06)" }}>
+        {/* Section header */}
+        <div style={{ padding: "16px 18px 14px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
+            🗺️
           </div>
-          <button
-            type="button"
-            onClick={() => setPlaceMode((current) => (current === "existing" ? "new" : "existing"))}
-            className="text-sm font-semibold text-emerald-600"
-          >
-            {placeMode === "existing" ? "Place not found? Add new" : "Select existing place"}
-          </button>
+          <div>
+            <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
+              {placeMode === "existing" ? "Select a Place" : "New Place Details"}
+            </h2>
+            <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
+              {placeMode === "existing" ? "Search and pick an existing destination" : "Tell us about this new destination"}
+            </p>
+          </div>
         </div>
 
-        {placeMode === "existing" ? (
-          <div className="mt-4 space-y-4">
-            <div className="relative">
-              <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                  }
-                }}
-                placeholder="Search by place name, district, or location..."
-                className="w-full rounded-[22px] border border-black/6 bg-slate-50 py-3 pl-12 pr-4 text-[15px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-emerald-200 focus:bg-white"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                
-                {selectedExistingPlace ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedExistingPlace("")}
-                    className="text-sm font-medium text-slate-500"
-                  >
-                    Clear selection
-                  </button>
-                ) : null}
+        <div style={{ padding: "16px 18px 20px" }}>
+          {placeMode === "existing" ? (
+            /* ── EXISTING PLACE SEARCH ── */
+            <div key="existing" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ position: "relative" }}>
+                <SearchIcon className="pointer-events-none" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "#94a3b8" }} />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
+                  placeholder="Search by place name, district or location..."
+                  style={{ ...inputStyle, paddingLeft: 40 }}
+                />
               </div>
 
-            <div className="space-y-2">
+              {selectedExistingPlace ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedExistingPlace("")}
+                  style={{ alignSelf: "flex-end", fontSize: 12, fontWeight: 600, color: "#64748b", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  Clear selection
+                </button>
+              ) : null}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {existingPlaces.map((place) => {
                   const isSelected = selectedExistingPlace === place.id;
-
                   return (
                     <button
                       key={place.id}
                       type="button"
                       onClick={() => handleSelectExistingPlace(place.id)}
-                      className={`w-full rounded-[22px] border px-4 py-3 text-left transition ${
-                        isSelected
-                          ? "border-emerald-300 bg-emerald-50 shadow-[0_10px_20px_rgba(8,175,59,0.08)]"
-                          : "border-black/6 bg-white hover:border-emerald-200 hover:bg-emerald-50/40"
-                      }`}
+                      style={{
+                        width: "100%",
+                        padding: "12px 14px",
+                        borderRadius: 14,
+                        border: `1.5px solid ${isSelected ? "#059669" : "#e2e8f0"}`,
+                        background: isSelected ? "#ecfdf5" : "#fff",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 12,
+                      }}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-[15px] font-semibold text-slate-950">{place.name}</div>
-                          <div className="mt-1 text-sm text-slate-500">
-                            {[place.district, place.location].filter(Boolean).join(" • ")}
-                          </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{place.name}</div>
+                        <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                          {[place.district, place.location].filter(Boolean).join(" · ")}
                         </div>
-                        {isSelected ? (
-                          <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                            Selected
-                          </span>
-                        ) : null}
                       </div>
+                      {isSelected ? (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "#059669", borderRadius: 999, padding: "3px 10px", flexShrink: 0 }}>
+                          Selected
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })}
 
                 {loadingPlaces ? (
-                  <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                    Loading matching places...
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+                    Loading places...
                   </div>
                 ) : null}
 
                 {!loadingPlaces && !deferredSearchQuery.trim() ? (
-                  <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
                     Start typing at least 2 letters to search existing places.
                   </div>
                 ) : null}
 
-                {!loadingPlaces && deferredSearchQuery.trim() && deferredSearchQuery.trim().length < 2 ? (
-                  <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                    Type 2 or more letters to search existing places.
+                {!loadingPlaces && deferredSearchQuery.trim().length > 0 && deferredSearchQuery.trim().length < 2 ? (
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+                    Type 2 or more letters to search.
                   </div>
                 ) : null}
 
                 {!loadingPlaces && deferredSearchQuery.trim().length >= 2 && !existingPlaces.length ? (
-                  <div className="rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
-                    Add new place if destination does not exist.
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+                    No match found — switch to &quot;Add New Place&quot; above.
                   </div>
                 ) : null}
               </div>
+
+              {selectedExistingPlace ? (
+                <div style={{ padding: "12px 14px", borderRadius: 14, background: "#ecfdf5", border: "1px solid #a7f3d0", fontSize: 13, color: "#065f46", fontWeight: 600 }}>
+                  ✓ Place selected. Now add nearby spots below!
+                </div>
+              ) : null}
             </div>
-
-            {selectedExistingPlace ? (
-              <div className="rounded-[24px] bg-emerald-50 px-4 py-4 text-sm text-emerald-700">
-                Next, add nearby  spots, eg HomeStay, Restaurants,Hotels etc.
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <div className="mt-5 rounded-[28px] bg-[#eef4ff] p-3 sm:p-5">
-            
-
-            <div className="mt-5 space-y-4">
-              <Field label="Upload Images">
+          ) : (
+            /* ── NEW PLACE FORM ── */
+            <div key="new" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {/* Image upload */}
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 10 }}>Photos</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -672,207 +701,170 @@ export default function ContributionForm() {
                   hidden
                   onChange={handlePlaceFilesChange}
                 />
-                <div className="flex flex-wrap gap-3">
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                   {placeImageItems.map((preview) => (
                     <div
                       key={preview.id}
-                      className="relative h-[118px] w-[118px] overflow-hidden rounded-[24px] bg-[linear-gradient(145deg,#d9f0de,#dbe7f7)]"
+                      style={{ position: "relative", width: 96, height: 96, borderRadius: 14, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}
                     >
                       <Image
                         src={preview.previewUrl}
                         alt={preview.name}
                         fill
-                        sizes="118px"
+                        sizes="96px"
                         unoptimized
                         className="object-cover"
                       />
                       <button
                         type="button"
                         onClick={() => removePreview(preview.id)}
-                        className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm"
+                        style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}
                         aria-label={`Remove ${preview.name}`}
                       >
-                        <XIcon className="size-4" />
+                        <XIcon style={{ width: 11, height: 11, color: "#64748b" }} />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={addPreview}
-                    className="flex h-[118px] w-[118px] flex-col items-center justify-center gap-2 rounded-[24px] border border-dashed border-slate-300 bg-white/80 text-sm font-medium text-slate-500"
+                    style={{ width: 96, height: 96, borderRadius: 14, border: "2px dashed #cbd5e1", background: "#f8fafc", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", flexShrink: 0 }}
                   >
-                    <UploadIcon className="size-7" />
-                    Upload
+                    <UploadIcon style={{ width: 20, height: 20, color: "#059669" }} />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8" }}>Upload</span>
                   </button>
                 </div>
-                <p className="mt-3 text-xs text-slate-500">Use JPG, PNG, or WEBP images for the best upload results.</p>
-              </Field>
+                <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 8 }}>JPG, PNG or WEBP · max 1400px recommended</p>
+              </div>
 
               <Field label="Place Name">
-                <input name="name" className={inputClass} placeholder="Enter place name" />
+                <input name="name" style={inputStyle} placeholder="E.g., Boudhanath Stupa" />
               </Field>
 
               <Field label="District">
-                <select name="district" className={inputClass} defaultValue="">
-                  <option value="" disabled>
-                    Select district
-                  </option>
+                <select name="district" style={inputStyle} defaultValue="">
+                  <option value="" disabled>Select district</option>
                   {allDistricts.map((district) => (
-                    <option key={district} value={district}>
-                      {district}
-                    </option>
+                    <option key={district} value={district}>{district}</option>
                   ))}
                 </select>
               </Field>
 
               <Field label="Location">
-                <input name="location" className={inputClass} placeholder="E.g., Thamel, Kathmandu" />
+                <input name="location" style={inputStyle} placeholder="E.g., Thamel, Kathmandu" />
               </Field>
 
               <Field label="Description">
                 <textarea
                   name="description"
                   rows={4}
-                  className={`${inputClass} resize-none py-4`}
-                  placeholder="Share details about this place..."
+                  style={{ ...inputStyle, resize: "none" }}
+                  placeholder="What makes this place special?"
                 />
               </Field>
 
-              <div className="rounded-[24px] border border-black/6 bg-white/70 p-5 sm:p-6">
+              {/* Collapsible details */}
+              <div style={{ borderRadius: 16, border: "1.5px solid #e2e8f0", overflow: "hidden" }}>
                 <button
                   type="button"
-                  onClick={() => setShowMorePlaceDetails((current) => !current)}
-                  className="flex w-full items-center justify-between gap-5 text-left"
+                  onClick={() => setShowMorePlaceDetails((c) => !c)}
+                  style={{ width: "100%", padding: "13px 14px", background: "#f8fafc", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}
                   aria-expanded={showMorePlaceDetails}
                 >
-                  <div>
-                    <h3 className="text-base font-semibold text-slate-950">Add More Details</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                      Optional guide content for the place page.
-                    </p>
+                  <div style={{ textAlign: "left" }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Add More Details</p>
+                    <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>Optional: highlights, tips, FAQs</p>
                   </div>
-                  <span
-                    className={`flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm transition ${
-                      showMorePlaceDetails ? "rotate-90" : ""
-                    }`}
-                  >
-                    <ChevronRightIcon className="size-5" />
+                  <span style={{
+                    width: 28, height: 28, borderRadius: "50%", background: "#fff", border: "1.5px solid #e2e8f0",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    transition: "transform 0.15s", transform: showMorePlaceDetails ? "rotate(90deg)" : "none",
+                  }}>
+                    <ChevronRightIcon style={{ width: 13, height: 13, color: "#64748b" }} />
                   </span>
                 </button>
 
                 {showMorePlaceDetails ? (
-                  <div className="mt-6 space-y-4">
-                    <Field label="Place Long Description">
-                      <textarea
-                        name="placeLongDescription"
-                        rows={5}
-                        className={`${inputClass} resize-none py-4`}
-                        placeholder="Write a detailed description of the place..."
-                      />
+                  <div style={{ padding: "14px 14px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+                    <Field label="Long Description">
+                      <textarea name="placeLongDescription" rows={5} style={{ ...inputStyle, resize: "none" }} placeholder="Write a detailed description of the place..." />
                     </Field>
 
-                    <Field label="Place Highlights">
-                      <textarea
-                        name="placeHighlights"
-                        rows={4}
-                        className={`${inputClass} resize-none py-4`}
-                        placeholder={"Add one highlight per line\nBeautiful sunrise views\nPeaceful monastery atmosphere"}
-                      />
+                    <Field label="Highlights (one per line)">
+                      <textarea name="placeHighlights" rows={4} style={{ ...inputStyle, resize: "none" }} placeholder={"Beautiful sunrise views\nPeaceful monastery atmosphere"} />
                     </Field>
 
                     <Field label="Practical Tips">
-                      <textarea
-                        name="placePracticalTips"
-                        rows={4}
-                        className={`${inputClass} resize-none py-4`}
-                        placeholder="Helpful tips for visitors..."
-                      />
+                      <textarea name="placePracticalTips" rows={4} style={{ ...inputStyle, resize: "none" }} placeholder="Helpful tips for visitors..." />
                     </Field>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Best Season / Time">
-                        <textarea
-                          name="placeBestSeason"
-                          rows={3}
-                          className={`${inputClass} resize-none py-4`}
-                          placeholder="Best season or time to visit..."
-                        />
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                      <Field label="Best Season">
+                        <textarea name="placeBestSeason" rows={3} style={{ ...inputStyle, resize: "none" }} placeholder="Best time to visit..." />
                       </Field>
-
-                      <Field label="Entry / Access Info">
-                        <textarea
-                          name="placeEntryAccessInfo"
-                          rows={3}
-                          className={`${inputClass} resize-none py-4`}
-                          placeholder="Tickets, permits, timings, or access info..."
-                        />
+                      <Field label="Entry / Access">
+                        <textarea name="placeEntryAccessInfo" rows={3} style={{ ...inputStyle, resize: "none" }} placeholder="Tickets, permits, timings..." />
                       </Field>
                     </div>
 
-                    <Field label="Nearby Attractions">
-                      <textarea
-                        name="placeNearbyAttractions"
-                        rows={4}
-                        className={`${inputClass} resize-none py-4`}
-                        placeholder={"Add one nearby attraction per line\nPhewa Lake\nWorld Peace Pagoda"}
-                      />
+                    <Field label="Nearby Attractions (one per line)">
+                      <textarea name="placeNearbyAttractions" rows={4} style={{ ...inputStyle, resize: "none" }} placeholder={"Phewa Lake\nWorld Peace Pagoda"} />
                     </Field>
 
                     <Field label="Place FAQs">
-                      <textarea
-                        name="placeFaqs"
-                        rows={4}
-                        className={`${inputClass} resize-none py-4`}
-                        placeholder={"Use one FAQ per line in this format:\nBest time to visit?::October to December.\nIs parking available?::Yes, near the main gate."}
-                      />
+                      <textarea name="placeFaqs" rows={4} style={{ ...inputStyle, resize: "none" }} placeholder={"Best time to visit?::October to December.\nIs parking available?::Yes, near the main gate."} />
                     </Field>
                   </div>
                 ) : null}
               </div>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+        </div>
+      </div>
 
-      <section className="rounded-[30px] border border-dashed border-slate-300 bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.04)] sm:p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="rounded-full bg-emerald-50 p-2 text-emerald-600">
-              <MapPinIcon className="size-5" />
+      {/* ── NEARBY SPOTS SECTION ───────────────────────────── */}
+      <div style={{ background: "#fff", borderRadius: 24, border: "1.5px solid #e2e8f0", overflow: "hidden", boxShadow: "0 4px 20px rgba(15,23,42,0.06)" }}>
+        {/* Section header */}
+        <div style={{ padding: "16px 18px 14px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
+              📍
             </div>
             <div>
-              <h2 className="text-[1.15rem] font-semibold tracking-tight text-slate-950">Nearby Spots</h2>
-      
+              <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>Nearby Spots</h2>
+              <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>Restaurants, hotels, homestays nearby</p>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => {
-              if (!canAddSpot) return;
-              setShowSpotForm(true);
-            }}
+            onClick={() => { if (canAddSpot) setShowSpotForm(true); }}
             disabled={!canAddSpot}
-            className={`inline-flex items-center gap-2 px-2 text-sm font-semibold ${
-              canAddSpot ? "text-emerald-600" : "cursor-not-allowed text-slate-400"
-            }`}
+            style={{
+              display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 999,
+              border: "none", cursor: canAddSpot ? "pointer" : "not-allowed",
+              background: canAddSpot ? "#ecfdf5" : "#f1f5f9",
+              color: canAddSpot ? "#059669" : "#94a3b8",
+              fontSize: 12, fontWeight: 700,
+            }}
           >
-            <PlusCircleIcon className="size-5" />
+            <PlusCircleIcon style={{ width: 15, height: 15 }} />
             Add Spot
           </button>
         </div>
 
-        {!canAddSpot ? (
-          <div className="mt-4 rounded-[22px] bg-slate-50 px-4 py-4 text-sm text-slate-500">
-            Select a place first to add nearby spots.
-          </div>
-        ) : null}
+        <div style={{ padding: "16px 18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+          {!canAddSpot ? (
+            <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+              Select a place above to start adding nearby spots.
+            </div>
+          ) : null}
 
-        {showSpotForm ? (
-          <div className="mt-5 rounded-[28px] bg-[#effaf2] p-4 sm:p-5">
-            <h3 className="text-lg font-semibold text-slate-950">Add New Spot</h3>
+          {showSpotForm ? (
+            <div style={{ borderRadius: 18, background: "#f0fdf4", border: "1.5px solid #bbf7d0", padding: "16px", display: "flex", flexDirection: "column", gap: 12 }}>
+              <p style={{ fontSize: 15, fontWeight: 800, color: "#065f46" }}>New Spot</p>
 
-            <div className="mt-5 space-y-4">
-              <Field label="Spot Images">
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 10 }}>Spot Photos</p>
                 <input
                   ref={spotFileInputRef}
                   type="file"
@@ -881,62 +873,59 @@ export default function ContributionForm() {
                   hidden
                   onChange={handleSpotFileChange}
                 />
-                <div className="flex flex-wrap gap-3">
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {spotDraft.imagePreviews.map((image) => (
                     <div
                       key={image.id}
-                      className="relative h-[118px] w-[118px] overflow-hidden rounded-[24px] bg-white"
+                      style={{ position: "relative", width: 80, height: 80, borderRadius: 12, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}
                     >
                       <Image
                         src={image.previewUrl}
                         alt={image.name || "Spot preview"}
                         fill
-                        sizes="118px"
+                        sizes="80px"
                         unoptimized
                         className="object-cover"
                       />
                       <button
                         type="button"
                         onClick={() => removeSpotDraftImage(image.id)}
-                        className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm"
+                        style={{ position: "absolute", top: 4, right: 4, width: 20, height: 20, borderRadius: "50%", background: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                         aria-label={`Remove ${image.name || "spot image"}`}
                       >
-                        <XIcon className="size-4" />
+                        <XIcon style={{ width: 10, height: 10, color: "#64748b" }} />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={() => spotFileInputRef.current?.click()}
-                    className="flex min-h-[118px] w-[118px] flex-col items-center justify-center gap-2 rounded-[24px] border border-dashed border-emerald-200 bg-white/80 px-4 py-5 text-sm font-medium text-slate-500"
+                    style={{ width: 80, height: 80, borderRadius: 12, border: "2px dashed #86efac", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer", flexShrink: 0 }}
                   >
-                    <UploadIcon className="size-7 text-emerald-600" />
-                    Upload
+                    <UploadIcon style={{ width: 18, height: 18, color: "#059669" }} />
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8" }}>Upload</span>
                   </button>
                 </div>
-                <p className="mt-3 text-xs text-slate-500">Use JPG, PNG, or WEBP images for nearby spots too.</p>
-              </Field>
+              </div>
 
               <Field label="Spot Name">
                 <input
                   value={spotDraft.name}
-                  onChange={(event) => handleSpotChange("name", event.target.value)}
-                  className={inputClass}
-                  placeholder="E.g., Himalayan Java Coffee, Mountain View Hotel"
+                  onChange={(e) => handleSpotChange("name", e.target.value)}
+                  style={inputStyle}
+                  placeholder="E.g., Himalayan Java Coffee"
                 />
               </Field>
 
               <Field label="Category">
                 <select
                   value={spotDraft.category}
-                  onChange={(event) => handleSpotChange("category", event.target.value)}
-                  className={inputClass}
+                  onChange={(e) => handleSpotChange("category", e.target.value)}
+                  style={inputStyle}
                 >
                   <option value="">Select category</option>
-                  {spotCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
+                  {spotCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
               </Field>
@@ -944,120 +933,128 @@ export default function ContributionForm() {
               <Field label="Description">
                 <textarea
                   value={spotDraft.description}
-                  onChange={(event) => handleSpotChange("description", event.target.value)}
+                  onChange={(e) => handleSpotChange("description", e.target.value)}
                   rows={3}
-                  className={`${inputClass} resize-none py-4`}
+                  style={{ ...inputStyle, resize: "none" }}
                   placeholder="Describe this spot..."
                 />
               </Field>
-            </div>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={handleAddSpot}
-                className="flex-1 rounded-[20px] bg-emerald-600 px-4 py-3 text-base font-semibold text-white"
-              >
-                Add Spot
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowSpotForm(false)}
-                className="flex-1 rounded-[20px] border border-black/10 bg-white px-4 py-3 text-base font-semibold text-slate-900"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : null}
-
-        {nearbySpots.length ? (
-          <div className="mt-5 space-y-3">
-            {nearbySpots.map((spot) => (
-              <div
-                key={spot.id}
-                className="flex items-start justify-between gap-4 rounded-[24px] bg-slate-50 px-4 py-4"
-              >
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-950">{spot.name}</h4>
-                  <p className="mt-1 text-sm font-medium text-emerald-600">{spot.category}</p>
-                  {spot.imagePreviews?.length ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {spot.imagePreviews.map((image) => (
-                        <div key={image.id} className="relative h-20 w-20 overflow-hidden rounded-[18px] bg-white">
-                          <Image
-                            src={image.previewUrl}
-                            alt={spot.name}
-                            fill
-                            sizes="80px"
-                            unoptimized
-                            className="object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{spot.description}</p>
-                </div>
+              <div style={{ display: "flex", gap: 10 }}>
                 <button
                   type="button"
-                  onClick={() => removeSpot(spot.id)}
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-red-500 text-white"
-                  aria-label={`Remove ${spot.name}`}
+                  onClick={handleAddSpot}
+                  style={{ flex: 1, padding: "12px", borderRadius: 14, background: "#059669", border: "none", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
                 >
-                  <XIcon className="size-4" />
+                  Add Spot
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSpotForm(false)}
+                  style={{ flex: 1, padding: "12px", borderRadius: 14, background: "#fff", border: "1.5px solid #e2e8f0", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+                >
+                  Cancel
                 </button>
               </div>
-            ))}
-          </div>
-        ) : null}
-      </section>
+            </div>
+          ) : null}
 
+          {nearbySpots.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {nearbySpots.map((spot) => (
+                <div
+                  key={spot.id}
+                  style={{ padding: "14px", borderRadius: 16, background: "#f8fafc", border: "1.5px solid #e2e8f0", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{spot.name}</p>
+                    <span style={{ display: "inline-block", marginTop: 4, fontSize: 11, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "3px 10px" }}>
+                      {spot.category}
+                    </span>
+                    {spot.imagePreviews?.length > 0 ? (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                        {spot.imagePreviews.map((img) => (
+                          <div key={img.id} style={{ width: 52, height: 52, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "#e2e8f0", position: "relative" }}>
+                            <Image src={img.previewUrl} alt={spot.name} fill sizes="52px" unoptimized className="object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    <p style={{ fontSize: 12, color: "#64748b", marginTop: 6, lineHeight: 1.5 }}>{spot.description}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeSpot(spot.id)}
+                    style={{ width: 30, height: 30, borderRadius: "50%", background: "#fee2e2", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                    aria-label={`Remove ${spot.name}`}
+                  >
+                    <XIcon style={{ width: 13, height: 13, color: "#ef4444" }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      {/* ── SUCCESS ────────────────────────────────────────── */}
       {submitted ? (
-        <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm font-medium text-emerald-700">
-          Contribution saved successfully. Opening the district page now so you can see the update.
+        <div style={{ padding: "14px 16px", borderRadius: 16, background: "#ecfdf5", border: "1.5px solid #a7f3d0", fontSize: 13, fontWeight: 600, color: "#065f46" }}>
+          ✓ Contribution saved! Opening district page...
           {submitted.districtSlug ? (
-            <div className="mt-2">
-              <Link href={`/districts/${submitted.districtSlug}`} className="font-semibold underline">
-                Open district page
+            <div style={{ marginTop: 8 }}>
+              <Link href={`/districts/${submitted.districtSlug}`} style={{ fontWeight: 700, color: "#059669", textDecoration: "underline" }}>
+                Open district page →
               </Link>
             </div>
           ) : null}
         </div>
       ) : null}
 
+      {/* ── ERROR ──────────────────────────────────────────── */}
       {error ? (
-        <div className="rounded-[20px] border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div style={{ padding: "14px 16px", borderRadius: 16, background: "#fef2f2", border: "1.5px solid #fecaca", fontSize: 13, color: "#b91c1c" }}>
           {error}
         </div>
       ) : null}
 
+      {/* ── UPLOAD PROGRESS ────────────────────────────────── */}
       {uploadingPhotos ? (
-        <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/70 p-4">
-          <div className="flex items-center justify-between gap-3 text-sm font-medium text-emerald-700">
+        <div style={{ padding: "14px 16px", borderRadius: 16, background: "#ecfdf5", border: "1.5px solid #a7f3d0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 700, color: "#065f46", marginBottom: 10 }}>
             <span>{uploadLabel || "Uploading photos..."}</span>
             <span>{uploadProgress}%</span>
           </div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-white">
-            <div
-              className="h-full rounded-full bg-[#08af3b] transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            />
+          <div style={{ height: 8, borderRadius: 999, background: "#d1fae5", overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: 999, background: "#059669", width: `${uploadProgress}%`, transition: "width 0.3s ease" }} />
           </div>
         </div>
       ) : null}
 
-      <div className="space-y-4 pt-2">
+      {/* ── SUBMIT ─────────────────────────────────────────── */}
+      <div style={{ paddingTop: 4 }}>
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-[24px] bg-[#08af3b] px-5 py-3 text-[1.1rem] font-semibold text-white shadow-[0_18px_32px_rgba(8,175,59,0.22)] transition hover:bg-[#079434]"
+          style={{
+            width: "100%",
+            padding: "16px",
+            borderRadius: 18,
+            border: "none",
+            background: loading ? "#94a3b8" : "linear-gradient(135deg, #059669 0%, #047857 100%)",
+            color: "#fff",
+            fontSize: 16,
+            fontWeight: 800,
+            cursor: loading ? "not-allowed" : "pointer",
+            boxShadow: loading ? "none" : "0 8px 24px rgba(5,150,105,0.28)",
+            letterSpacing: "-0.01em",
+            transition: "all 0.15s ease",
+          }}
         >
-          {loading ? "Submitting..." : "Submit Contribution"}
+          {loading ? "Submitting..." : "Submit Contribution →"}
         </button>
-
-        <p className="text-center text-sm text-slate-500">
-          Saved contributions appear on the district page right after upload.
+        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: 12 }}>
+          Your contribution will be reviewed and published to the district page.
         </p>
       </div>
     </form>
@@ -1066,12 +1063,22 @@ export default function ContributionForm() {
 
 function Field({ label, children }) {
   return (
-    <label className="block space-y-2.5">
-      <span className="text-sm font-semibold text-slate-950">{label}</span>
+    <label style={{ display: "block" }}>
+      <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", display: "block", marginBottom: 8 }}>{label}</span>
       {children}
     </label>
   );
 }
 
-const inputClass =
-  "w-full rounded-[20px] border border-black/6 bg-white px-4 py-3 text-[15px] text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-200";
+const inputStyle = {
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 12,
+  border: "1.5px solid #e2e8f0",
+  background: "#fff",
+  fontSize: 14,
+  color: "#0f172a",
+  outline: "none",
+  boxSizing: "border-box",
+  fontFamily: "inherit",
+};

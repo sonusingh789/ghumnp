@@ -2,46 +2,126 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CirclePlus, Compass, Heart, House, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Compass, Heart, House, Plus, User } from "lucide-react";
 
-const navItems = [
+const LEFT_ITEMS = [
   { href: "/", label: "Home", icon: House },
   { href: "/explore", label: "Explore", icon: Compass },
-  { href: "/add", label: "Add", icon: CirclePlus },
-  { href: "/favorites", label: "Favorites", icon: Heart },
+];
+
+const RIGHT_ITEMS = [
+  { href: "/favorites", label: "Saved", icon: Heart },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
 export default function BottomNavigation() {
   const pathname = usePathname();
+  const addActive = pathname === "/add";
 
   return (
-    <nav className="glass-panel fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[calc(78px+env(safe-area-inset-bottom))] w-full items-center border-t border-black/5 px-2 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-2 md:bottom-5 md:h-[78px] md:max-w-[720px] md:rounded-full md:border md:px-3 md:pb-3 md:pt-3 md:shadow-[0_18px_40px_rgba(17,24,39,0.12)]">
-      {navItems.map(({ href, label, icon: Icon }) => {
-        const active = pathname === href;
+    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full md:bottom-4 md:max-w-[620px] md:rounded-full md:shadow-[0_8px_36px_rgba(15,23,42,0.14)]"
+      style={{
+        background: "rgba(255,255,255,0.96)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderTop: "1px solid rgba(15,23,42,0.07)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", height: 62 }}>
 
-        return (
+        {/* Left items */}
+        {LEFT_ITEMS.map(({ href, label, icon: Icon }) => (
+          <NavTab key={href} href={href} label={label} active={pathname === href}>
+            <Icon size={20} strokeWidth={pathname === href ? 2.5 : 2} />
+          </NavTab>
+        ))}
+
+        {/* ── ADD BUTTON (center) ──────────────────────────── */}
+        <div style={{ flex: "0 0 60px", display: "flex", justifyContent: "center", alignItems: "center" }}>
           <Link
-            key={href}
-            href={href}
-            className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 text-[11px] font-medium transition-all md:flex-row md:gap-2 md:text-sm",
-              active ? "text-primary" : "text-slate-500"
-            )}
+            href="/add"
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: "50%",
+              background: addActive
+                ? "linear-gradient(135deg, #047857 0%, #059669 100%)"
+                : "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              textDecoration: "none",
+              border: "2.5px solid #fff",
+              boxShadow: addActive
+                ? "0 2px 10px rgba(5,150,105,0.3), 0 0 0 3px rgba(5,150,105,0.12)"
+                : "0 6px 22px rgba(5,150,105,0.45), 0 0 0 3px rgba(255,255,255,0.9)",
+              transform: addActive ? "scale(0.95)" : "scale(1)",
+              transition: "all 0.2s ease",
+            }}
+            aria-label="Add a place"
           >
-            <span
-              className={cn(
-                "flex size-10 items-center justify-center rounded-full transition-all",
-                active ? "bg-primary-soft text-primary" : "bg-transparent"
-              )}
-            >
-              <Icon className="size-5" strokeWidth={2} fill={active && href === "/favorites" ? "currentColor" : "none"} />
-            </span>
-            <span>{label}</span>
+            <Plus size={18} strokeWidth={2.5} />
           </Link>
-        );
-      })}
+        </div>
+
+        {/* Right items */}
+        {RIGHT_ITEMS.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <NavTab key={href} href={href} label={label} active={active}>
+              <Icon
+                size={20}
+                strokeWidth={active ? 2.5 : 2}
+                fill={active && href === "/favorites" ? "currentColor" : "none"}
+              />
+            </NavTab>
+          );
+        })}
+
+      </div>
     </nav>
+  );
+}
+
+function NavTab({ href, label, active, children }) {
+  return (
+    <Link
+      href={href}
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 3,
+        textDecoration: "none",
+        color: active ? "#059669" : "#94a3b8",
+        padding: "6px 2px",
+        transition: "color 0.15s ease",
+      }}
+    >
+      <span style={{
+        width: 38,
+        height: 28,
+        borderRadius: 10,
+        background: active ? "#ecfdf5" : "transparent",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "background 0.15s ease",
+      }}>
+        {children}
+      </span>
+      <span style={{
+        fontSize: 10,
+        fontWeight: active ? 700 : 500,
+        letterSpacing: "0.01em",
+        lineHeight: 1,
+      }}>
+        {label}
+      </span>
+    </Link>
   );
 }

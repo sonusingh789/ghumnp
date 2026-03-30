@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useFavorites } from "@/context/favorites-context";
 import { CheckCircleIcon, HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
-import { cn } from "@/lib/utils";
 
 export default function PlaceCard({
   place,
@@ -15,13 +14,23 @@ export default function PlaceCard({
   const { isFavorite, toggleFavorite } = useFavorites();
   const favorite = isFavorite(place.id);
 
+  /* ── GRID LAYOUT ─────────────────────────────────────────── */
   if (layout === "grid") {
     return (
       <Link
         href={`/place/${place.id}`}
-        className="group overflow-hidden rounded-[26px] border border-black/5 bg-white shadow-[0_14px_30px_rgba(17,24,39,0.08)]"
+        style={{
+          display: "block",
+          borderRadius: 20,
+          overflow: "hidden",
+          background: "#fff",
+          border: "1.5px solid #f1f5f9",
+          boxShadow: "0 4px 18px rgba(15,23,42,0.07)",
+          textDecoration: "none",
+        }}
+        className="group"
       >
-        <div className="relative h-44 overflow-hidden">
+        <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
           <Image
             src={place.image}
             alt={place.name}
@@ -30,18 +39,22 @@ export default function PlaceCard({
             priority={imagePriority}
             className="object-cover transition duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute right-3 top-3 rounded-full bg-white/[0.92] px-2.5 py-1 text-xs font-semibold text-slate-800">
-            <span className="inline-flex items-center gap-1">
-              <StarIcon className="size-3 text-amber-400" />
-              {place.rating.toFixed(1)}
-            </span>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%)" }} />
+          <div style={{
+            position: "absolute", top: 10, right: 10,
+            display: "inline-flex", alignItems: "center", gap: 3,
+            background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)",
+            borderRadius: 999, padding: "4px 9px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+          }}>
+            <StarIcon style={{ width: 11, height: 11, color: "#f59e0b" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#0f172a" }}>{place.rating.toFixed(1)}</span>
           </div>
         </div>
-        <div className="space-y-2 p-4">
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900">{place.name}</h3>
-          <p className="inline-flex items-center gap-1 text-sm text-slate-500">
-            <MapPinIcon className="size-4" />
+        <div style={{ padding: "12px 14px" }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", lineHeight: 1.3, marginBottom: 5 }}>{place.name}</h3>
+          <p style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#94a3b8" }}>
+            <MapPinIcon style={{ width: 13, height: 13 }} />
             {place.location}
           </p>
         </div>
@@ -49,23 +62,36 @@ export default function PlaceCard({
     );
   }
 
+  /* ── HORIZONTAL LAYOUT (default) ─────────────────────────── */
   return (
-    <div className="rounded-[28px] border border-black/5 bg-white p-3 shadow-[0_16px_34px_rgba(17,24,39,0.08)]">
-      <div className="flex gap-4">
-        <Link href={`/place/${place.id}`} className="relative h-28 w-28 shrink-0 overflow-hidden rounded-[22px]">
+    <div style={{
+      borderRadius: 20,
+      border: "1.5px solid #f1f5f9",
+      background: "#fff",
+      padding: "12px",
+      boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
+    }}>
+      <div style={{ display: "flex", gap: 12 }}>
+        {/* Thumbnail */}
+        <Link
+          href={`/place/${place.id}`}
+          style={{ position: "relative", width: 96, height: 96, flexShrink: 0, borderRadius: 14, overflow: "hidden", display: "block" }}
+        >
           <Image
             src={place.image}
             alt={place.name}
             fill
-            sizes="112px"
+            sizes="96px"
             priority={imagePriority}
             className="object-cover"
           />
         </Link>
-        <div className="min-w-0 flex-1 pt-1">
-          <div className="flex items-start gap-2">
-            <Link href={`/place/${place.id}`} className="min-w-0 flex-1">
-              <h3 className="line-clamp-2 text-[1.35rem] font-semibold tracking-tight text-slate-950">
+
+        {/* Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <Link href={`/place/${place.id}`} style={{ flex: 1, minWidth: 0, textDecoration: "none" }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", lineHeight: 1.25, letterSpacing: "-0.01em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                 {place.name}
               </h3>
             </Link>
@@ -73,40 +99,51 @@ export default function PlaceCard({
               <button
                 type="button"
                 onClick={() => toggleFavorite(place.id)}
-                className={cn(
-                  "mt-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full transition",
-                  favorite ? "bg-rose-50 text-rose-500" : "bg-slate-50 text-slate-400"
-                )}
+                style={{
+                  width: 32, height: 32, flexShrink: 0, borderRadius: "50%", border: "none",
+                  background: favorite ? "rgba(255,228,230,0.9)" : "#f8fafc",
+                  color: favorite ? "#f43f5e" : "#94a3b8",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", transition: "all 0.15s ease",
+                }}
                 aria-label={favorite ? "Remove favorite" : "Add favorite"}
               >
-                <HeartIcon filled={favorite} className="size-5" />
+                <HeartIcon filled={favorite} style={{ width: 14, height: 14 }} />
               </button>
             ) : null}
           </div>
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{place.description}</p>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            <span className="inline-flex items-center gap-1 font-semibold text-slate-900">
-              <StarIcon className="size-3.5 text-amber-400" />
+
+          {/* Description */}
+          <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, marginTop: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {place.description}
+          </p>
+
+          {/* Meta row */}
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6, marginTop: 8 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, color: "#0f172a" }}>
+              <StarIcon style={{ width: 12, height: 12, color: "#f59e0b" }} />
               {place.rating.toFixed(1)}
             </span>
-            <span className="text-slate-300">•</span>
-            <span className="inline-flex items-center gap-1">
-              <MapPinIcon className="size-4" />
+            <span style={{ color: "#e2e8f0", fontSize: 12 }}>·</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "#94a3b8" }}>
+              <MapPinIcon style={{ width: 12, height: 12 }} />
               {place.location}
             </span>
             {place.isVerified ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                <CheckCircleIcon className="size-3" />
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "2px 8px" }}>
+                <CheckCircleIcon style={{ width: 10, height: 10 }} />
                 Verified
               </span>
             ) : null}
           </div>
+
+          {/* Contributor */}
           {place.contributorName ? (
-            <p className="mt-2 text-[11px] text-slate-400">
-              Added by{" "}
+            <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>
+              By{" "}
               <Link
                 href={`/contributors/${place.contributorId}`}
-                className="font-semibold text-emerald-600 hover:underline"
+                style={{ fontWeight: 700, color: "#059669", textDecoration: "none" }}
                 onClick={(e) => e.stopPropagation()}
               >
                 @{place.contributorName}

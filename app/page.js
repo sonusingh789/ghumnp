@@ -1,6 +1,7 @@
 import HomePageClient from "@/components/pages/home-page-client";
 import { getDistrictCards, getHomePageCollections } from "@/lib/content";
 import { buildMetadata, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { query } from "@/lib/db";
 
 export const metadata = buildMetadata({
   title: "Best Places to Visit in Nepal — Explore All 77 Districts | visitNepal77",
@@ -30,9 +31,19 @@ export default async function HomePage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
   const initialQuery =
     typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q.trim() : "";
-  const [districts, homeCollections] = await Promise.all([
+  const [districts, homeCollections, topContributorsResult] = await Promise.all([
     getDistrictCards(),
     getHomePageCollections(),
+    query(
+      `SELECT TOP 3
+         u.id, u.name, u.avatar_url,
+         COUNT(p.id) AS contributions
+       FROM Users u
+       INNER JOIN Places p ON p.created_by_user_id = u.id AND p.status = 'approved'
+       WHERE u.is_active = 1
+       GROUP BY u.id, u.name, u.avatar_url
+       ORDER BY contributions DESC`
+    ).catch(() => ({ recordset: [] })),
   ]);
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -104,6 +115,7 @@ export default async function HomePage({ searchParams }) {
       <HomePageClient
         featuredDistricts={districts.slice(0, 5)}
         popularDistricts={homeCollections.popularDistricts}
+        topContributors={topContributorsResult.recordset}
         topPlaces={homeCollections.topPlaces}
         initialQuery={initialQuery}
       />

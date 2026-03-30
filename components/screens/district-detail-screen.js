@@ -16,7 +16,7 @@ import {
   StarIcon,
   XIcon,
 } from "@/components/ui/icons";
-import { cn, formatVisitors } from "@/lib/utils";
+import { formatVisitors } from "@/lib/utils";
 
 const tabs = ["All", "Tourist Attraction", "Local Food", "Restaurant", "Hotel", "Local Stay"];
 
@@ -29,9 +29,17 @@ const TAB_LABELS = {
   "Local Stay": { eyebrow: "Local Stays", heading: (name) => `Local Stays in ${name}` },
 };
 
+const TAB_EMOJIS = {
+  All: "🗺️",
+  "Tourist Attraction": "🏛️",
+  "Local Food": "🍜",
+  Restaurant: "🍽️",
+  Hotel: "🏨",
+  "Local Stay": "🏡",
+};
+
 async function copyTextFallback(text) {
   if (typeof document === "undefined") return false;
-
   const textArea = document.createElement("textarea");
   textArea.value = text;
   textArea.setAttribute("readonly", "");
@@ -42,38 +50,23 @@ async function copyTextFallback(text) {
   textArea.focus();
   textArea.select();
   textArea.setSelectionRange(0, text.length);
-
   let copied = false;
-  try {
-    copied = document.execCommand("copy");
-  } catch {
-    copied = false;
-  }
-
+  try { copied = document.execCommand("copy"); } catch { copied = false; }
   document.body.removeChild(textArea);
   return copied;
 }
 
 async function tryNativeShare(payloads) {
-  if (typeof navigator === "undefined" || typeof navigator.share !== "function") {
-    return false;
-  }
-
+  if (typeof navigator === "undefined" || typeof navigator.share !== "function") return false;
   for (const payload of payloads) {
     try {
-      if (typeof navigator.canShare === "function" && !navigator.canShare(payload)) {
-        continue;
-      }
-
+      if (typeof navigator.canShare === "function" && !navigator.canShare(payload)) continue;
       await navigator.share(payload);
       return true;
     } catch (error) {
-      if (error?.name === "AbortError") {
-        throw error;
-      }
+      if (error?.name === "AbortError") throw error;
     }
   }
-
   return false;
 }
 
@@ -102,10 +95,8 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
 
   const filteredPlaces = districtPlaces.filter((place) => {
     if (activeTab === "All") return true;
-
     const normalizedCategory = String(place.category || "").trim().toLowerCase();
     const normalizedTab = activeTab.trim().toLowerCase();
-
     const categoryAliases = {
       "tourist attraction": ["tourist attraction", "attraction"],
       "local food": ["local food", "food"],
@@ -113,68 +104,43 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
       hotel: ["hotel"],
       "local stay": ["local stay", "stay"],
     };
-
     return (categoryAliases[normalizedTab] || [normalizedTab]).includes(normalizedCategory);
   });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     const visitKey = `district-visit:${district.id}`;
     const storedCount = Number(window.sessionStorage.getItem(visitKey) || "");
     if (Number.isFinite(storedCount) && storedCount > 0) {
       const frameId = window.requestAnimationFrame(() => {
         setVisitorsCount((current) => Math.max(current, storedCount));
       });
-
-      return () => {
-        window.cancelAnimationFrame(frameId);
-      };
+      return () => { window.cancelAnimationFrame(frameId); };
     }
-
-    if (storedCount > 0) {
-      return;
-    }
-
+    if (storedCount > 0) return;
     let cancelled = false;
-
     async function trackVisit() {
       try {
         const response = await fetch("/api/visits", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            entityType: "district",
-            slug: district.id,
-          }),
+          body: JSON.stringify({ entityType: "district", slug: district.id }),
         });
         const data = await response.json().catch(() => ({}));
-
         if (!cancelled && response.ok && typeof data.visitorsCount === "number") {
           window.sessionStorage.setItem(visitKey, String(data.visitorsCount));
           setVisitorsCount(data.visitorsCount);
         }
-      } catch {
-        // Ignore visitor tracking errors so the page UX stays unaffected.
-      }
+      } catch {}
     }
-
     trackVisit();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [district.id]);
 
   function setTemporaryShareFeedback(message) {
-    if (shareTimerRef.current) {
-      clearTimeout(shareTimerRef.current);
-    }
-
+    if (shareTimerRef.current) clearTimeout(shareTimerRef.current);
     setShareFeedback(message);
-    shareTimerRef.current = setTimeout(() => {
-      setShareFeedback("");
-    }, 2000);
+    shareTimerRef.current = setTimeout(() => setShareFeedback(""), 2000);
   }
 
   function openRatingDialog() {
@@ -187,10 +153,8 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
       router.push(buildLoginHref(`/districts/${district.id}`));
       return;
     }
-
     setSubmittingRating(true);
     setRatingError("");
-
     try {
       const response = await fetch(`/api/districts/${district.id}/ratings`, {
         method: "POST",
@@ -198,20 +162,12 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
         body: JSON.stringify({ rating: ratingValue }),
       });
       const data = await response.json().catch(() => ({}));
-
       if (!response.ok) {
-        if (response.status === 401) {
-          router.push(buildLoginHref(`/districts/${district.id}`));
-          return;
-        }
-
+        if (response.status === 401) { router.push(buildLoginHref(`/districts/${district.id}`)); return; }
         setRatingError(data.error || "Unable to submit district rating.");
         return;
       }
-
-      if (typeof data.rating === "number") {
-        setRatingDisplay(data.rating);
-      }
+      if (typeof data.rating === "number") setRatingDisplay(data.rating);
       setShowRatingDialog(false);
     } catch {
       setRatingError("Unable to submit district rating.");
@@ -223,303 +179,278 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
   async function handleShare() {
     const shareUrl = typeof window !== "undefined" ? window.location.href : "";
     const sharePayloads = [
-      {
-        title: district.name,
-        text: `Check out ${district.name} district on visitNepal77`,
-        url: shareUrl,
-      },
-      {
-        title: district.name,
-        url: shareUrl,
-      },
-      {
-        text: `Check out ${district.name} district on visitNepal77`,
-        url: shareUrl,
-      },
-      {
-        url: shareUrl,
-      },
+      { title: district.name, text: `Check out ${district.name} district on visitNepal77`, url: shareUrl },
+      { title: district.name, url: shareUrl },
+      { text: `Check out ${district.name} district on visitNepal77`, url: shareUrl },
+      { url: shareUrl },
     ];
-
     try {
       const openedNativeShare = await tryNativeShare(sharePayloads);
-      if (openedNativeShare) {
-        setTemporaryShareFeedback("Shared");
-        return;
-      }
-
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
-        setTemporaryShareFeedback("Link copied");
-        return;
-      }
-
+      if (openedNativeShare) { setTemporaryShareFeedback("Shared"); return; }
+      if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(shareUrl); setTemporaryShareFeedback("Link copied"); return; }
       const copied = await copyTextFallback(shareUrl);
       setTemporaryShareFeedback(copied ? "Link copied" : "Open browser share");
     } catch (shareError) {
       if (shareError?.name === "AbortError") return;
-
       try {
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(shareUrl);
-          setTemporaryShareFeedback("Link copied");
-          return;
-        }
+        if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(shareUrl); setTemporaryShareFeedback("Link copied"); return; }
       } catch {}
-
       const copied = await copyTextFallback(shareUrl);
       setTemporaryShareFeedback(copied ? "Link copied" : "Open browser share");
     }
   }
 
   return (
-    <AppShell className="bg-[#f5f6f8]" contentClassName="pt-0">
-      <div className="mx-auto w-full max-w-5xl">
-        <section className="relative overflow-hidden  border border-black/5 bg-white shadow-[0_20px_54px_rgba(15,23,42,0.08)]">
-          <div className="relative h-[300px] sm:h-[360px] lg:h-[430px]">
-            <Image
-              src={district.image}
-              alt={`${district.name} district, ${district.province} Province, Nepal — places to visit on visitNepal77`}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1100px"
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/20" />
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 sm:p-5">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="flex size-11 items-center justify-center rounded-full bg-white/92 text-slate-900 shadow-lg"
-                aria-label="Go back"
-              >
-                <ArrowLeftIcon className="size-5" />
-              </button>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  className="flex size-11 items-center justify-center rounded-full bg-white/92 text-slate-800 shadow-lg"
-                  aria-label="Share district"
-                >
-                  <ShareIcon className="size-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleFavorite(districtFavoriteId)}
-                  className={cn(
-                    "flex size-11 items-center justify-center rounded-full shadow-lg transition",
-                    isSaved ? "bg-rose-50 text-rose-500" : "bg-white/92 text-slate-800"
-                  )}
-                  aria-label={isSaved ? "Remove saved district" : "Save district"}
-                >
-                  <HeartIcon filled={isSaved} className="size-5" />
-                </button>
-              </div>
-            </div>
-            {shareFeedback ? (
-              <div className="absolute right-4 top-[4.8rem] rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-lg sm:right-5">
-                {shareFeedback}
-              </div>
-            ) : null}
-          </div>
+    <AppShell contentClassName="pt-0">
+      {/* ── HERO IMAGE ─────────────────────────────────────── */}
+      <div style={{ position: "relative", height: 300, margin: "-24px -1px 0", overflow: "hidden" }}>
+        <Image
+          src={district.image}
+          alt={`${district.name} district, ${district.province} Province, Nepal`}
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
+        />
+        {/* Gradient */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.3) 100%)" }} />
 
-          <div className="relative -mt-8 rounded-t-[28px] bg-white px-4 pb-5 pt-5 sm:-mt-10 sm:px-6 sm:pb-6 sm:pt-6 lg:px-7">
-            {/* Visible breadcrumb — crawlable anchor text for SEO */}
-            <nav aria-label="Breadcrumb" className="mb-3">
-              <ol className="flex flex-wrap items-center gap-1 text-xs text-slate-400">
-                <li><Link href="/" className="hover:text-emerald-600 transition">Home</Link></li>
-                <li aria-hidden="true" className="select-none">/</li>
-                <li><Link href="/districts" className="hover:text-emerald-600 transition">All 77 Districts</Link></li>
-                <li aria-hidden="true" className="select-none">/</li>
-                <li className="font-medium text-slate-600" aria-current="page">{district.name}</li>
-              </ol>
-            </nav>
-
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="min-w-0">
-                <h1 className="text-[2rem] font-semibold tracking-tight text-slate-950 sm:text-[2.3rem]">
-                  {district.name}
-                </h1>
-                <p className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-500">
-                  <MapPinIcon className="size-4" />
-                  {district.province} Province, Nepal
-                </p>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px]">
-                  {district.tagline}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3.5 py-2 font-semibold text-amber-600">
-                  <button
-                    type="button"
-                    onClick={openRatingDialog}
-                    className="inline-flex items-center gap-1.5"
-                    aria-label="Rate this district"
-                  >
-                    <StarIcon className="size-4" />
-                    {ratingDisplay.toFixed(1)}
-                  </button>
-                </div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3.5 py-2 font-medium text-slate-600">
-                  <MapPinIcon className="size-4" />
-                  {formatVisitors(visitorsCount)}
-                </div>
-                <div className="inline-flex items-center rounded-full bg-emerald-50 px-3.5 py-2 font-semibold text-emerald-700">
-                  {districtPlaces.length} places
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        <section className="px-1 pb-8 pt-5 sm:px-2 sm:pt-6">
-        <div className="scrollbar-hide mobile-h-scroll flex gap-2 rounded-full bg-slate-100 p-1.5">
-          {tabs.map((tab) => (
+        {/* Top bar */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "env(safe-area-inset-top, 16px) 16px 0", paddingTop: "max(env(safe-area-inset-top), 44px)" }}>
+          <button
+            type="button"
+            onClick={() => router.back()}
+            style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.18)" }}
+            aria-label="Go back"
+          >
+            <ArrowLeftIcon style={{ width: 18, height: 18, color: "#0f172a" }} />
+          </button>
+          <div style={{ display: "flex", gap: 8 }}>
             <button
-              key={tab}
               type="button"
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "shrink-0 whitespace-nowrap rounded-full px-5 py-2.5 text-[13px] font-semibold transition sm:text-sm",
-                activeTab === tab
-                  ? "bg-white text-slate-950 shadow-[0_8px_20px_rgba(15,23,42,0.16)]"
-                  : "bg-transparent text-slate-500"
-              )}
+              onClick={handleShare}
+              style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.18)" }}
+              aria-label="Share"
             >
-              {tab}
+              <ShareIcon style={{ width: 17, height: 17, color: "#0f172a" }} />
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => toggleFavorite(districtFavoriteId)}
+              style={{ width: 38, height: 38, borderRadius: "50%", background: isSaved ? "rgba(255,228,230,0.95)" : "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.18)", color: isSaved ? "#f43f5e" : "#0f172a" }}
+              aria-label={isSaved ? "Remove saved" : "Save district"}
+            >
+              <HeartIcon filled={isSaved} style={{ width: 17, height: 17 }} />
+            </button>
+          </div>
         </div>
 
-        <div className="mt-6">
-          <div className="mb-4 flex items-center justify-between">
+        {/* Share feedback */}
+        {shareFeedback ? (
+          <div style={{ position: "absolute", top: 62, right: 16, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", borderRadius: 999, padding: "5px 14px", fontSize: 12, fontWeight: 700, color: "#0f172a", boxShadow: "0 2px 10px rgba(0,0,0,0.14)" }}>
+            {shareFeedback}
+          </div>
+        ) : null}
+
+        {/* District name + province overlaid at bottom */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px 24px", pointerEvents: "none" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(5,150,105,0.85)", backdropFilter: "blur(6px)", borderRadius: 999, padding: "4px 12px", marginBottom: 8 }}>
+            <MapPinIcon style={{ width: 12, height: 12, color: "#fff" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{district.province} Province</span>
+          </div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 4 }}>{district.name}</h1>
+          {district.tagline ? (
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.82)", lineHeight: 1.5 }}>{district.tagline}</p>
+          ) : null}
+        </div>
+      </div>
+
+      {/* ── PULL-UP CONTENT ────────────────────────────────── */}
+      <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1 }}>
+
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" style={{ padding: "16px 20px 0" }}>
+          <ol style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 4, listStyle: "none", margin: 0, padding: 0 }}>
+            {[["Home", "/"], ["Districts", "/districts"], [district.name, null]].map(([label, href], i) => (
+              <li key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                {i > 0 && <span style={{ color: "#cbd5e1", fontSize: 11 }}>/</span>}
+                {href ? (
+                  <Link href={href} style={{ fontSize: 11, color: "#94a3b8", textDecoration: "none" }}>{label}</Link>
+                ) : (
+                  <span style={{ fontSize: 11, color: "#475569", fontWeight: 600 }}>{label}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+
+        {/* Stats chips */}
+        <div style={{ display: "flex", gap: 8, padding: "14px 20px 0", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={openRatingDialog}
+            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#d97706", cursor: "pointer" }}
+            aria-label="Rate this district"
+          >
+            <StarIcon style={{ width: 13, height: 13, color: "#f59e0b" }} />
+            {ratingDisplay.toFixed(1)} · Rate
+          </button>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: "#64748b" }}>
+            <MapPinIcon style={{ width: 13, height: 13 }} />
+            {formatVisitors(visitorsCount)}
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#059669" }}>
+            🏛️ {districtPlaces.length} places
+          </div>
+        </div>
+
+        {/* ── CATEGORY TABS ──────────────────────────────────── */}
+        <div className="scrollbar-hide" style={{ display: "flex", gap: 8, padding: "16px 20px 0", overflowX: "auto" }}>
+          {tabs.map((tab) => {
+            const active = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 5,
+                  borderRadius: 999, padding: "8px 14px",
+                  border: active ? "none" : "1.5px solid #e2e8f0",
+                  cursor: "pointer", fontSize: 12, fontWeight: 700,
+                  whiteSpace: "nowrap", flexShrink: 0,
+                  background: active ? "#059669" : "#fff",
+                  color: active ? "#fff" : "#475569",
+                  boxShadow: active ? "0 4px 14px rgba(5,150,105,0.3)" : "0 1px 4px rgba(15,23,42,0.06)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>{TAB_EMOJIS[tab]}</span>
+                {tab}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── PLACES LIST ────────────────────────────────────── */}
+        <div style={{ padding: "20px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#059669", marginBottom: 2 }}>
                 {TAB_LABELS[activeTab].eyebrow}
               </p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
                 {TAB_LABELS[activeTab].heading(district.name)}
               </h2>
             </div>
+            {filteredPlaces.length > 0 && (
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "3px 10px" }}>
+                {filteredPlaces.length}
+              </span>
+            )}
           </div>
 
-        <div className="space-y-4">
           {filteredPlaces.length ? (
-            filteredPlaces.map((place) => <PlaceCard key={place.id} place={place} />)
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {filteredPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
+            </div>
           ) : (
-            <div className="rounded-[28px] border border-dashed border-slate-300 bg-white px-5 py-10 text-center">
-              <p className="text-lg font-semibold text-slate-900">No places in this section yet</p>
-              <p className="mt-2 text-sm text-slate-500"> You can contribute by adding new places!</p>
+            <div style={{ textAlign: "center", padding: "40px 20px", background: "#f8fafc", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
+              <p style={{ fontSize: 28, marginBottom: 10 }}>🗺️</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No places yet</p>
+              <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>Be the first to add a place here!</p>
               <Link
                 href="/add"
-                className="mt-5 inline-flex rounded-full bg-primary px-4 py-2.5 font-semibold text-white"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "#fff", borderRadius: 999, padding: "10px 22px", fontSize: 13, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 14px rgba(5,150,105,0.3)" }}
               >
-                Add a contribution
+                + Add a Place
               </Link>
             </div>
           )}
         </div>
-        </div>
-        </section>
 
+        {/* ── TRAVEL GUIDE ───────────────────────────────────── */}
         {hasExtendedInfo ? (
-          <section className="px-1 pb-10 sm:px-2" aria-label="Travel guide">
-            <div className="mb-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                Travel Guide
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                {district.name} District — Complete Travel Guide
+          <div style={{ padding: "0 16px 32px" }}>
+            {/* Section header */}
+            <div style={{ marginBottom: 16 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#059669", marginBottom: 2 }}>Travel Guide</p>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
+                {district.name} — Complete Guide
               </h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Best places, best time to visit, how to reach, local food &amp; culture, and FAQs.
-              </p>
             </div>
 
-            <div className="space-y-4 sm:space-y-5">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* About */}
               {seo.intro ? (
-                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                    About the District
-                  </p>
-                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                    About {district.name}, {district.province} Province
-                  </h2>
-                  <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-[15px]">
-                    {seo.intro.split(/\n{2,}/).map((paragraph) => (
-                      <p key={paragraph}>{paragraph}</p>
+                <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e2e8f0", padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>🏔️</div>
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669" }}>About</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>About {district.name}</h3>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {seo.intro.split(/\n{2,}/).map((p) => (
+                      <p key={p} style={{ fontSize: 13, lineHeight: 1.7, color: "#475569" }}>{p}</p>
                     ))}
                   </div>
                 </div>
               ) : null}
 
-              <div className="grid gap-4 lg:grid-cols-3">
-                {seo.bestTimeToVisit ? (
-                  <InfoSectionCard
-                    eyebrow="Plan"
-                    title="Best Time To Visit"
-                    content={seo.bestTimeToVisit}
-                  />
-                ) : null}
-                {seo.howToReach ? (
-                  <InfoSectionCard
-                    eyebrow="Travel"
-                    title="How To Reach"
-                    content={seo.howToReach}
-                  />
-                ) : null}
-                {seo.localFoodsCulture ? (
-                  <InfoSectionCard
-                    eyebrow="Culture"
-                    title="Local Foods And Culture"
-                    content={seo.localFoodsCulture}
-                  />
-                ) : null}
-              </div>
+              {/* Info cards grid */}
+              {(seo.bestTimeToVisit || seo.howToReach || seo.localFoodsCulture) ? (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {seo.bestTimeToVisit ? <InfoCard emoji="🌤️" label="Best Time" title="When to Visit" content={seo.bestTimeToVisit} /> : null}
+                  {seo.howToReach ? <InfoCard emoji="🚌" label="Travel" title="How to Reach" content={seo.howToReach} /> : null}
+                  {seo.localFoodsCulture ? (
+                    <div style={{ gridColumn: (seo.bestTimeToVisit && seo.howToReach) ? "1 / -1" : undefined }}>
+                      <InfoCard emoji="🍜" label="Culture" title="Local Food & Culture" content={seo.localFoodsCulture} />
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
 
+              {/* Top things to do */}
               {seo.topThingsToDo?.length ? (
-                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                    Activities &amp; Highlights
-                  </p>
-                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                    Top Things To Do in {district.name}
-                  </h2>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {seo.topThingsToDo.map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-[22px] border border-black/5 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-700 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
-                      >
-                        {item}
+                <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e2e8f0", padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>⭐</div>
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669" }}>Activities</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>Top Things To Do</h3>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {seo.topThingsToDo.map((item, i) => (
+                      <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 12, background: "#f8fafc", border: "1px solid #f1f5f9" }}>
+                        <span style={{ width: 22, height: 22, borderRadius: 999, background: "#ecfdf5", color: "#059669", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
+                        <p style={{ fontSize: 13, color: "#334155", lineHeight: 1.5, fontWeight: 500 }}>{item}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : null}
 
-
+              {/* FAQs */}
               {seo.faqs?.length ? (
-                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                    FAQ
-                  </p>
-                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                    Before You Go — {district.name} FAQ
-                  </h2>
-                  <div className="mt-4 space-y-3">
+                <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e2e8f0", padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #fffbeb, #fde68a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>❓</div>
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#d97706" }}>FAQ</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>Before You Go</h3>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {seo.faqs.map((item, index) => {
                       const [question, ...rest] = item.split("::");
                       const answer = rest.join("::").trim();
                       return (
-                        <div key={`${question}-${index}`} className="rounded-[22px] border border-black/5 bg-slate-50 px-4 py-4">
-                          <p className="text-sm font-semibold text-slate-900">{question}</p>
-                          {answer ? (
-                            <p className="mt-1.5 text-sm leading-6 text-slate-600">{answer}</p>
-                          ) : null}
+                        <div key={`${question}-${index}`} style={{ borderRadius: 14, background: "#f8fafc", border: "1px solid #f1f5f9", padding: "12px 14px" }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: answer ? 6 : 0 }}>{question?.trim()}</p>
+                          {answer ? <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>{answer}</p> : null}
                         </div>
                       );
                     })}
@@ -527,75 +458,67 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                 </div>
               ) : null}
             </div>
-          </section>
+          </div>
         ) : null}
       </div>
 
+      {/* ── RATING DIALOG ──────────────────────────────────── */}
       {showRatingDialog ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="w-full max-w-sm rounded-[28px] bg-white p-5 shadow-[0_24px_64px_rgba(15,23,42,0.22)]">
-            <div className="flex items-start justify-between gap-3">
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(15,23,42,0.5)", padding: 16 }}>
+          <div style={{ width: "100%", maxWidth: 340, background: "#fff", borderRadius: 24, padding: "22px", boxShadow: "0 24px 64px rgba(15,23,42,0.22)" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 20 }}>
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                  Rate District
-                </p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                  {district.name}
-                </h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Tap a star to rate this district.
-                </p>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#059669", marginBottom: 4 }}>Rate District</p>
+                <h2 style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em" }}>{district.name}</h2>
+                <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>Tap a star to rate</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowRatingDialog(false)}
-                className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500"
-                aria-label="Close rating dialog"
+                style={{ width: 34, height: 34, borderRadius: "50%", background: "#f1f5f9", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#64748b" }}
+                aria-label="Close"
               >
-                <XIcon className="size-5" />
+                <XIcon style={{ width: 15, height: 15 }} />
               </button>
             </div>
 
-            <div className="mt-5 flex items-center justify-center gap-2">
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 12 }}>
               {[1, 2, 3, 4, 5].map((value) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setRatingValue(value)}
-                  className={cn(
-                    "flex size-12 items-center justify-center rounded-full transition",
-                    value <= ratingValue ? "bg-amber-50 text-amber-500" : "bg-slate-100 text-slate-400"
-                  )}
+                  style={{ width: 48, height: 48, borderRadius: "50%", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: value <= ratingValue ? "#fffbeb" : "#f8fafc", transition: "all 0.15s ease" }}
                   aria-label={`Rate ${value} stars`}
                 >
-                  <StarIcon className="size-5" filled={value <= ratingValue} />
+                  <StarIcon style={{ width: 22, height: 22, color: value <= ratingValue ? "#f59e0b" : "#cbd5e1" }} filled={value <= ratingValue} />
                 </button>
               ))}
             </div>
 
-            <p className="mt-4 text-center text-sm font-medium text-slate-600">
-              Selected rating: {ratingValue} / 5
+            <p style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 16 }}>
+              {ratingValue} / 5 stars
             </p>
 
             {ratingError ? (
-              <div className="mt-4 rounded-[18px] border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div style={{ borderRadius: 12, background: "#fef2f2", border: "1px solid #fecaca", padding: "10px 14px", fontSize: 13, color: "#dc2626", marginBottom: 14 }}>
                 {ratingError}
               </div>
             ) : null}
 
-            <div className="mt-5 flex gap-3">
+            <div style={{ display: "flex", gap: 10 }}>
               <button
                 type="button"
                 onClick={handleDistrictRatingSubmit}
                 disabled={submittingRating}
-                className="flex-1 rounded-full bg-[#08af3b] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(8,175,59,0.22)] disabled:opacity-70"
+                style={{ flex: 1, padding: "13px", borderRadius: 14, background: "linear-gradient(135deg, #059669 0%, #047857 100%)", border: "none", color: "#fff", fontSize: 14, fontWeight: 700, cursor: submittingRating ? "not-allowed" : "pointer", opacity: submittingRating ? 0.7 : 1, boxShadow: "0 4px 14px rgba(5,150,105,0.3)" }}
               >
-                {submittingRating ? "Saving..." : authenticated ? "Submit Rating" : "Login To Rate"}
+                {submittingRating ? "Saving..." : authenticated ? "Submit Rating" : "Login to Rate"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowRatingDialog(false)}
-                className="flex-1 rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-slate-900"
+                style={{ flex: 1, padding: "13px", borderRadius: 14, background: "#fff", border: "1.5px solid #e2e8f0", color: "#475569", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
               >
                 Cancel
               </button>
@@ -607,14 +530,13 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
   );
 }
 
-function InfoSectionCard({ eyebrow, title, content }) {
+function InfoCard({ emoji, label, title, content }) {
   return (
-    <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)]">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-        {eyebrow}
-      </p>
-      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{title}</h3>
-      <p className="mt-3 text-sm leading-7 text-slate-600">{content}</p>
+    <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", padding: "14px", boxShadow: "0 2px 10px rgba(15,23,42,0.05)", height: "100%" }}>
+      <div style={{ fontSize: 20, marginBottom: 6 }}>{emoji}</div>
+      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 2 }}>{label}</p>
+      <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>{title}</p>
+      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>{content}</p>
     </div>
   );
 }

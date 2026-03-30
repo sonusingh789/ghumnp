@@ -1,14 +1,25 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { buildSignupHref, sanitizeReturnPath } from "@/utils/navigation";
 import { ArrowLeftIcon } from "@/components/ui/icons";
+import BrandLogo from "@/components/ui/brand-logo";
 
 const AUTH_PAGES = new Set(["/login", "/signup"]);
 const PROTECTED_BACK_PATHS = ["/profile", "/favorites", "/add"];
+
+const inputStyle = {
+  width: "100%",
+  padding: "13px 16px",
+  borderRadius: 14,
+  border: "1.5px solid #e2e8f0",
+  background: "#f8fafc",
+  fontSize: 14,
+  color: "#0f172a",
+  outline: "none",
+  boxSizing: "border-box",
+};
 
 export default function LoginClient({ initialFrom = "/" }) {
   const router = useRouter();
@@ -24,36 +35,23 @@ export default function LoginClient({ initialFrom = "/" }) {
   const [loading, setLoading] = useState(false);
 
   function handleBack() {
-    if (typeof window === "undefined") {
-      router.push("/");
-      return;
-    }
-
+    if (typeof window === "undefined") { router.push("/"); return; }
     const referrer = document.referrer;
     if (referrer) {
       try {
         const referrerUrl = new URL(referrer);
         const currentUrl = new URL(window.location.href);
         const referrerPath = `${referrerUrl.pathname}${referrerUrl.search}${referrerUrl.hash}`;
-
         if (
           referrerUrl.origin === currentUrl.origin &&
           referrerPath !== `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}` &&
           !AUTH_PAGES.has(referrerUrl.pathname)
-        ) {
-          router.push(referrerPath);
-          return;
-        }
-      } catch {
-        // Ignore URL parsing errors
-      }
+        ) { router.push(referrerPath); return; }
+      } catch {}
     }
-
-    if (from && !AUTH_PAGES.has(from) && !PROTECTED_BACK_PATHS.some((path) => from.startsWith(path))) {
-      router.push(from);
-      return;
+    if (from && !AUTH_PAGES.has(from) && !PROTECTED_BACK_PATHS.some((p) => from.startsWith(p))) {
+      router.push(from); return;
     }
-
     router.push("/");
   }
 
@@ -61,7 +59,6 @@ export default function LoginClient({ initialFrom = "/" }) {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -70,160 +67,123 @@ export default function LoginClient({ initialFrom = "/" }) {
         cache: "no-store",
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-        setLoading(false);
-        return;
-      }
-
-      // Store the redirect path
-      const redirectPath = from;
-      
-      // Use window.location for a reliable redirect
-      // This ensures a full page navigation and avoids any router conflicts
-      window.location.href = redirectPath;
-      
+      if (!res.ok) { setError(data.error || "Login failed"); setLoading(false); return; }
+      window.location.href = from;
     } catch (err) {
-      console.error("Login error:", err);
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50/30 px-4">
-      <div className="w-full max-w-md">
-        <div className="mb-4">
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label="Go back"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700"
-          >
-            <ArrowLeftIcon className="size-5" />
-          </button>
-        </div>
+    <div style={{ minHeight: "100svh", background: "linear-gradient(160deg, #064e35 0%, #0a6644 40%, #059669 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 20px" }}>
 
-        <div className="mb-5 flex justify-center">
-          <Image src="/logo.png" alt="visitNepal77 - logo" width={200} height={50} priority />
-        </div>
+      {/* Back button */}
+      <div style={{ width: "100%", maxWidth: 400, marginBottom: 20 }}>
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Go back"
+          style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+        >
+          <ArrowLeftIcon style={{ width: 18, height: 18 }} />
+        </button>
+      </div>
 
-        {/* Card - matches the white card style from the contribution interface */}
-        <div className="rounded-2xl border border-slate-200 bg-[linear-gradient(145deg,#d9f0de,#dbe7f7)] p-8 shadow-sm">
-          <div className="mb-6 flex items-center gap-2 border-b border-slate-100 pb-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#566ffd] via-[#c169d8] to-[#0f9fa4]">
-              <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-slate-800">Sign in to contribute</h2>
-              <p className="text-xs text-slate-500">Help travelers discover Nepal's hidden corners</p>
-            </div>
+      {/* Brand + headline */}
+      <div style={{ width: "100%", maxWidth: 400, textAlign: "center", marginBottom: 28 }}>
+        <div style={{ marginBottom: 20 }}>
+          <BrandLogo variant="light" size="lg" />
+        </div>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", marginBottom: 6 }}>Welcome back</h1>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Sign in to explore Nepal with your account</p>
+      </div>
+
+      {/* Card */}
+      <div style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 24, padding: "28px 24px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+
+        {error ? (
+          <div style={{ background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 12, padding: "11px 14px", fontSize: 13, color: "#dc2626", marginBottom: 20 }}>
+            {error}
+          </div>
+        ) : null}
+
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="your@email.com"
+              style={inputStyle}
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-700 border border-red-100">
-                <svg className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{error}</span>
-              </div>
-            )}
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              style={inputStyle}
+            />
+          </div>
 
-            {/* Email field */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                <svg className="mr-1.5 inline h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="your@email.com"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#566ffd] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#566ffd]/20 transition-all"
-              />
-            </div>
-
-            {/* Password field */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                <svg className="mr-1.5 inline h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6-4h12a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6a2 2 0 012-2zm10-4V6a4 4 0 00-8 0v4h8z" />
-                </svg>
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#566ffd] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#566ffd]/20 transition-all"
-              />
-            </div>
-
-            {/* Forgot password link */}
-            <div className="flex justify-end">
-              <button 
-                type="button" 
-                onClick={() => router.push("/forgot-password")}
-                className="text-xs text-slate-500 hover:text-[#566ffd] transition-colors"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            {/* Submit button */}
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full overflow-hidden rounded-xl bg-emerald-600 py-3 font-medium text-white shadow-md shadow-blue-500/20 transition-all hover:scale-[1.01] hover:shadow-lg disabled:opacity-50 disabled:hover:scale-100"
+              type="button"
+              onClick={() => router.push("/forgot-password")}
+              style={{ background: "none", border: "none", fontSize: 12, color: "#059669", fontWeight: 600, cursor: "pointer", padding: 0 }}
             >
-              <span className="relative flex items-center justify-center gap-2">
-                {loading ? (
-                  <>
-                    <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                    </svg>
-                    Sign In
-                  </>
-                )}
-              </span>
+              Forgot password?
             </button>
-          </form>
-
-          {/* Sign up link */}
-          <div className="mt-8 pt-2 text-center">
-            <p className="text-sm text-emerald-600">
-              Don't have an account?{' '}
-              <a 
-                href={buildSignupHref(from)} 
-                className="font-medium text-[#566ffd] hover:text-[#c169d8] transition-colors inline-flex items-center gap-1"
-              >
-                Join as contributor
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
-            </p>
           </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "14px",
+              borderRadius: 14,
+              border: "none",
+              background: loading ? "#94a3b8" : "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+              color: "#fff",
+              fontSize: 15,
+              fontWeight: 800,
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: loading ? "none" : "0 6px 20px rgba(5,150,105,0.35)",
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            {loading ? (
+              <>
+                <svg style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} fill="none" viewBox="0 0 24 24">
+                  <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Signing in...
+              </>
+            ) : "Sign In"}
+          </button>
+        </form>
+
+        <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: "#64748b" }}>
+            Don't have an account?{" "}
+            <a href={buildSignupHref(from)} style={{ fontWeight: 700, color: "#059669", textDecoration: "none" }}>
+              Sign up free →
+            </a>
+          </p>
         </div>
       </div>
     </div>

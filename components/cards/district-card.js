@@ -26,92 +26,113 @@ export default function DistrictCard({ district, compact = false, imagePriority 
     <article
       role="link"
       tabIndex={0}
-      onPointerDown={(event) => {
-        pointerStartRef.current = { x: event.clientX, y: event.clientY };
+      onPointerDown={(e) => {
+        pointerStartRef.current = { x: e.clientX, y: e.clientY };
         isDraggingRef.current = false;
       }}
-      onPointerMove={(event) => {
+      onPointerMove={(e) => {
         if (!pointerStartRef.current) return;
-
-        const deltaX = Math.abs(event.clientX - pointerStartRef.current.x);
-        const deltaY = Math.abs(event.clientY - pointerStartRef.current.y);
-
-        if (deltaX > 8 || deltaY > 8) {
+        if (Math.abs(e.clientX - pointerStartRef.current.x) > 8 || Math.abs(e.clientY - pointerStartRef.current.y) > 8) {
           isDraggingRef.current = true;
         }
       }}
-      onPointerUp={() => {
-        pointerStartRef.current = null;
-      }}
-      onPointerCancel={() => {
-        pointerStartRef.current = null;
-        isDraggingRef.current = false;
-      }}
+      onPointerUp={() => { pointerStartRef.current = null; }}
+      onPointerCancel={() => { pointerStartRef.current = null; isDraggingRef.current = false; }}
       onClick={openDistrict}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          openDistrict();
-        }
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDistrict(); } }}
+      style={{
+        cursor: "pointer",
+        borderRadius: 20,
+        overflow: "hidden",
+        background: "#fff",
+        border: "1.5px solid #f1f5f9",
+        boxShadow: "0 4px 18px rgba(15,23,42,0.07)",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+        touchAction: "auto",
+        outline: "none",
+        flexShrink: compact ? 0 : undefined,
+        width: compact ? 280 : "100%",
       }}
       className={cn(
-        "group block cursor-pointer touch-auto overflow-hidden rounded-[28px] border border-black/5 bg-white shadow-[0_18px_40px_rgba(17,24,39,0.08)] transition-transform duration-300 hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400",
-        compact ? "w-[300px] shrink-0" : "w-full"
+        "group focus-visible:ring-2 focus-visible:ring-emerald-400",
+        "hover:-translate-y-0.5"
       )}
     >
-      <div className={cn("relative overflow-hidden", compact ? "h-48" : "h-44")}>
+      {/* ── IMAGE ──────────────────────────────────────────── */}
+      <div style={{ position: "relative", overflow: "hidden", height: compact ? 168 : 148 }}>
         <Image
           src={district.image}
           alt={district.name}
           fill
-          sizes={compact ? "248px" : "50vw"}
+          sizes={compact ? "280px" : "50vw"}
           className="object-cover transition duration-500 group-hover:scale-105"
           priority={imagePriority}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/[0.18] to-transparent" />
-        <div className="absolute left-4 top-4 z-10">
-          <button
-            type="button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              toggleFavorite(districtFavoriteId);
-            }}
-            className={cn(
-              "flex size-10 items-center justify-center rounded-full shadow-lg transition",
-              saved ? "bg-rose-50 text-rose-500" : "bg-white/[0.92] text-slate-800"
-            )}
-            aria-label={saved ? "Remove saved district" : "Save district"}
-          >
-            <HeartIcon filled={saved} className="size-5" />
-          </button>
+        {/* Gradient overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.18) 50%, transparent 100%)" }} />
+
+        {/* Heart button — top left */}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(districtFavoriteId); }}
+          style={{
+            position: "absolute", top: 10, left: 10, zIndex: 10,
+            width: 34, height: 34, borderRadius: "50%", border: "none",
+            background: saved ? "rgba(255,228,230,0.95)" : "rgba(255,255,255,0.92)",
+            color: saved ? "#f43f5e" : "#64748b",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.14)",
+            backdropFilter: "blur(6px)",
+            transition: "all 0.15s ease",
+          }}
+          aria-label={saved ? "Remove saved district" : "Save district"}
+        >
+          <HeartIcon filled={saved} style={{ width: 15, height: 15 }} />
+        </button>
+
+        {/* Rating — top right */}
+        <div style={{
+          position: "absolute", top: 10, right: 10, zIndex: 10,
+          display: "inline-flex", alignItems: "center", gap: 3,
+          background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)",
+          borderRadius: 999, padding: "4px 9px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+        }}>
+          <StarIcon style={{ width: 12, height: 12, color: "#f59e0b" }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{district.rating.toFixed(1)}</span>
         </div>
-        <div className="absolute right-4 top-4 rounded-full bg-white/[0.92] px-3 py-1 text-xs font-semibold text-slate-800 shadow-lg">
-          <span className="inline-flex items-center gap-1">
-            <StarIcon className="size-3.5 text-amber-400" />
-            {district.rating.toFixed(1)}
-          </span>
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white">
-          <h3 className="text-xl font-semibold tracking-tight">{district.name}</h3>
-          <p className="mt-1 line-clamp-2 text-sm text-white/[0.84]">{district.tagline}</p>
+
+        {/* Name + tagline over image */}
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "12px 14px", pointerEvents: "none" }}>
+          <h3 style={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.01em" }}>{district.name}</h3>
+          {district.tagline ? (
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.82)", marginTop: 3, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              {district.tagline}
+            </p>
+          ) : null}
         </div>
       </div>
+
+      {/* ── FOOTER (non-compact only) ───────────────────────── */}
       {!compact ? (
-        <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-500">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px" }}>
           <Link
             href={href}
-            onClick={(event) => event.stopPropagation()}
-            className="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              fontSize: 11, fontWeight: 700, color: "#059669",
+              background: "#ecfdf5", borderRadius: 999, padding: "4px 10px",
+              textDecoration: "none", border: "1px solid #d1fae5",
+            }}
           >
             {district.province}
           </Link>
           <Link
             href={href}
-            onClick={(event) => event.stopPropagation()}
-            className="inline-flex items-center gap-1"
+            onClick={(e) => e.stopPropagation()}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#94a3b8", textDecoration: "none", fontWeight: 500 }}
           >
-            <MapPinIcon className="size-4" />
+            <MapPinIcon style={{ width: 13, height: 13 }} />
             {formatVisitors(district.visitorsCount)}
           </Link>
         </div>
