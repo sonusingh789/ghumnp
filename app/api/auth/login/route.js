@@ -17,7 +17,7 @@ export async function POST(request) {
     const { email, password } = parsed.data;
 
     const result = await query(
-      `SELECT id, name, email, password_hash FROM Users WHERE email = @email`,
+      `SELECT id, name, email, password_hash, role FROM Users WHERE email = @email`,
       { email }
     );
     const user = result.recordset[0];
@@ -26,9 +26,9 @@ export async function POST(request) {
     const valid = await verifyPassword(password, user.password_hash);
     if (!valid) return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
 
-    const token = await createToken({ sub: String(user.id), email: user.email, name: user.name });
+    const token = await createToken({ sub: String(user.id), email: user.email, name: user.name, role: user.role || 'user' });
     const res = NextResponse.json({
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role || 'user' },
     });
     res.cookies.set(COOKIE_NAME, token, getCookieOptions());
     return res;

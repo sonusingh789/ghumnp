@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useFavorites } from "@/context/favorites-context";
-import { HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
+import { CheckCircleIcon, HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 export default function PlaceCard({
@@ -94,7 +94,25 @@ export default function PlaceCard({
               <MapPinIcon className="size-4" />
               {place.location}
             </span>
+            {place.isVerified ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                <CheckCircleIcon className="size-3" />
+                Verified
+              </span>
+            ) : null}
           </div>
+          {place.contributorName ? (
+            <p className="mt-2 text-[11px] text-slate-400">
+              Added by{" "}
+              <Link
+                href={`/contributors/${place.contributorId}`}
+                className="font-semibold text-emerald-600 hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                @{place.contributorName}
+              </Link>
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

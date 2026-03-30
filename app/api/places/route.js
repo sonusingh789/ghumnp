@@ -321,6 +321,16 @@ async function handleRequest(auth, data) {
 
     placeId = insertResult.recordset[0]?.id;
     placeDistrictSlug = district.slug;
+
+    // Increment contributor stats
+    if (auth?.id) {
+      await query(
+        `IF NOT EXISTS (SELECT 1 FROM ContributorStats WHERE user_id = @uid)
+           INSERT INTO ContributorStats (user_id) VALUES (@uid);
+         UPDATE ContributorStats SET places_submitted = places_submitted + 1 WHERE user_id = @uid`,
+        { uid: Number(auth.id) }
+      );
+    }
   }
 
   if (uploadedImageUrls.length) {

@@ -92,15 +92,13 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
   const seo = district.seoContent || {};
   const districtFavoriteId = `district:${district.id}`;
   const isSaved = isFavorite(districtFavoriteId);
-  const topPlaceLinks = districtPlaces.slice(0, 6);
   const hasExtendedInfo =
     Boolean(seo.intro) ||
     Boolean(seo.topThingsToDo?.length) ||
     Boolean(seo.bestTimeToVisit) ||
     Boolean(seo.howToReach) ||
     Boolean(seo.localFoodsCulture) ||
-    Boolean(seo.faqs?.length) ||
-    Boolean(topPlaceLinks.length);
+    Boolean(seo.faqs?.length);
 
   const filteredPlaces = districtPlaces.filter((place) => {
     if (activeTab === "All") return true;

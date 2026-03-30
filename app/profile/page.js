@@ -27,6 +27,7 @@ export default async function ProfilePage() {
 
   return (
     <ProfilePageClient
+      userId={user.id}
       initialProfile={{
         ...profile,
         favoritePlaces: favoriteCollections.favoritePlaces,

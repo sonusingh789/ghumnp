@@ -64,6 +64,14 @@ export async function POST(request, { params }) {
     }
   );
 
+  // Increment reviewer's total_reviews in ContributorStats
+  await query(
+    `IF NOT EXISTS (SELECT 1 FROM ContributorStats WHERE user_id = @uid)
+       INSERT INTO ContributorStats (user_id) VALUES (@uid);
+     UPDATE ContributorStats SET total_reviews = total_reviews + 1 WHERE user_id = @uid`,
+    { uid: Number(auth.id) }
+  );
+
   const userResult = await query(
     `SELECT name, avatar_url FROM Users WHERE id = @id`,
     { id: auth.id }

@@ -62,7 +62,7 @@ export async function DELETE(request, { params }) {
 
   const { slug } = await params;
   const placeResult = await query(
-    `SELECT TOP 1 p.slug, d.slug AS district_slug
+    `SELECT TOP 1 p.id, p.slug, d.slug AS district_slug
      FROM Places p
      INNER JOIN Districts d ON d.id = p.district_id
      WHERE p.slug = @slug AND p.created_by_user_id = @userId`,
@@ -76,6 +76,9 @@ export async function DELETE(request, { params }) {
   if (!place) {
     return NextResponse.json({ error: "Contribution not found." }, { status: 404 });
   }
+
+  await query(`DELETE FROM Reports WHERE place_id = @placeId`, { placeId: place.id });
+  await query(`DELETE FROM EditSuggestions WHERE place_id = @placeId`, { placeId: place.id });
 
   const deleteResult = await query(
     `DELETE FROM Places

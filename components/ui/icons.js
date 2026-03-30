@@ -271,3 +271,47 @@ export function ShareIcon({ className }) {
     </Icon>
   );
 }
+
+export function ShieldIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <path d="M12 2 4 6v5c0 4.4 3.4 8.5 8 9.5 4.6-1 8-5.1 8-9.5V6l-8-4z" />
+    </Icon>
+  );
+}
+
+export function CheckCircleIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m8.5 12.5 2.5 2.5 4.5-5" />
+    </Icon>
+  );
+}
+
+export function FlagIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+      <line x1="4" x2="4" y1="22" y2="15" />
+    </Icon>
+  );
+}
+
+export function BadgeIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <circle cx="12" cy="8" r="6" />
+      <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+    </Icon>
+  );
+}
+
+export function ClockIcon({ className }) {
+  return (
+    <Icon className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15 15" />
+    </Icon>
+  );
+}

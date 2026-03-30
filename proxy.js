@@ -18,7 +18,9 @@ function isProtectedPage(pathname) {
     pathname === "/profile" ||
     pathname.startsWith("/profile/") ||
     pathname === "/favorites" ||
-    pathname.startsWith("/favorites/")
+    pathname.startsWith("/favorites/") ||
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/")
   );
 }
 
@@ -115,5 +117,10 @@ export const config = {
     "/api/places",
     "/api/districts/:districtId/ratings",
     "/api/places/:placeId/reviews",
+    "/api/places/:placeId/report",
+    "/api/places/:placeId/suggest-edit",
+    "/api/places/:placeId/status",
+    "/api/admin/:path*",
+    "/admin/:path*",
   ],
 };

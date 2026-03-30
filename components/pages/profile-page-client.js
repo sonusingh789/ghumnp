@@ -16,6 +16,7 @@ import {
   PencilIcon,
   StarIcon,
   TrashIcon,
+  UserIcon,
 } from "@/components/ui/icons";
 
 const fallbackAvatar = "";
@@ -50,7 +51,7 @@ function uploadProfileImage(file, folderHint, onProgress) {
   });
 }
 
-export default function ProfilePageClient({ initialProfile }) {
+export default function ProfilePageClient({ initialProfile, userId }) {
   const router = useRouter();
   const { favorites } = useFavorites();
   const fileInputRef = useRef(null);
@@ -388,271 +389,166 @@ export default function ProfilePageClient({ initialProfile }) {
 
   return (
   <AppShell className="bg-[#f5f6f8]">
-    <div className="mx-auto w-full max-w-6xl pb-6 pt-2 md:pb-8 md:pt-3">
-      <section className="relative overflow-hidden rounded-2xl md:rounded-[34px] border border-black/5 bg-[linear-gradient(135deg,#0f9f58_0%,#0d6e42_55%,#103f2d_100%)] px-4 pb-7 pt-4 shadow-[0_24px_60px_rgba(15,23,42,0.12)] md:px-7 md:pb-10 md:pt-6">
-        <div className="absolute -right-10 top-0 size-32 md:size-44 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute bottom-0 left-0 h-20 w-32 md:h-28 md:w-40 rounded-tr-[80px] md:rounded-tr-[120px] bg-white/6" />
-        <div className="absolute right-5 top-5 flex items-center gap-3">
-          <HeroChip
-            icon={LogOutIcon}
-            label={loggingOut ? "Logging out..." : "Logout"}
-            onClick={handleLogout}
-            disabled={loggingOut}
-          />
-          <button
-            type="button"
-            onClick={handleDeleteAccount}
-            disabled={deletingAccount}
-            aria-label={deletingAccount ? "Deleting account" : "Delete account"}
-            className="inline-flex size-11 items-center justify-center rounded-full border border-white/14 bg-red-500/15 text-white backdrop-blur transition hover:bg-red-500/25 disabled:opacity-60"
-          >
-            <TrashIcon className="size-5" />
-          </button>
-        </div>
-        
-        <div className="flex flex-col gap-5">
-          <div className="pr-28 text-left md:pr-40">
-            <p className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.2em] md:tracking-[0.24em] text-white/60">
-              Account Settings
-            </p>
-            <h1 className="mt-2 text-[1.75rem] md:text-[2.4rem] font-semibold tracking-tight text-white">
-              My Profile
-            </h1>
+    <div className="mx-auto w-full max-w-2xl pb-6 pt-2">
+      {/* Green header */}
+      <div style={{ background: "linear-gradient(135deg, #059669 0%, #065f46 100%)", margin: "-24px -1px 0", padding: "20px 20px 64px", borderRadius: "0 0 32px 32px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>Account</p>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1.1 }}>My Profile</h1>
           </div>
-
-        </div>
-      </section>
-
-      {/* Main Content - Stacked on mobile, grid on desktop */}
-      <div className="relative z-10 -mt-8 md:-mt-14 grid gap-5 md:gap-6 lg:grid-cols-[minmax(0,1.15fr)_380px]">
-        {/* Profile Section */}
-        <section className="rounded-2xl md:rounded-[30px] border border-black/5 bg-white p-4 md:p-6 shadow-[0_20px_44px_rgba(15,23,42,0.07)]">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="text-center md:text-left">
-              <p className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.2em] md:tracking-[0.22em] text-emerald-600">
-                Profile
-              </p>
-              <h2 className="mt-1 text-xl md:text-2xl font-semibold tracking-tight text-slate-950">
-                Personal Information
-              </h2>
-            </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+            {userId ? (
+              <Link
+                href={`/contributors/${(userProfile.name || "user").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${userId}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "8px 14px", fontSize: 12, fontWeight: 700, color: "#fff", textDecoration: "none" }}
+              >
+                <UserIcon className="size-3.5" />
+                Public Profile
+              </Link>
+            ) : null}
+            <HeroChip
+              icon={LogOutIcon}
+              label={loggingOut ? "..." : "Logout"}
+              onClick={handleLogout}
+              disabled={loggingOut}
+            />
             <button
               type="button"
-              onClick={() => {
-                setError("");
-                setSuccess("");
-                if (isEditing) {
-                  setForm({
-                    name: userProfile.name || "",
-                    email: userProfile.email || "",
-                    bio: userProfile.bio || "",
-                    avatar: userProfile.avatar || fallbackAvatar,
-                  });
-                }
-                setIsEditing((current) => !current);
-              }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2.5 md:py-2 text-sm font-semibold text-emerald-700 md:w-auto"
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              aria-label="Delete account"
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(239,68,68,0.15)", color: "#fff", cursor: "pointer", flexShrink: 0 }}
             >
-              <PencilIcon className="size-4" />
-              {isEditing ? "Cancel" : "Edit Profile"}
+              <TrashIcon className="size-4" />
             </button>
           </div>
-
-          <div className="mt-5 md:mt-6 space-y-4 md:space-y-5">
-            {/* Profile Photo Card - Mobile optimized */}
-            <div className="flex flex-col gap-4 rounded-2xl md:rounded-[28px] bg-[linear-gradient(145deg,#f7fbf8,#eff6ff)] p-4 md:p-5 md:flex-row md:items-center">
-              <div className="relative size-20 md:size-24 shrink-0 overflow-hidden rounded-full border-4 border-white shadow-[0_14px_30px_rgba(15,23,42,0.12)] mx-auto md:mx-0">
-                {(isEditing ? form.avatar : userProfile.avatar) ? (
-                  <Image
-                    src={(isEditing ? form.avatar : userProfile.avatar) || fallbackAvatar}
-                    alt={(isEditing ? form.name : userProfile.name) || "Traveler"}
-                    fill
-                    sizes="96px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(145deg,#dff5e7,#e7eefc)] text-2xl md:text-3xl font-semibold text-emerald-700">
-                    {((isEditing ? form.name : userProfile.name) || "T").trim().charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              
-              <div className="min-w-0 flex-1 text-center md:text-left">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h3 className="text-base md:text-lg font-semibold text-slate-950">
-                      {isEditing ? "Profile Photo" : userProfile.name}
-                    </h3>
-                    {!isEditing ? (
-                      <div className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-slate-500">
-                        <MailIcon className="size-4" />
-                        {userProfile.email || "No email"}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-                <p className="mt-2 text-xs md:text-sm leading-5 md:leading-6 text-slate-500">
-                  {isEditing
-                    ? "Upload a square portrait for the cleanest look across the app."
-                    : userProfile.bio}
-                </p>
-                
-                {isEditing ? (
-                  <>
-                    <div className="mt-3 md:mt-4 flex flex-wrap items-center justify-center md:justify-start gap-2 md:gap-3">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={handleAvatarChange}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center gap-2 rounded-full bg-[#0f9f58] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(15,159,88,0.22)]"
-                      >
-                        <CameraIcon className="size-4" />
-                        {uploadingAvatar ? "Uploading..." : "Upload New Photo"}
-                      </button>
-                      <span className="text-xs md:text-sm font-medium text-slate-500">
-                        {uploadingAvatar ? `${uploadProgress}% uploaded` : "PNG, JPG, WEBP"}
-                      </span>
-                    </div>
-                    {uploadingAvatar && (
-                      <div className="mt-3 md:mt-4 h-2 overflow-hidden rounded-full bg-white">
-                        <div
-                          className="h-full rounded-full bg-[#0f9f58] transition-all duration-300"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="mt-3 md:mt-4 grid gap-2 md:gap-3 sm:grid-cols-2">
-                    <InfoTile label="Email" value={userProfile.email || "Not added"} icon={MailIcon} />
-                    <InfoTile label="Bio" value={userProfile.bio || "No bio added yet"} icon={PencilIcon} />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {isEditing && (
-              <form onSubmit={handleSave} className="space-y-4 md:space-y-5">
-                <div className="grid gap-4 md:gap-4 sm:grid-cols-2">
-                  <Field label="Full Name">
-                    <input
-                      value={form.name}
-                      onChange={(event) => handleFieldChange("name", event.target.value)}
-                      className={inputClass}
-                      placeholder="Enter your full name"
-                    />
-                  </Field>
-
-                  <Field label="Email Address">
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(event) => handleFieldChange("email", event.target.value)}
-                      className={inputClass}
-                      placeholder="you@example.com"
-                    />
-                  </Field>
-                </div>
-
-                <Field label="Bio">
-                  <textarea
-                    value={form.bio}
-                    onChange={(event) => handleFieldChange("bio", event.target.value)}
-                    rows={4}
-                    className={`${inputClass} resize-none py-3 md:py-4`}
-                    placeholder="Tell travelers a little about yourself..."
-                  />
-                </Field>
-
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-3">
-                  <button
-                    type="submit"
-                    disabled={saving || uploadingAvatar}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0f9f58] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_32px_rgba(15,159,88,0.22)] disabled:opacity-70 md:w-auto"
-                  >
-                    <PencilIcon className="size-4" />
-                    {saving ? "Saving..." : "Save Changes"}
-                  </button>
-                  <span className="text-xs md:text-sm text-slate-500 text-center md:text-left">
-                    Changes update your profile and avatar everywhere this account appears.
-                  </span>
-                </div>
-              </form>
-            )}
-
-            {error && (
-              <div className="rounded-xl md:rounded-[20px] border border-red-100 bg-red-50 px-3 md:px-4 py-2.5 md:py-3 text-xs md:text-sm text-red-700">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="rounded-xl md:rounded-[20px] border border-emerald-100 bg-emerald-50 px-3 md:px-4 py-2.5 md:py-3 text-xs md:text-sm text-emerald-700">
-                {success}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Sidebar - Profile Overview and Favorite Places */}
-        <aside className="space-y-5 md:space-y-6">
-          <section className="rounded-2xl md:rounded-[30px] border border-black/5 bg-white p-4 md:p-5 shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
-            <p className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.2em] md:tracking-[0.22em] text-emerald-600">
-              Snapshot
-            </p>
-            <h2 className="mt-1 text-xl md:text-2xl font-semibold tracking-tight text-slate-950">
-              Profile Overview
-            </h2>
-            <div className="mt-4 md:mt-5 space-y-2 md:space-y-3">
-              {profileStats.map((stat) => (
-                <StatCard key={stat.label} {...stat} />
-              ))}
-            </div>
-          </section>
-
-          {!!favoritePlaces.length && (
-            <section className="rounded-2xl md:rounded-[30px] border border-black/5 bg-white p-4 md:p-5 shadow-[0_18px_42px_rgba(15,23,42,0.06)]">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.2em] md:tracking-[0.22em] text-emerald-600">
-                    Saved
-                  </p>
-                  <h2 className="mt-1 text-xl md:text-2xl font-semibold tracking-tight text-slate-950">
-                    Favorite Places
-                  </h2>
-                </div>
-                <Link href="/favorites" className="text-xs md:text-sm font-semibold text-emerald-600">
-                  See all
-                </Link>
-              </div>
-              <div className="mt-4 md:mt-5 grid grid-cols-2 gap-2 md:gap-3">
-                {favoritePlaces.slice(0, 4).map((place) => (
-                  <Link
-                    key={place.id}
-                    href={`/place/${place.id}`}
-                    className="overflow-hidden rounded-xl md:rounded-[22px] border border-black/5 bg-slate-50"
-                  >
-                    <div className="relative h-20 md:h-24">
-                      <Image src={place.image} alt={place.name} fill sizes="180px" className="object-cover" />
-                    </div>
-                    <div className="px-2 md:px-3 py-2 md:py-3">
-                      <div className="line-clamp-2 text-xs md:text-sm font-semibold text-slate-900">
-                        {place.name}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-        </aside>
+        </div>
       </div>
+
+      {/* Profile card overlapping header */}
+      <div style={{ margin: "-44px 0 0", background: "#fff", borderRadius: 24, padding: "20px", boxShadow: "0 8px 32px rgba(15,23,42,0.1)", position: "relative", zIndex: 1, border: "1.5px solid #f1f5f9" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <div style={{ width: 72, height: 72, borderRadius: "50%", overflow: "hidden", background: "#d1fae5", border: "3px solid #fff", boxShadow: "0 4px 14px rgba(5,150,105,0.25)" }}>
+              {(isEditing ? form.avatar : userProfile.avatar) ? (
+                <Image src={(isEditing ? form.avatar : userProfile.avatar) || fallbackAvatar} alt={userProfile.name || "Traveler"} fill sizes="72px" className="object-cover" />
+              ) : (
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 800, color: "#059669" }}>
+                  {(userProfile.name || "T")[0].toUpperCase()}
+                </div>
+              )}
+            </div>
+            {isEditing ? (
+              <>
+                <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Upload photo"
+                  style={{ position: "absolute", bottom: -2, right: -4, background: "#059669", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #fff", cursor: "pointer", color: "#fff" }}
+                >
+                  <CameraIcon className="size-3" />
+                </button>
+              </>
+            ) : null}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", lineHeight: 1.1, marginBottom: 2 }}>{userProfile.name}</h2>
+            <p style={{ fontSize: 12, color: "#64748b", marginBottom: userProfile.bio && !isEditing ? 6 : 0 }}>{userProfile.email}</p>
+            {userProfile.bio && !isEditing ? <p style={{ fontSize: 12, color: "#475569", lineHeight: 1.55 }}>{userProfile.bio}</p> : null}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setError(""); setSuccess("");
+              if (isEditing) { setForm({ name: userProfile.name || "", email: userProfile.email || "", bio: userProfile.bio || "", avatar: userProfile.avatar || fallbackAvatar }); }
+              setIsEditing((c) => !c);
+            }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, border: "1.5px solid #e2e8f0", background: "#f8fafc", padding: "8px 14px", fontSize: 12, fontWeight: 700, color: "#475569", cursor: "pointer", flexShrink: 0 }}
+          >
+            <PencilIcon className="size-3.5" />
+            {isEditing ? "Cancel" : "Edit"}
+          </button>
+        </div>
+
+        {/* Stats 3-col */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 16 }}>
+          {[
+            { label: "Contributions", value: userProfile.stats.contributions, color: "#059669", bg: "#ecfdf5" },
+            { label: "Saved Places",  value: favoritePlaces.length || favorites.length, color: "#1d4ed8", bg: "#eff6ff" },
+            { label: "Reviews",       value: userProfile.stats.reviews, color: "#d97706", bg: "#fffbeb" },
+          ].map(({ label, value, color, bg }) => (
+            <div key={label} style={{ background: bg, borderRadius: 14, padding: "12px 6px", textAlign: "center" }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "#64748b", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        {uploadingAvatar ? (
+          <div style={{ marginTop: 12 }}>
+            <p style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>{uploadProgress}% uploaded</p>
+            <div style={{ height: 5, borderRadius: 999, background: "#e2e8f0", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 999, background: "#059669", width: `${uploadProgress}%`, transition: "width 0.3s" }} />
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Edit form */}
+      {isEditing ? (
+        <div style={{ margin: "12px 0 0", background: "#fff", borderRadius: 20, padding: "20px", border: "1.5px solid #f1f5f9" }}>
+          <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <Field label="Full Name">
+                <input value={form.name} onChange={(e) => handleFieldChange("name", e.target.value)} className={inputClass} placeholder="Your full name" />
+              </Field>
+              <Field label="Email">
+                <input type="email" value={form.email} onChange={(e) => handleFieldChange("email", e.target.value)} className={inputClass} placeholder="you@example.com" />
+              </Field>
+            </div>
+            <Field label="Bio">
+              <textarea value={form.bio} onChange={(e) => handleFieldChange("bio", e.target.value)} rows={3} className={`${inputClass} resize-none py-3`} placeholder="Tell travelers about yourself..." />
+            </Field>
+            <button
+              type="submit"
+              disabled={saving || uploadingAvatar}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 999, background: "#059669", color: "#fff", padding: "11px 24px", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", opacity: (saving || uploadingAvatar) ? 0.7 : 1, alignSelf: "flex-start" }}
+            >
+              <PencilIcon className="size-4" />
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </form>
+        </div>
+      ) : null}
+
+      {error ? (
+        <div style={{ margin: "12px 0 0", borderRadius: 14, background: "#fef2f2", border: "1.5px solid #fecaca", padding: "12px 16px", fontSize: 13, color: "#dc2626" }}>{error}</div>
+      ) : null}
+      {success ? (
+        <div style={{ margin: "12px 0 0", borderRadius: 14, background: "#ecfdf5", border: "1.5px solid #bbf7d0", padding: "12px 16px", fontSize: 13, color: "#059669" }}>{success}</div>
+      ) : null}
+
+      {/* Saved Places */}
+      {favoritePlaces.length ? (
+        <div style={{ margin: "16px 0 0", background: "#fff", borderRadius: 20, padding: "18px", border: "1.5px solid #f1f5f9" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>Saved Places</h2>
+            <Link href="/favorites" style={{ fontSize: 12, fontWeight: 700, color: "#059669", textDecoration: "none" }}>See all</Link>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+            {favoritePlaces.slice(0, 4).map((place) => (
+              <Link key={place.id} href={`/place/${place.id}`} style={{ textDecoration: "none", borderRadius: 14, overflow: "hidden", border: "1.5px solid #f1f5f9", background: "#f8fafc" }}>
+                <div style={{ position: "relative", height: 80 }}>
+                  <Image src={place.image} alt={place.name} fill sizes="180px" className="object-cover" />
+                </div>
+                <div style={{ padding: "8px 10px", fontSize: 12, fontWeight: 600, color: "#0f172a" }}>{place.name}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* Bottom Sections - Contributions and Reviews */}
       <div className="mt-5 md:mt-6 grid gap-5 md:gap-6 lg:grid-cols-2">
