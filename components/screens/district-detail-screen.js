@@ -10,7 +10,6 @@ import { useFavorites } from "@/context/favorites-context";
 import { buildLoginHref } from "@/utils/navigation";
 import {
   ArrowLeftIcon,
-  ChevronRightIcon,
   HeartIcon,
   MapPinIcon,
   ShareIcon,
@@ -20,6 +19,15 @@ import {
 import { cn, formatVisitors } from "@/lib/utils";
 
 const tabs = ["All", "Tourist Attraction", "Local Food", "Restaurant", "Hotel", "Local Stay"];
+
+const TAB_LABELS = {
+  All: { eyebrow: "All Places", heading: (name) => `All Places in ${name}` },
+  "Tourist Attraction": { eyebrow: "Tourist Attractions", heading: (name) => `Top Tourist Attractions in ${name}` },
+  "Local Food": { eyebrow: "Local Food", heading: (name) => `Local Food Spots in ${name}` },
+  Restaurant: { eyebrow: "Restaurants", heading: (name) => `Restaurants in ${name}` },
+  Hotel: { eyebrow: "Hotels", heading: (name) => `Hotels in ${name}` },
+  "Local Stay": { eyebrow: "Local Stays", heading: (name) => `Local Stays in ${name}` },
+};
 
 async function copyTextFallback(text) {
   if (typeof document === "undefined") return false;
@@ -71,7 +79,6 @@ async function tryNativeShare(payloads) {
 
 export default function DistrictDetailScreen({ district, districtPlaces }) {
   const [activeTab, setActiveTab] = useState("All");
-  const [showKnowMore, setShowKnowMore] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [ratingValue, setRatingValue] = useState(5);
   const [ratingDisplay, setRatingDisplay] = useState(Number(district.rating || 0));
@@ -274,7 +281,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           <div className="relative h-[300px] sm:h-[360px] lg:h-[430px]">
             <Image
               src={district.image}
-              alt={district.name}
+              alt={`${district.name} district, ${district.province} Province, Nepal — places to visit on visitNepal77`}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1100px"
               className="object-cover"
@@ -320,6 +327,17 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           </div>
 
           <div className="relative -mt-8 rounded-t-[28px] bg-white px-4 pb-5 pt-5 sm:-mt-10 sm:px-6 sm:pb-6 sm:pt-6 lg:px-7">
+            {/* Visible breadcrumb — crawlable anchor text for SEO */}
+            <nav aria-label="Breadcrumb" className="mb-3">
+              <ol className="flex flex-wrap items-center gap-1 text-xs text-slate-400">
+                <li><Link href="/" className="hover:text-emerald-600 transition">Home</Link></li>
+                <li aria-hidden="true" className="select-none">/</li>
+                <li><Link href="/districts" className="hover:text-emerald-600 transition">All 77 Districts</Link></li>
+                <li aria-hidden="true" className="select-none">/</li>
+                <li className="font-medium text-slate-600" aria-current="page">{district.name}</li>
+              </ol>
+            </nav>
+
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
                 <h1 className="text-[2rem] font-semibold tracking-tight text-slate-950 sm:text-[2.3rem]">
@@ -327,7 +345,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                 </h1>
                 <p className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-slate-500">
                   <MapPinIcon className="size-4" />
-                  {district.province} Province
+                  {district.province} Province, Nepal
                 </p>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px]">
                   {district.tagline}
@@ -356,177 +374,6 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               </div>
             </div>
 
-            {hasExtendedInfo ? (
-              <div className="mt-5 border-t border-slate-100 pt-5 sm:mt-6 sm:pt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowKnowMore((current) => !current)}
-                  className="flex w-full items-center justify-between gap-4 px-0 py-0 text-left"
-                  aria-expanded={showKnowMore}
-                >
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                      Know More
-                    </p>
-                    <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                      Travel Guide For {district.name}
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-500">
-                      Best time, how to reach, local culture, FAQs, and more.
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "flex size-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition",
-                      showKnowMore ? "rotate-90" : ""
-                    )}
-                  >
-                    <ChevronRightIcon className="size-5" />
-                  </span>
-                </button>
-
-                <div
-                  className={cn(
-                    "relative mt-5 overflow-hidden transition-all duration-300 ease-out",
-                    showKnowMore ? "max-h-[5000px]" : "max-h-[190px]"
-                  )}
-                >
-                  <div className="space-y-4 sm:space-y-5">
-                    {seo.intro ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                          District Guide
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                          Discover {district.name}
-                        </h2>
-                        <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-[15px]">
-                          {seo.intro.split(/\n{2,}/).map((paragraph) => (
-                            <p key={paragraph}>{paragraph}</p>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    <div className="grid gap-4 lg:grid-cols-3">
-                      {seo.bestTimeToVisit ? (
-                        <InfoSectionCard
-                          eyebrow="Plan"
-                          title="Best Time To Visit"
-                          content={seo.bestTimeToVisit}
-                        />
-                      ) : null}
-                      {seo.howToReach ? (
-                        <InfoSectionCard
-                          eyebrow="Travel"
-                          title="How To Reach"
-                          content={seo.howToReach}
-                        />
-                      ) : null}
-                      {seo.localFoodsCulture ? (
-                        <InfoSectionCard
-                          eyebrow="Culture"
-                          title="Local Foods And Culture"
-                          content={seo.localFoodsCulture}
-                        />
-                      ) : null}
-                    </div>
-
-                    {seo.topThingsToDo?.length ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                          Highlights
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                          Top Things To Do
-                        </h2>
-                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                          {seo.topThingsToDo.map((item) => (
-                            <div
-                              key={item}
-                              className="rounded-[22px] border border-black/5 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-700"
-                            >
-                              {item}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {topPlaceLinks.length ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                              Explore More
-                            </p>
-                            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                              Top Places In {district.name}
-                            </h2>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex flex-wrap gap-2.5">
-                          {topPlaceLinks.map((place) => (
-                            <Link
-                              key={place.id}
-                              href={`/place/${place.id}`}
-                              className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
-                            >
-                              {place.name}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {seo.faqs?.length ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                          FAQ
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                          Before You Go
-                        </h2>
-                        <div className="mt-4 space-y-3">
-                          {seo.faqs.map((item, index) => {
-                            const [question, ...rest] = item.split("::");
-                            const answer = rest.join("::").trim();
-                            return (
-                              <div key={`${question}-${index}`} className="rounded-[22px] border border-black/5 bg-white px-4 py-4">
-                                <p className="text-sm font-semibold text-slate-900">{question}</p>
-                                {answer ? (
-                                  <p className="mt-1.5 text-sm leading-6 text-slate-600">{answer}</p>
-                                ) : null}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {!showKnowMore ? (
-                      <div className="pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setShowKnowMore(true)}
-                          className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700"
-                        >
-                          Read full travel guide
-                          <ChevronRightIcon className="size-4" />
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {!showKnowMore ? (
-                    <>
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-white via-white/96 to-white/0" />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-5 bg-white" />
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
           </div>
         </section>
 
@@ -553,10 +400,10 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           <div className="mb-4 flex items-center justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                Explore
+                {TAB_LABELS[activeTab].eyebrow}
               </p>
               <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                Must Visit
+                {TAB_LABELS[activeTab].heading(district.name)}
               </h2>
             </div>
           </div>
@@ -579,6 +426,111 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
         </div>
         </div>
         </section>
+
+        {hasExtendedInfo ? (
+          <section className="px-1 pb-10 sm:px-2" aria-label="Travel guide">
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                Travel Guide
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                {district.name} District — Complete Travel Guide
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
+                Best places, best time to visit, how to reach, local food &amp; culture, and FAQs.
+              </p>
+            </div>
+
+            <div className="space-y-4 sm:space-y-5">
+              {seo.intro ? (
+                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    About the District
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                    About {district.name}, {district.province} Province
+                  </h2>
+                  <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-[15px]">
+                    {seo.intro.split(/\n{2,}/).map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="grid gap-4 lg:grid-cols-3">
+                {seo.bestTimeToVisit ? (
+                  <InfoSectionCard
+                    eyebrow="Plan"
+                    title="Best Time To Visit"
+                    content={seo.bestTimeToVisit}
+                  />
+                ) : null}
+                {seo.howToReach ? (
+                  <InfoSectionCard
+                    eyebrow="Travel"
+                    title="How To Reach"
+                    content={seo.howToReach}
+                  />
+                ) : null}
+                {seo.localFoodsCulture ? (
+                  <InfoSectionCard
+                    eyebrow="Culture"
+                    title="Local Foods And Culture"
+                    content={seo.localFoodsCulture}
+                  />
+                ) : null}
+              </div>
+
+              {seo.topThingsToDo?.length ? (
+                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    Activities &amp; Highlights
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                    Top Things To Do in {district.name}
+                  </h2>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {seo.topThingsToDo.map((item) => (
+                      <div
+                        key={item}
+                        className="rounded-[22px] border border-black/5 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-700 shadow-[0_4px_12px_rgba(15,23,42,0.04)]"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+
+              {seo.faqs?.length ? (
+                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    FAQ
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                    Before You Go — {district.name} FAQ
+                  </h2>
+                  <div className="mt-4 space-y-3">
+                    {seo.faqs.map((item, index) => {
+                      const [question, ...rest] = item.split("::");
+                      const answer = rest.join("::").trim();
+                      return (
+                        <div key={`${question}-${index}`} className="rounded-[22px] border border-black/5 bg-slate-50 px-4 py-4">
+                          <p className="text-sm font-semibold text-slate-900">{question}</p>
+                          {answer ? (
+                            <p className="mt-1.5 text-sm leading-6 text-slate-600">{answer}</p>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
       </div>
 
       {showRatingDialog ? (

@@ -38,10 +38,10 @@ export default function AllPlacesPageClient({ places = [] }) {
           Place Directory
         </div>
         <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1, marginBottom: 6 }}>
-          All Places
+          Best Places to Visit in Nepal
         </h1>
-        <p style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.6, marginBottom: 16 }}>
-          Browse places across Nepal.
+        <p style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.65, marginBottom: 16 }}>
+          Browse the best tourist attractions, local food spots, cultural sites, hotels, and hidden gems across all 77 districts of Nepal — contributed and reviewed by real travellers on visitNepal77.
         </p>
 
         <label style={{ position: "relative", display: "block" }}>

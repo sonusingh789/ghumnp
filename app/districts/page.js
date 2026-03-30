@@ -3,11 +3,22 @@ import { getDistrictCards } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
-  title: "All Districts | visitNepal77",
+  title: "All 77 Districts of Nepal — Complete Travel Directory | visitNepal77",
   description:
-    "Explore all 77 districts of Nepal with quick access to places, ratings, and travel highlights.",
+    "Browse all 77 districts of Nepal with places to visit, travel guides, ratings, and local highlights. From Himalayan peaks to the Terai plains — discover the best destinations in every district on visitNepal77.",
   path: "/districts",
-  keywords: ["Nepal districts", "all districts of Nepal", "Nepal travel districts"],
+  keywords: [
+    "all 77 districts of Nepal",
+    "Nepal districts list",
+    "best districts to visit in Nepal",
+    "Nepal travel guide by district",
+    "visit Nepal districts",
+    "Nepal tourism",
+    "Nepal district travel directory",
+    "places to visit in Nepal districts",
+    "Nepal province districts",
+    "visitNepal77 districts",
+  ],
 });
 
 export default async function DistrictsPage() {

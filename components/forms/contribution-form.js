@@ -126,8 +126,7 @@ export default function ContributionForm() {
   const previewItemsRef = useRef([]);
   const nearbySpotsRef = useRef([]);
   const spotDraftPreviewRef = useRef(null);
-  const [placePreviews, setPlacePreviews] = useState([]);
-  const [placeFiles, setPlaceFiles] = useState([]);
+  const [placeImageItems, setPlaceImageItems] = useState([]);
   const [submitted, setSubmitted] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -154,8 +153,8 @@ export default function ContributionForm() {
     placeMode === "new" ? true : Boolean(selectedExistingPlace);
 
   useEffect(() => {
-    previewItemsRef.current = placePreviews;
-  }, [placePreviews]);
+    previewItemsRef.current = placeImageItems;
+  }, [placeImageItems]);
 
   useEffect(() => {
     nearbySpotsRef.current = nearbySpots;
@@ -253,19 +252,17 @@ export default function ContributionForm() {
       file,
     }));
 
-    setPlaceFiles((current) => [...current, ...previewItems]);
-    setPlacePreviews((current) => [...current, ...previewItems]);
+    setPlaceImageItems((current) => [...current, ...previewItems]);
     event.target.value = "";
   }
 
   function removePreview(previewId) {
-    const item = placePreviews.find((preview) => preview.id === previewId);
+    const item = placeImageItems.find((preview) => preview.id === previewId);
     if (item?.previewUrl) {
       URL.revokeObjectURL(item.previewUrl);
     }
 
-    setPlacePreviews((current) => current.filter((preview) => preview.id !== previewId));
-    setPlaceFiles((current) => current.filter((preview) => preview.id !== previewId));
+    setPlaceImageItems((current) => current.filter((preview) => preview.id !== previewId));
   }
 
   async function handleSpotFileChange(event) {
@@ -430,12 +427,12 @@ export default function ContributionForm() {
     setSubmitted(null);
     setLoading(true);
     const hasSpotImages = nearbySpots.some((spot) => (spot.imageFiles || []).length > 0);
-    setUploadingPhotos(placeFiles.length > 0 || hasSpotImages);
+    setUploadingPhotos(placeImageItems.length > 0 || hasSpotImages);
     setUploadProgress(0);
-    setUploadLabel(placeFiles.length > 0 || hasSpotImages ? "Preparing upload..." : "");
+    setUploadLabel(placeImageItems.length > 0 || hasSpotImages ? "Preparing upload..." : "");
 
     try {
-      const uploadedImageUrls = await uploadAllFiles(placeFiles, folderHint, "Uploading place image");
+      const uploadedImageUrls = await uploadAllFiles(placeImageItems, folderHint, "Uploading place image");
       const nearbySpotsWithUploads = [];
 
       for (const spot of nearbySpots) {
@@ -507,13 +504,12 @@ export default function ContributionForm() {
         });
       });
       setNearbySpots([]);
-      placePreviews.forEach((preview) => {
+      placeImageItems.forEach((preview) => {
         if (preview.previewUrl) {
           URL.revokeObjectURL(preview.previewUrl);
         }
       });
-      setPlacePreviews([]);
-      setPlaceFiles([]);
+      setPlaceImageItems([]);
       spotDraft.imagePreviews.forEach((image) => {
         if (image.previewUrl) {
           URL.revokeObjectURL(image.previewUrl);
@@ -677,7 +673,7 @@ export default function ContributionForm() {
                   onChange={handlePlaceFilesChange}
                 />
                 <div className="flex flex-wrap gap-3">
-                  {placePreviews.map((preview) => (
+                  {placeImageItems.map((preview) => (
                     <div
                       key={preview.id}
                       className="relative h-[118px] w-[118px] overflow-hidden rounded-[24px] bg-[linear-gradient(145deg,#d9f0de,#dbe7f7)]"

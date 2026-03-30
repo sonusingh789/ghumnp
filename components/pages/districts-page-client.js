@@ -19,10 +19,10 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
           District Directory
         </div>
         <h1 className="display" style={{ fontSize: 28, fontWeight: 700, color: "var(--ink)", lineHeight: 1.1, marginBottom: 4 }}>
-          All 77 Districts
+          All 77 Districts of Nepal
         </h1>
-        <p style={{ fontSize: 13, color: "var(--ink-muted)", marginBottom: 16 }}>
-          Every district of Nepal, from the Himalayan peaks to the Terai plains.
+        <p style={{ fontSize: 13, color: "var(--ink-muted)", lineHeight: 1.65, marginBottom: 16 }}>
+          Explore every district of Nepal — from the high Himalayan peaks of Solukhumbu and Mustang to the rich cultural heartland of Kathmandu Valley and the wildlife havens of the Terai plains. Find the best places to visit, local food spots, and hidden gems in each district on visitNepal77.
         </p>
 
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>

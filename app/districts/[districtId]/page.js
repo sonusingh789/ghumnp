@@ -13,25 +13,34 @@ export async function generateMetadata({ params }) {
     district.tagline ||
     `Explore ${district.name} district in Nepal on visitNepal77.`;
   const description =
-    descriptionSource
+    `${district.name} district travel guide — best places to visit, local food, things to do, how to reach, and hidden gems in ${district.name}, ${district.province} Province, Nepal. ${descriptionSource}`
       .replace(/\s+/g, " ")
       .trim()
       .slice(0, 158);
   return buildMetadata({
-    title: `${district.name} District`,
+    title: `${district.name} District Travel Guide — Best Places, Things To Do & Tips | visitNepal77`,
     description,
     path: `/districts/${district.id}`,
     image: district.image,
-    imageAlt: `${district.name} District - visitNepal77`,
+    imageAlt: `${district.name} District, ${district.province} Province Nepal — visitNepal77`,
     type: "article",
     keywords: [
       `${district.name} district`,
       `${district.name} Nepal`,
       `${district.name} travel guide`,
-      `${district.name} places to visit`,
-      `${district.province} province`,
+      `best places to visit in ${district.name}`,
       `things to do in ${district.name}`,
+      `${district.name} tourist attractions`,
+      `${district.name} local food`,
+      `${district.name} hidden gems`,
+      `visit ${district.name}`,
+      `${district.name} trip`,
+      `how to reach ${district.name}`,
       `best time to visit ${district.name}`,
+      `${district.province} province Nepal`,
+      `${district.province} Nepal travel`,
+      `Nepal 77 districts`,
+      `visitNepal77 ${district.name}`,
     ],
   });
 }

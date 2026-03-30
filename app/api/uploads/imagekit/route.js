@@ -61,6 +61,7 @@ export async function POST(request) {
       thumbnailUrl: uploaded.thumbnailUrl,
     });
   } catch (error) {
+    console.error("[imagekit-upload] Upload failed:", error?.message);
     return NextResponse.json(
       { error: error?.message || "Image upload failed." },
       { status: 500 }

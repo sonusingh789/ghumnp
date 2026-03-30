@@ -99,13 +99,21 @@ export async function proxy(request) {
 
 export const config = {
   matcher: [
+    // Protected pages — always need JWT check
     "/add/:path*",
     "/profile/:path*",
     "/favorites/:path*",
+    // Protected API routes — only write operations need JWT (checked inside isProtectedApi)
     "/api/profile/:path*",
     "/api/uploads/:path*",
+    // favorites GET is public; POST/DELETE are protected — isProtectedApi filters by method
     "/api/favorites/:path*",
-    "/api/districts/:path*",
-    "/api/places/:path*",
+    // Only POST to /api/places needs auth (creating a place); GET is public search
+    // Only POST to /api/districts/*/ratings needs auth; GET is public
+    // These are handled inside isProtectedApi — but we must still match to reach that check.
+    // Keep these narrow: match only the specific sub-paths that can be protected.
+    "/api/places",
+    "/api/districts/:districtId/ratings",
+    "/api/places/:placeId/reviews",
   ],
 };

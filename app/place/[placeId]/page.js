@@ -8,16 +8,37 @@ export async function generateMetadata({ params }) {
   const place = await getApprovedPlaceBySlug(placeId);
   if (!place) return {};
   const seo = place.seoContent || {};
-  const description =
+  const baseDesc =
     place.description ||
-    seo.longDescription?.slice(0, 155) ||
-    `Discover ${place.name} in Nepal on visitNepal77.`;
+    seo.longDescription?.slice(0, 120) ||
+    `Discover ${place.name} in Nepal.`;
+  const description =
+    `${place.name} — ${place.category} in ${place.location}, ${place.districtId} District, Nepal. ${baseDesc}`
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 158);
   return buildMetadata({
-    title: place.name,
+    title: `${place.name} — ${place.category} in ${place.location} | visitNepal77`,
     description,
     path: `/place/${place.id}`,
     image: place.image,
-    imageAlt: `${place.name} - visitNepal77`,
+    imageAlt: `${place.name}, ${place.location}, ${place.districtId} District Nepal — visitNepal77`,
+    type: "article",
+    keywords: [
+      place.name,
+      `${place.name} Nepal`,
+      `${place.name} ${place.districtId}`,
+      `${place.category} in ${place.location}`,
+      `${place.category} in ${place.districtId}`,
+      `best ${place.category.toLowerCase()} in ${place.districtId}`,
+      `things to do in ${place.districtId}`,
+      `places to visit in ${place.districtId}`,
+      `${place.location} Nepal`,
+      `${place.districtId} district travel`,
+      `visit ${place.name}`,
+      `Nepal tourism`,
+      `visitNepal77 ${place.name}`,
+    ],
   });
 }
 
@@ -48,7 +69,7 @@ export default async function PlaceDetailPage({ params }) {
   const schemaItems = [
     {
       "@context": "https://schema.org",
-      "@type": "TouristDestination",
+      "@type": "TouristAttraction",
       name: place.name,
       description: place.description,
       image: place.images?.length ? place.images : [place.image],
@@ -91,6 +112,12 @@ export default async function PlaceDetailPage({ params }) {
         {
           "@type": "ListItem",
           position: 3,
+          name: `${place.districtId} District`,
+          item: `${SITE_URL}/districts/${place.districtId}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
           name: place.name,
           item: `${SITE_URL}/place/${place.id}`,
         },

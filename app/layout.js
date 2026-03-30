@@ -1,4 +1,4 @@
-import { Playfair_Display, DM_Sans } from "next/font/google";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
@@ -9,10 +9,10 @@ const playfair = Playfair_Display({
   weight: ["400", "600", "700"],
 });
 
-const dmSans = DM_Sans({
+const jakartaSans = Plus_Jakarta_Sans({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata = {
@@ -48,7 +48,7 @@ export default async function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${playfair.variable} ${dmSans.variable}`}
+      className={`${playfair.variable} ${jakartaSans.variable}`}
       data-scroll-behavior="smooth"
     >
       <body>

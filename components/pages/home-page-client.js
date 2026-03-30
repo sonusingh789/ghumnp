@@ -23,6 +23,7 @@ export default function HomePageClient({
         className="fade-up"
       >
         <Image src="/logo.png" alt="visitNepal77 - logo" width={200} height={50} priority />
+    
       </header>
 
       <div style={{ padding: "16px 20px 0" }} className="fade-up-1">
@@ -147,6 +148,7 @@ export default function HomePageClient({
           </div>
           <HomeTopPlaces places={topPlaces} />
         </section>
+
       </div>
     </AppShell>
   );

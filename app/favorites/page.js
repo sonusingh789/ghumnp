@@ -4,8 +4,6 @@ import { getApprovedPlacesBySlugs, getCurrentUser, getFavoriteCollections } from
 import { buildMetadata } from "@/lib/seo";
 import { buildLoginHref } from "@/utils/navigation";
 
-export const dynamic = "force-dynamic";
-
 export const metadata = buildMetadata({
   title: "My Favorites",
   description:

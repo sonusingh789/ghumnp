@@ -2,19 +2,23 @@ import ExplorePageClient from "@/components/pages/explore-page-client";
 import { getDistrictCards } from "@/lib/content";
 import { buildMetadata, SITE_URL } from "@/lib/seo";
 
-export const revalidate = 300;
-
 export const metadata = buildMetadata({
-  title: "Explore Nepal",
+  title: "Explore Nepal — Browse All 77 Districts by Province | visitNepal77",
   description:
-    "Browse Nepal by province and district to find destinations, travel ideas, and local highlights.",
+    "Explore all 77 districts of Nepal organised by province. Find the best travel destinations, local attractions, hidden gems, and travel guides across Nepal's mountains, hills, and Terai plains — on visitNepal77.",
   path: "/explore",
   keywords: [
-    "explore Nepal",
-    "Nepal provinces",
-    "Nepal districts",
+    "explore Nepal districts",
+    "Nepal provinces and districts",
+    "best districts to visit in Nepal",
+    "visit Nepal",
     "Nepal travel destinations",
-    "visit Nepal districts",
+    "Nepal tourism guide",
+    "77 districts of Nepal",
+    "Nepal hill districts",
+    "Nepal Himalayan districts",
+    "Nepal Terai travel",
+    "visitNepal77 explore",
   ],
 });
 

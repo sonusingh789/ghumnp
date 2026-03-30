@@ -11,14 +11,12 @@ import ImageCarousel from "@/components/sections/image-carousel";
 import { useFavorites } from "@/context/favorites-context";
 import {
   ArrowLeftIcon,
-  ChevronRightIcon,
   HeartIcon,
   MapPinIcon,
   PlusCircleIcon,
   ShareIcon,
   StarIcon,
 } from "@/components/ui/icons";
-import { cn } from "@/lib/utils";
 
 async function copyTextFallback(text) {
   if (typeof document === "undefined") return false;
@@ -70,7 +68,6 @@ async function tryNativeShare(payloads) {
 
 export default function PlaceDetailScreen({ place }) {
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [showKnowMore, setShowKnowMore] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [reviews, setReviews] = useState(place.reviews || []);
   const [error, setError] = useState("");
@@ -242,6 +239,19 @@ export default function PlaceDetailScreen({ place }) {
           </div>
 
           <div className="relative -mt-8 rounded-t-[28px] bg-white px-4 pb-5 pt-5 sm:-mt-10 sm:px-6 sm:pb-6 sm:pt-6 lg:px-7">
+            {/* Visible breadcrumb — crawlable anchor text for SEO */}
+            <nav aria-label="Breadcrumb" className="mb-3">
+              <ol className="flex flex-wrap items-center gap-1 text-xs text-slate-400">
+                <li><Link href="/" className="hover:text-emerald-600 transition">Home</Link></li>
+                <li aria-hidden="true" className="select-none">/</li>
+                <li><Link href="/districts" className="hover:text-emerald-600 transition">All 77 Districts</Link></li>
+                <li aria-hidden="true" className="select-none">/</li>
+                <li><Link href={`/districts/${place.districtId}`} className="hover:text-emerald-600 transition">{place.districtId}</Link></li>
+                <li aria-hidden="true" className="select-none">/</li>
+                <li className="font-medium text-slate-600" aria-current="page">{place.name}</li>
+              </ol>
+            </nav>
+
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
@@ -278,177 +288,6 @@ export default function PlaceDetailScreen({ place }) {
 
         <section className="grid gap-6 px-1 pb-8 pt-5 sm:px-2 sm:pt-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-start">
           <div className="space-y-6">
-            {hasExtendedInfo ? (
-              <div className="rounded-[28px] border border-black/5 bg-white p-4 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-5">
-                <button
-                  type="button"
-                  onClick={() => setShowKnowMore((current) => !current)}
-                  className="flex w-full items-center justify-between gap-4 text-left"
-                  aria-expanded={showKnowMore}
-                >
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                      Know More
-                    </p>
-                    <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                      Travel Guide For {place.name}
-                    </h2>
-                    <p className="mt-2 text-sm text-slate-500">
-                      Why visit, best season, tips, access info, nearby attractions, and FAQs.
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "flex size-11 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition",
-                      showKnowMore ? "rotate-90" : ""
-                    )}
-                  >
-                    <ChevronRightIcon className="size-5" />
-                  </span>
-                </button>
-
-                <div
-                  className={cn(
-                    "relative mt-5 overflow-hidden transition-all duration-300 ease-out",
-                    showKnowMore ? "max-h-[5000px]" : "max-h-[190px]"
-                  )}
-                >
-                  <div className="space-y-4 sm:space-y-5">
-                    {seo.longDescription ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                          Destination Guide
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                          Why Visit {place.name}
-                        </h2>
-                        <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-[15px]">
-                          {seo.longDescription.split(/\n{2,}/).map((paragraph) => (
-                            <p key={paragraph}>{paragraph}</p>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {seo.highlights?.length ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                          Highlights
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                          What Makes It Special
-                        </h2>
-                        <div className="mt-4 grid gap-3">
-                          {seo.highlights.map((item) => (
-                            <div
-                              key={item}
-                              className="rounded-[22px] border border-black/5 bg-white px-4 py-3 text-sm font-medium leading-6 text-slate-700"
-                            >
-                              {item}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {(seo.practicalTips || seo.bestSeason || seo.entryAccessInfo) ? (
-                      <div className="grid gap-4 md:grid-cols-2">
-                        {seo.practicalTips ? (
-                          <InfoSectionCard
-                            eyebrow="Travel Tips"
-                            title="Practical Tips"
-                            content={seo.practicalTips}
-                          />
-                        ) : null}
-                        {seo.bestSeason ? (
-                          <InfoSectionCard
-                            eyebrow="Season"
-                            title="Best Season To Visit"
-                            content={seo.bestSeason}
-                          />
-                        ) : null}
-                        {seo.entryAccessInfo ? (
-                          <div className="md:col-span-2">
-                            <InfoSectionCard
-                              eyebrow="Access"
-                              title="Entry And Access Info"
-                              content={seo.entryAccessInfo}
-                            />
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
-
-                    {seo.nearbyAttractions?.length ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                          Around Here
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                          Nearby Attractions
-                        </h2>
-                        <div className="mt-4 flex flex-wrap gap-2.5">
-                          {seo.nearbyAttractions.map((item) => (
-                            <span
-                              key={item}
-                              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {seo.faqs?.length ? (
-                      <div className="rounded-[28px] border border-black/5 bg-slate-50 p-5 sm:p-6">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
-                          FAQ
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
-                          Helpful To Know
-                        </h2>
-                        <div className="mt-4 space-y-3">
-                          {seo.faqs.map((item, index) => {
-                            const [question, ...rest] = item.split("::");
-                            const answer = rest.join("::").trim();
-                            return (
-                              <div key={`${question}-${index}`} className="rounded-[22px] border border-black/5 bg-white px-4 py-4">
-                                <p className="text-sm font-semibold text-slate-900">{question}</p>
-                                {answer ? (
-                                  <p className="mt-1.5 text-sm leading-6 text-slate-600">{answer}</p>
-                                ) : null}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {!showKnowMore ? (
-                      <div className="pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setShowKnowMore(true)}
-                          className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700"
-                        >
-                          Read full travel guide
-                          <ChevronRightIcon className="size-4" />
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  {!showKnowMore ? (
-                    <>
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-white via-white/96 to-white/0" />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-5 bg-white" />
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-
             <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)]">
               <div className="flex items-center justify-between">
                 <div>
@@ -494,13 +333,13 @@ export default function PlaceDetailScreen({ place }) {
                       key={spot.id}
                       className="flex gap-4 rounded-[24px] border border-black/5 bg-slate-50 p-3"
                     >
-                      <div className="h-24 w-24 shrink-0 overflow-hidden rounded-[18px] bg-white">
+                      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-[18px] bg-white">
                         <Image
                           src={spot.image || place.image}
                           alt={spot.name}
-                          width={96}
-                          height={96}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="96px"
+                          className="object-cover"
                         />
                       </div>
                       <div className="min-w-0">
@@ -558,6 +397,135 @@ export default function PlaceDetailScreen({ place }) {
             </div>
           </div>
         </section>
+
+        {hasExtendedInfo ? (
+          <section className="px-1 pb-10 sm:px-2" aria-label="Travel guide">
+            <div className="mb-5">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                Travel Guide
+              </p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                {place.name} — Complete Travel Guide
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
+                Why visit, best season, tips, access info, nearby attractions, and FAQs.
+              </p>
+            </div>
+
+            <div className="space-y-4 sm:space-y-5">
+              {seo.longDescription ? (
+                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    Destination Guide
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                    Why Visit {place.name}
+                  </h2>
+                  <div className="mt-4 space-y-4 text-sm leading-7 text-slate-600 sm:text-[15px]">
+                    {seo.longDescription.split(/\n{2,}/).map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {seo.highlights?.length ? (
+                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    Highlights
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                    What Makes {place.name} Special
+                  </h2>
+                  <div className="mt-4 grid gap-3">
+                    {seo.highlights.map((item) => (
+                      <div
+                        key={item}
+                        className="rounded-[22px] border border-black/5 bg-slate-50 px-4 py-3 text-sm font-medium leading-6 text-slate-700"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {(seo.practicalTips || seo.bestSeason || seo.entryAccessInfo) ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {seo.practicalTips ? (
+                    <InfoSectionCard
+                      eyebrow="Travel Tips"
+                      title="Practical Tips"
+                      content={seo.practicalTips}
+                    />
+                  ) : null}
+                  {seo.bestSeason ? (
+                    <InfoSectionCard
+                      eyebrow="Season"
+                      title="Best Season To Visit"
+                      content={seo.bestSeason}
+                    />
+                  ) : null}
+                  {seo.entryAccessInfo ? (
+                    <div className="md:col-span-2">
+                      <InfoSectionCard
+                        eyebrow="Access"
+                        title="Entry And Access Info"
+                        content={seo.entryAccessInfo}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {seo.nearbyAttractions?.length ? (
+                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    Around Here
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                    Nearby Attractions to {place.name}
+                  </h2>
+                  <div className="mt-4 flex flex-wrap gap-2.5">
+                    {seo.nearbyAttractions.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {seo.faqs?.length ? (
+                <div className="rounded-[28px] border border-black/5 bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.05)] sm:p-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600">
+                    FAQ
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+                    {place.name} — Frequently Asked Questions
+                  </h2>
+                  <div className="mt-4 space-y-3">
+                    {seo.faqs.map((item, index) => {
+                      const [question, ...rest] = item.split("::");
+                      const answer = rest.join("::").trim();
+                      return (
+                        <div key={`${question}-${index}`} className="rounded-[22px] border border-black/5 bg-slate-50 px-4 py-4">
+                          <p className="text-sm font-semibold text-slate-900">{question}</p>
+                          {answer ? (
+                            <p className="mt-1.5 text-sm leading-6 text-slate-600">{answer}</p>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
       </div>
     </AppShell>
   );
