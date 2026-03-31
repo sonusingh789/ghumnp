@@ -11,6 +11,7 @@ const FavoritesContext = createContext({
   isFavorite: () => false,
   toggleFavorite: async () => {},
   authenticated: false,
+  loaded: false,
 });
 
 export function FavoritesProvider({
@@ -20,6 +21,7 @@ export function FavoritesProvider({
 }) {
   const [favorites, setFavorites] = useState(initialFavorites);
   const [authenticated, setAuthenticated] = useState(initialAuthenticated);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -38,6 +40,7 @@ export function FavoritesProvider({
         if (!cancelled) {
           setFavorites(local);
           setAuthenticated(false);
+          setLoaded(true);
         }
         return;
       }
@@ -52,20 +55,25 @@ export function FavoritesProvider({
         if (cancelled) return;
 
         if (data?.authenticated) {
-          setFavorites(data.favorites || []);
+          const serverFavorites = data.favorites || [];
+          setFavorites(serverFavorites);
           setAuthenticated(true);
+          // Cache in localStorage so we have a fallback if the session expires
+          persistLocalFavorites(serverFavorites);
         } else {
-          // Session expired
+          // Session expired — fall back to cached localStorage favorites
           const local = readLocalFavorites();
-          if (!cancelled) {
-            setFavorites(local);
-            setAuthenticated(false);
-          }
+          setFavorites(local);
+          setAuthenticated(false);
         }
+        setLoaded(true);
       } catch {
         // Network error — fall back to local
         const local = readLocalFavorites();
-        if (!cancelled) setFavorites(local);
+        if (!cancelled) {
+          setFavorites(local);
+          setLoaded(true);
+        }
       }
     }
 
@@ -123,6 +131,8 @@ export function FavoritesProvider({
           return { ok: false, error: errData?.error || "Failed" };
         }
 
+        // Keep localStorage in sync as a cache for authenticated users
+        persistLocalFavorites(next);
         return { ok: true, saved: !isCurrentlyFavorite };
       } catch {
         // Revert on network error
@@ -138,7 +148,7 @@ export function FavoritesProvider({
   );
 
   return (
-    <FavoritesContext.Provider value={{ favorites, isFavorite, toggleFavorite, authenticated }}>
+    <FavoritesContext.Provider value={{ favorites, isFavorite, toggleFavorite, authenticated, loaded }}>
       {children}
     </FavoritesContext.Provider>
   );

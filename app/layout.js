@@ -44,7 +44,7 @@ export const metadata = {
   },
 };
 
-export default async function RootLayout({ children }) {
+export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
@@ -52,7 +52,7 @@ export default async function RootLayout({ children }) {
       data-scroll-behavior="smooth"
     >
       <body>
-        <FavoritesProvider initialFavorites={[]} initialAuthenticated={false}>
+        <FavoritesProvider>
           {children}
         </FavoritesProvider>
       </body>

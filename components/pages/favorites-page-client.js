@@ -14,36 +14,75 @@ export default function FavoritesPageClient({
   initialFavoriteDistricts = [],
   initialSuggestions = [],
 }) {
-  const { favorites } = useFavorites();
-  const [favPlaces, setFavPlaces] = useState(initialFavoritePlaces);
-  const [favDistricts, setFavDistricts] = useState(initialFavoriteDistricts);
+  const { favorites, loaded } = useFavorites();
+  // Pool of all place/district data objects we have loaded.
+  // Initialized from SSR; grows only when newly-favorited items need data fetched.
+  const [allPlaces, setAllPlaces] = useState(initialFavoritePlaces);
+  const [allDistricts, setAllDistricts] = useState(initialFavoriteDistricts);
   const [suggestions] = useState(initialSuggestions);
   const [activeTab, setActiveTab] = useState("All");
-  const hasHydratedRef = useRef(false);
+
+  // Derived lists — filtered by context immediately once the context has loaded.
+  // Before loaded: show the full server-provided data (no flash of empty state).
+  const favPlaces = loaded
+    ? allPlaces.filter((p) => favorites.includes(p.id))
+    : allPlaces;
+  const favDistricts = loaded
+    ? allDistricts.filter((d) => favorites.includes(`district:${d.id}`))
+    : allDistricts;
+
+  // Track previous favorites to detect additions (removals are handled by filtering above).
+  const prevFavoritesRef = useRef(favorites);
 
   useEffect(() => {
-    if (!hasHydratedRef.current) {
-      hasHydratedRef.current = true;
-      return;
+    if (!loaded) return;
+
+    const prev = prevFavoritesRef.current;
+    prevFavoritesRef.current = favorites;
+
+    // Find IDs that were just added to favorites
+    const addedIds = favorites.filter((id) => !prev.includes(id));
+    if (addedIds.length === 0) return;
+
+    // Check if we already have data for all added items
+    const missingPlaces = addedIds.filter(
+      (id) => !id.startsWith("district:") && !allPlaces.some((p) => p.id === id)
+    );
+    const missingDistricts = addedIds
+      .filter((id) => id.startsWith("district:"))
+      .map((id) => id.replace("district:", ""))
+      .filter((slug) => !allDistricts.some((d) => d.id === slug));
+
+    if (missingPlaces.length === 0 && missingDistricts.length === 0) return;
+
+    // Try filling missing places from the suggestions pool first (no extra API call)
+    const fromSuggestions = missingPlaces
+      .map((slug) => suggestions.find((s) => s.id === slug))
+      .filter(Boolean);
+    if (fromSuggestions.length > 0) {
+      setAllPlaces((prev) => {
+        const existing = new Set(prev.map((p) => p.id));
+        return [...prev, ...fromSuggestions.filter((p) => !existing.has(p.id))];
+      });
     }
 
-    let cancelled = false;
-
-    async function loadFavorites() {
-      const response = await fetch("/api/favorites", { cache: "no-store" });
-      const data = await response.json().catch(() => ({}));
-      if (!cancelled) {
-        setFavPlaces(data.favoritePlaces || []);
-        setFavDistricts(data.favoriteDistricts || []);
-      }
+    // If any items still have no data, fetch the full favorites list from the API
+    const stillMissing = missingPlaces.filter(
+      (slug) => !fromSuggestions.some((p) => p.id === slug)
+    );
+    if (stillMissing.length > 0 || missingDistricts.length > 0) {
+      let cancelled = false;
+      fetch("/api/favorites", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((data) => {
+          if (cancelled) return;
+          if (data.favoritePlaces) setAllPlaces(data.favoritePlaces);
+          if (data.favoriteDistricts) setAllDistricts(data.favoriteDistricts);
+        })
+        .catch(() => {});
+      return () => { cancelled = true; };
     }
-
-    loadFavorites();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [favorites]);
+  }, [favorites, loaded]);
 
   const totalSaved = favPlaces.length + favDistricts.length;
   const showDistricts = activeTab === "All" || activeTab === "Districts";

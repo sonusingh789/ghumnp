@@ -117,6 +117,50 @@ function loadImage(src) {
   });
 }
 
+// Uploads a single file immediately and calls onUpdate(patch) as status changes.
+// onUpdate receives a partial object to merge into the image item.
+async function startImageUpload(itemId, file, folderHint, onUpdate) {
+  onUpdate({ progress: 10 });
+
+  let dataUrl;
+  try {
+    dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => reject(new Error("Could not read image file."));
+      reader.readAsDataURL(file);
+    });
+  } catch (err) {
+    onUpdate({ status: "error", progress: 0, error: err.message || "Could not read image." });
+    return;
+  }
+
+  onUpdate({ progress: 40 });
+
+  try {
+    const res = await fetch("/api/uploads/imagekit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        file: dataUrl,
+        fileName: file.name || `upload-${Date.now()}`,
+        mimeType: file.type || "image/jpeg",
+        folderHint,
+      }),
+    });
+
+    onUpdate({ progress: 90 });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || `Upload failed (${res.status})`);
+
+    onUpdate({ status: "done", progress: 100, uploadedUrl: data.url });
+  } catch (err) {
+    onUpdate({ status: "error", progress: 0, error: err.message || "Upload failed." });
+  }
+}
+
 export default function ContributionForm() {
   const router = useRouter();
   const fileInputRef = useRef(null);
@@ -136,9 +180,6 @@ export default function ContributionForm() {
   const [nearbySpots, setNearbySpots] = useState([]);
   const [existingPlaces, setExistingPlaces] = useState([]);
   const [loadingPlaces, setLoadingPlaces] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  const [uploadLabel, setUploadLabel] = useState("");
   const [spotDraft, setSpotDraft] = useState({
     name: "",
     category: "",
@@ -234,23 +275,46 @@ export default function ContributionForm() {
     const nextFiles = Array.from(event.target.files || []);
     if (!nextFiles.length) return;
 
-    let optimizedFiles;
-    try {
-      optimizedFiles = await Promise.all(nextFiles.map((file) => optimizeImageFile(file)));
-    } catch (fileError) {
-      setError(fileError?.message || "One of the selected images could not be processed.");
-      event.target.value = "";
-      return;
+    for (const rawFile of nextFiles) {
+      let optimizedFile;
+      try {
+        optimizedFile = await optimizeImageFile(rawFile);
+      } catch (fileError) {
+        const errItem = {
+          id: `${rawFile.name}-${rawFile.size}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          name: rawFile.name,
+          previewUrl: URL.createObjectURL(rawFile),
+          file: rawFile,
+          status: "error",
+          progress: 0,
+          uploadedUrl: null,
+          error: fileError?.message || "Could not process this image.",
+        };
+        setPlaceImageItems((current) => [...current, errItem]);
+        continue;
+      }
+
+      const newItem = {
+        id: `${optimizedFile.name}-${optimizedFile.size}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name: optimizedFile.name,
+        previewUrl: URL.createObjectURL(optimizedFile),
+        file: optimizedFile,
+        status: "uploading",
+        progress: 0,
+        uploadedUrl: null,
+        error: null,
+      };
+
+      setPlaceImageItems((current) => [...current, newItem]);
+
+      const capturedId = newItem.id;
+      startImageUpload(capturedId, optimizedFile, "new-place", (patch) => {
+        setPlaceImageItems((current) =>
+          current.map((item) => (item.id === capturedId ? { ...item, ...patch } : item))
+        );
+      });
     }
 
-    const previewItems = optimizedFiles.map((file) => ({
-      id: `${file.name}-${file.size}-${Date.now()}`,
-      name: file.name,
-      previewUrl: URL.createObjectURL(file),
-      file,
-    }));
-
-    setPlaceImageItems((current) => [...current, ...previewItems]);
     event.target.value = "";
   }
 
@@ -267,27 +331,56 @@ export default function ContributionForm() {
     const nextFiles = Array.from(event.target.files || []);
     if (!nextFiles.length) return;
 
-    let optimizedFiles;
-    try {
-      optimizedFiles = await Promise.all(nextFiles.map((file) => optimizeImageFile(file)));
-    } catch (fileError) {
-      setError(fileError?.message || "One of the selected spot images could not be processed.");
-      event.target.value = "";
-      return;
+    for (const rawFile of nextFiles) {
+      let optimizedFile;
+      try {
+        optimizedFile = await optimizeImageFile(rawFile);
+      } catch (fileError) {
+        const errItem = {
+          id: `${rawFile.name}-${rawFile.size}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          name: rawFile.name,
+          previewUrl: URL.createObjectURL(rawFile),
+          file: rawFile,
+          status: "error",
+          progress: 0,
+          uploadedUrl: null,
+          error: fileError?.message || "Could not process this image.",
+        };
+        setSpotDraft((current) => ({
+          ...current,
+          imageFiles: [...current.imageFiles, errItem],
+          imagePreviews: [...current.imagePreviews, errItem],
+        }));
+        continue;
+      }
+
+      const newItem = {
+        id: `${optimizedFile.name}-${optimizedFile.size}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name: optimizedFile.name,
+        previewUrl: URL.createObjectURL(optimizedFile),
+        file: optimizedFile,
+        status: "uploading",
+        progress: 0,
+        uploadedUrl: null,
+        error: null,
+      };
+
+      setSpotDraft((current) => ({
+        ...current,
+        imageFiles: [...current.imageFiles, newItem],
+        imagePreviews: [...current.imagePreviews, newItem],
+      }));
+
+      const capturedId = newItem.id;
+      startImageUpload(capturedId, optimizedFile, "contribution-spots", (patch) => {
+        setSpotDraft((current) => ({
+          ...current,
+          imageFiles: current.imageFiles.map((img) => (img.id === capturedId ? { ...img, ...patch } : img)),
+          imagePreviews: current.imagePreviews.map((img) => (img.id === capturedId ? { ...img, ...patch } : img)),
+        }));
+      });
     }
 
-    const nextItems = optimizedFiles.map((file) => ({
-      id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      name: file.name,
-      previewUrl: URL.createObjectURL(file),
-      file,
-    }));
-
-    setSpotDraft((current) => ({
-      ...current,
-      imageFiles: [...current.imageFiles, ...nextItems],
-      imagePreviews: [...current.imagePreviews, ...nextItems],
-    }));
     event.target.value = "";
   }
 
@@ -304,12 +397,48 @@ export default function ContributionForm() {
     }));
   }
 
+  function retryPlaceImageUpload(itemId) {
+    const item = placeImageItems.find((i) => i.id === itemId);
+    if (!item?.file) return;
+    setPlaceImageItems((current) =>
+      current.map((i) => (i.id === itemId ? { ...i, status: "uploading", progress: 0, error: null } : i))
+    );
+    startImageUpload(itemId, item.file, "new-place", (patch) => {
+      setPlaceImageItems((current) =>
+        current.map((i) => (i.id === itemId ? { ...i, ...patch } : i))
+      );
+    });
+  }
+
+  function retrySpotDraftImageUpload(imageId) {
+    const img = spotDraft.imageFiles.find((i) => i.id === imageId);
+    if (!img?.file) return;
+    setSpotDraft((current) => ({
+      ...current,
+      imageFiles: current.imageFiles.map((i) => (i.id === imageId ? { ...i, status: "uploading", progress: 0, error: null } : i)),
+      imagePreviews: current.imagePreviews.map((i) => (i.id === imageId ? { ...i, status: "uploading", progress: 0, error: null } : i)),
+    }));
+    startImageUpload(imageId, img.file, "contribution-spots", (patch) => {
+      setSpotDraft((current) => ({
+        ...current,
+        imageFiles: current.imageFiles.map((i) => (i.id === imageId ? { ...i, ...patch } : i)),
+        imagePreviews: current.imagePreviews.map((i) => (i.id === imageId ? { ...i, ...patch } : i)),
+      }));
+    });
+  }
+
   function handleSpotChange(key, value) {
     setSpotDraft((current) => ({ ...current, [key]: value }));
   }
 
   function handleAddSpot() {
     if (!spotDraft.name.trim() || !spotDraft.category.trim() || !spotDraft.description.trim()) {
+      return;
+    }
+
+    const pendingImages = spotDraft.imagePreviews.filter((img) => img.status === "uploading");
+    if (pendingImages.length > 0) {
+      setError("Please wait for spot images to finish uploading before adding the spot.");
       return;
     }
 
@@ -346,120 +475,49 @@ export default function ContributionForm() {
     });
   }
 
-  function slugify(value) {
-    return String(value || "")
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
-
-  async function uploadSingleFile(file, folderHint, onProgress) {
-    onProgress(10);
-
-    // Read as data URL via FileReader (works for all File/Blob including canvas output)
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = () => reject(new Error("Could not read image file."));
-      reader.readAsDataURL(file);
-    });
-
-    onProgress(40);
-
-    const res = await fetch("/api/uploads/imagekit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({
-        file: dataUrl,
-        fileName: file.name || `upload-${Date.now()}`,
-        mimeType: file.type || "image/jpeg",
-        folderHint,
-      }),
-    });
-
-    onProgress(90);
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data?.error || `Upload failed (${res.status})`);
-    return data;
-  }
-
-  async function uploadAllFiles(fileItems, folderHint, labelPrefix) {
-    if (!fileItems.length) return [];
-
-    const uploadedUrls = [];
-
-    for (let index = 0; index < fileItems.length; index += 1) {
-      const fileItem = fileItems[index];
-      setUploadLabel(`${labelPrefix} ${fileItem.name}`);
-
-      let result;
-      try {
-        result = await uploadSingleFile(fileItem.file, folderHint, (filePercent) => {
-          const overallPercent = Math.round(((index + filePercent / 100) / fileItems.length) * 100);
-          setUploadProgress(overallPercent);
-        });
-      } catch (uploadError) {
-        throw new Error(uploadError?.message || `Upload failed for ${fileItem.name}.`);
-      }
-
-      uploadedUrls.push(result.url);
-      setUploadProgress(Math.round(((index + 1) / fileItems.length) * 100));
-    }
-
-    return uploadedUrls;
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const formName = String(formData.get("name") || "");
-    const folderHint =
-      placeMode === "existing"
-        ? selectedExistingPlace || "existing-place"
-        : slugify(formName) || "new-place";
+
     setError("");
     setSubmitted(null);
+
+    // Block submission while any images are still uploading
+    const pendingPlaceImages = placeImageItems.filter((item) => item.status === "uploading");
+    const pendingSpotImages = nearbySpots.flatMap((spot) =>
+      (spot.imageFiles || []).filter((img) => img.status === "uploading")
+    );
+    const total = pendingPlaceImages.length + pendingSpotImages.length;
+    if (total > 0) {
+      setError(`Please wait — ${total} image${total > 1 ? "s are" : " is"} still uploading.`);
+      return;
+    }
+
     setLoading(true);
-    const hasSpotImages = nearbySpots.some((spot) => (spot.imageFiles || []).length > 0);
-    setUploadingPhotos(placeImageItems.length > 0 || hasSpotImages);
-    setUploadProgress(0);
-    setUploadLabel(placeImageItems.length > 0 || hasSpotImages ? "Preparing upload..." : "");
 
     try {
-      const uploadedImageUrls = await uploadAllFiles(placeImageItems, folderHint, "Uploading place image");
-      const nearbySpotsWithUploads = [];
+      // Images are already uploaded — just collect their URLs
+      const uploadedImageUrls = placeImageItems
+        .filter((item) => item.status === "done" && item.uploadedUrl)
+        .map((item) => item.uploadedUrl);
 
-      for (const spot of nearbySpots) {
-        let imageUrls = [];
-
-        if ((spot.imageFiles || []).length) {
-          imageUrls = await uploadAllFiles(
-            spot.imageFiles,
-            `${folderHint}-spots`,
-            `Uploading ${spot.name}`
-          );
-        }
-
-        nearbySpotsWithUploads.push({
+      const nearbySpotsWithUploads = nearbySpots.map((spot) => {
+        const imageUrls = (spot.imageFiles || [])
+          .filter((img) => img.status === "done" && img.uploadedUrl)
+          .map((img) => img.uploadedUrl);
+        return {
           name: spot.name,
           category: spot.category,
           description: spot.description,
           imageUrl: imageUrls[0] || "",
           imageUrls,
-        });
-      }
-
-      setUploadLabel(uploadedImageUrls.length || nearbySpotsWithUploads.some((spot) => (spot.imageUrls || []).length) ? "Saving place details..." : "");
+        };
+      });
 
       const response = await fetch("/api/places", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: placeMode,
           selectedExistingPlace,
@@ -495,37 +553,21 @@ export default function ContributionForm() {
       setSearchQuery("");
       nearbySpots.forEach((spot) => {
         (spot.imagePreviews || []).forEach((image) => {
-          if (image.previewUrl) {
-            URL.revokeObjectURL(image.previewUrl);
-          }
+          if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
         });
       });
       setNearbySpots([]);
       placeImageItems.forEach((preview) => {
-        if (preview.previewUrl) {
-          URL.revokeObjectURL(preview.previewUrl);
-        }
+        if (preview.previewUrl) URL.revokeObjectURL(preview.previewUrl);
       });
       setPlaceImageItems([]);
       spotDraft.imagePreviews.forEach((image) => {
-        if (image.previewUrl) {
-          URL.revokeObjectURL(image.previewUrl);
-        }
+        if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
       });
-      setSpotDraft({
-        name: "",
-        category: "",
-        description: "",
-        imageFiles: [],
-        imagePreviews: [],
-      });
-      setUploadProgress(100);
-      setUploadLabel("Upload complete");
+      setSpotDraft({ name: "", category: "", description: "", imageFiles: [], imagePreviews: [] });
+
       startTransition(() => {
-        setSubmitted({
-          slug: data.slug,
-          districtSlug: data.districtSlug,
-        });
+        setSubmitted({ slug: data.slug, districtSlug: data.districtSlug });
       });
 
       if (data.districtSlug) {
@@ -538,7 +580,6 @@ export default function ContributionForm() {
       setError(submitError?.message || "Unable to submit contribution right now.");
     } finally {
       setLoading(false);
-      setUploadingPhotos(false);
     }
   }
 
@@ -715,14 +756,47 @@ export default function ContributionForm() {
                         unoptimized
                         className="object-cover"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removePreview(preview.id)}
-                        style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}
-                        aria-label={`Remove ${preview.name}`}
-                      >
-                        <XIcon style={{ width: 11, height: 11, color: "#64748b" }} />
-                      </button>
+
+                      {/* Uploading overlay */}
+                      {preview.status === "uploading" && (
+                        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.52)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 14 }}>
+                          <div className="animate-spin" style={{ width: 22, height: 22, border: "2.5px solid rgba(255,255,255,0.35)", borderTop: "2.5px solid #fff", borderRadius: "50%" }} />
+                          <span style={{ fontSize: 10, color: "#fff", marginTop: 5, fontWeight: 700 }}>{preview.progress}%</span>
+                        </div>
+                      )}
+
+                      {/* Error overlay */}
+                      {preview.status === "error" && (
+                        <div style={{ position: "absolute", inset: 0, background: "rgba(220,38,38,0.88)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, borderRadius: 14, padding: 6 }}>
+                          <span style={{ fontSize: 9, color: "#fff", textAlign: "center", lineHeight: 1.3, fontWeight: 600 }}>{preview.error || "Upload failed"}</span>
+                          <button
+                            type="button"
+                            onClick={() => retryPlaceImageUpload(preview.id)}
+                            style={{ fontSize: 9, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,0.22)", border: "1px solid rgba(255,255,255,0.5)", borderRadius: 6, padding: "2px 7px", cursor: "pointer" }}
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Done badge */}
+                      {preview.status === "done" && (
+                        <div style={{ position: "absolute", top: 5, left: 5, width: 18, height: 18, borderRadius: "50%", background: "#059669", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>
+                          <span style={{ fontSize: 10, color: "#fff", lineHeight: 1 }}>✓</span>
+                        </div>
+                      )}
+
+                      {/* Remove button — hidden while uploading */}
+                      {preview.status !== "uploading" && (
+                        <button
+                          type="button"
+                          onClick={() => removePreview(preview.id)}
+                          style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}
+                          aria-label={`Remove ${preview.name}`}
+                        >
+                          <XIcon style={{ width: 11, height: 11, color: "#64748b" }} />
+                        </button>
+                      )}
                     </div>
                   ))}
                   <button
@@ -887,14 +961,47 @@ export default function ContributionForm() {
                         unoptimized
                         className="object-cover"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeSpotDraftImage(image.id)}
-                        style={{ position: "absolute", top: 4, right: 4, width: 20, height: 20, borderRadius: "50%", background: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                        aria-label={`Remove ${image.name || "spot image"}`}
-                      >
-                        <XIcon style={{ width: 10, height: 10, color: "#64748b" }} />
-                      </button>
+
+                      {/* Uploading overlay */}
+                      {image.status === "uploading" && (
+                        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.52)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 12 }}>
+                          <div className="animate-spin" style={{ width: 18, height: 18, border: "2px solid rgba(255,255,255,0.35)", borderTop: "2px solid #fff", borderRadius: "50%" }} />
+                          <span style={{ fontSize: 9, color: "#fff", marginTop: 4, fontWeight: 700 }}>{image.progress}%</span>
+                        </div>
+                      )}
+
+                      {/* Error overlay */}
+                      {image.status === "error" && (
+                        <div style={{ position: "absolute", inset: 0, background: "rgba(220,38,38,0.88)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, borderRadius: 12, padding: 5 }}>
+                          <span style={{ fontSize: 8, color: "#fff", textAlign: "center", lineHeight: 1.3, fontWeight: 600 }}>{image.error || "Upload failed"}</span>
+                          <button
+                            type="button"
+                            onClick={() => retrySpotDraftImageUpload(image.id)}
+                            style={{ fontSize: 8, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,0.22)", border: "1px solid rgba(255,255,255,0.5)", borderRadius: 5, padding: "2px 6px", cursor: "pointer" }}
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Done badge */}
+                      {image.status === "done" && (
+                        <div style={{ position: "absolute", top: 4, left: 4, width: 16, height: 16, borderRadius: "50%", background: "#059669", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: 9, color: "#fff", lineHeight: 1 }}>✓</span>
+                        </div>
+                      )}
+
+                      {/* Remove button — hidden while uploading */}
+                      {image.status !== "uploading" && (
+                        <button
+                          type="button"
+                          onClick={() => removeSpotDraftImage(image.id)}
+                          style={{ position: "absolute", top: 4, right: 4, width: 20, height: 20, borderRadius: "50%", background: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          aria-label={`Remove ${image.name || "spot image"}`}
+                        >
+                          <XIcon style={{ width: 10, height: 10, color: "#64748b" }} />
+                        </button>
+                      )}
                     </div>
                   ))}
                   <button
@@ -1015,19 +1122,6 @@ export default function ContributionForm() {
       {error ? (
         <div style={{ padding: "14px 16px", borderRadius: 16, background: "#fef2f2", border: "1.5px solid #fecaca", fontSize: 13, color: "#b91c1c" }}>
           {error}
-        </div>
-      ) : null}
-
-      {/* ── UPLOAD PROGRESS ────────────────────────────────── */}
-      {uploadingPhotos ? (
-        <div style={{ padding: "14px 16px", borderRadius: 16, background: "#ecfdf5", border: "1.5px solid #a7f3d0" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 700, color: "#065f46", marginBottom: 10 }}>
-            <span>{uploadLabel || "Uploading photos..."}</span>
-            <span>{uploadProgress}%</span>
-          </div>
-          <div style={{ height: 8, borderRadius: 999, background: "#d1fae5", overflow: "hidden" }}>
-            <div style={{ height: "100%", borderRadius: 999, background: "#059669", width: `${uploadProgress}%`, transition: "width 0.3s ease" }} />
-          </div>
         </div>
       ) : null}
 
