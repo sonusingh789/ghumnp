@@ -83,11 +83,10 @@ export default function AllPlacesPageClient({ places = [] }) {
           </p>
 
           {/* Search */}
-          <div style={{ position: "relative" }}>
-            <SearchIcon
-              className="pointer-events-none"
-              style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "#94a3b8" }}
-            />
+          <div style={{ position: "relative", width: "100%" }}>
+            <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 1 }}>
+              <SearchIcon style={{ width: 16, height: 16, color: "#94a3b8" }} />
+            </span>
             <input
               value={query}
               onChange={(e) => handleSearch(e.target.value)}

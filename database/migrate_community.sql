@@ -93,4 +93,45 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ContributorStats_UserI
     CREATE INDEX IX_ContributorStats_UserId ON dbo.ContributorStats(user_id);
 GO
 
+-- 6. PlaceSeoContent table
+IF OBJECT_ID('dbo.PlaceSeoContent', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PlaceSeoContent (
+        id                  INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        place_id            INT NOT NULL,
+        long_description    NVARCHAR(MAX) NULL,
+        highlights          NVARCHAR(MAX) NULL,  -- JSON array
+        practical_tips      NVARCHAR(MAX) NULL,
+        best_season         NVARCHAR(500) NULL,
+        entry_access_info   NVARCHAR(MAX) NULL,
+        nearby_attractions  NVARCHAR(MAX) NULL,  -- JSON array
+        faqs                NVARCHAR(MAX) NULL,  -- JSON array
+        updated_at          DATETIME2(0) NOT NULL CONSTRAINT DF_PSC_UpdatedAt DEFAULT SYSDATETIME(),
+        CONSTRAINT UQ_PlaceSeoContent_PlaceId UNIQUE (place_id),
+        CONSTRAINT FK_PlaceSeoContent_Place   FOREIGN KEY (place_id) REFERENCES dbo.Places(id) ON DELETE CASCADE
+    );
+    PRINT 'Created PlaceSeoContent table';
+END
+GO
+
+-- 7. DistrictSeoContent table
+IF OBJECT_ID('dbo.DistrictSeoContent', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.DistrictSeoContent (
+        id                  INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        district_id         INT NOT NULL,
+        intro_text          NVARCHAR(MAX) NULL,
+        top_things_to_do    NVARCHAR(MAX) NULL,  -- JSON array
+        best_time_to_visit  NVARCHAR(500) NULL,
+        how_to_reach        NVARCHAR(MAX) NULL,
+        local_foods_culture NVARCHAR(MAX) NULL,
+        faqs                NVARCHAR(MAX) NULL,  -- JSON array
+        updated_at          DATETIME2(0) NOT NULL CONSTRAINT DF_DSC_UpdatedAt DEFAULT SYSDATETIME(),
+        CONSTRAINT UQ_DistrictSeoContent_DistrictId UNIQUE (district_id),
+        CONSTRAINT FK_DistrictSeoContent_District   FOREIGN KEY (district_id) REFERENCES dbo.Districts(id) ON DELETE CASCADE
+    );
+    PRINT 'Created DistrictSeoContent table';
+END
+GO
+
 PRINT 'Migration complete.';

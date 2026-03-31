@@ -327,13 +327,19 @@ async function handleRequest(auth, data) {
       await query(
         `IF NOT EXISTS (SELECT 1 FROM ContributorStats WHERE user_id = @uid)
            INSERT INTO ContributorStats (user_id) VALUES (@uid);
-         UPDATE ContributorStats SET places_submitted = places_submitted + 1 WHERE user_id = @uid`,
+         UPDATE ContributorStats SET places_submitted = places_submitted + 1, places_approved = places_approved + 1 WHERE user_id = @uid`,
         { uid: Number(auth.id) }
       );
     }
   }
 
   if (uploadedImageUrls.length) {
+    const maxSortResult = await query(
+      `SELECT ISNULL(MAX(sort_order), 0) AS maxSort FROM PlaceImages WHERE place_id = @placeId`,
+      { placeId }
+    );
+    const baseSort = maxSortResult.recordset[0]?.maxSort ?? 0;
+
     for (let index = 0; index < uploadedImageUrls.length; index += 1) {
       await query(
         `INSERT INTO PlaceImages (place_id, image_url, sort_order)
@@ -341,7 +347,7 @@ async function handleRequest(auth, data) {
         {
           placeId,
           imageUrl: uploadedImageUrls[index],
-          sortOrder: index + 1,
+          sortOrder: baseSort + index + 1,
         }
       );
     }

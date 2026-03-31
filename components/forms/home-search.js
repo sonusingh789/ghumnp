@@ -6,27 +6,10 @@ import { useRouter } from "next/navigation";
 import { MapPinIcon, SearchIcon, XIcon } from "@/components/ui/icons";
 
 const FEATURED_SEARCH_LINKS = [
-  { href: "/explore", label: "Browse all districts" },
-  { href: "/districts", label: "See all 77 districts" },
-  { href: "/favorites", label: "Open saved routes" },
+  { href: "/explore", label: "🗺️ Browse all districts", sub: "Explore all 77" },
+  { href: "/districts", label: "📍 See all 77 districts", sub: "Map & list view" },
+  { href: "/favorites", label: "❤️ Saved routes", sub: "Your collection" },
 ];
-
-function SectionTitle({ children }) {
-  return (
-    <div
-      style={{
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: "0.14em",
-        textTransform: "uppercase",
-        color: "var(--jade)",
-        marginBottom: 10,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
 
 export default function HomeSearch({ initialQuery = "" }) {
   const router = useRouter();
@@ -44,287 +27,269 @@ export default function HomeSearch({ initialQuery = "" }) {
 
   useEffect(() => {
     if (!isOpen) return undefined;
-
-    const previousOverflow = document.body.style.overflow;
+    const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
+    return () => { document.body.style.overflow = prev; };
   }, [isOpen]);
 
   useEffect(() => {
-    if (!trimmedQuery) {
-      setResults({ districts: [], places: [] });
-      setStatus("idle");
-      return undefined;
-    }
-
-    if (trimmedQuery.length < 2) {
-      setResults({ districts: [], places: [] });
-      setStatus("typing");
-      return undefined;
-    }
-
+    if (!trimmedQuery) { setResults({ districts: [], places: [] }); setStatus("idle"); return undefined; }
+    if (trimmedQuery.length < 2) { setResults({ districts: [], places: [] }); setStatus("typing"); return undefined; }
     const controller = new AbortController();
-
-    async function loadResults() {
+    async function load() {
       setStatus("loading");
-
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(trimmedQuery)}`, {
-          signal: controller.signal,
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Search request failed");
-        }
-
-        const data = await response.json();
-        setResults({
-          districts: Array.isArray(data?.districts) ? data.districts : [],
-          places: Array.isArray(data?.places) ? data.places : [],
-        });
+        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmedQuery)}`, { signal: controller.signal, cache: "no-store" });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setResults({ districts: Array.isArray(data?.districts) ? data.districts : [], places: Array.isArray(data?.places) ? data.places : [] });
         setStatus("done");
-      } catch (error) {
-        if (error?.name === "AbortError") return;
+      } catch (e) {
+        if (e?.name === "AbortError") return;
         setResults({ districts: [], places: [] });
         setStatus("error");
       }
     }
-
-    loadResults();
-
+    load();
     return () => controller.abort();
   }, [trimmedQuery]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
-
-    function handleEscape(event) {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    }
-
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+    const onKey = (e) => { if (e.key === "Escape") setIsOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [isOpen]);
 
-  function openSearch() {
-    setIsOpen(true);
-  }
-
-  function closeSearch() {
-    setIsOpen(false);
-  }
-
-  function submitSearch(event) {
-    event.preventDefault();
-    if (trimmedQuery.length < 2) return;
-    setIsOpen(true);
-  }
-
-  function handleResultNavigation(href) {
-    setIsOpen(false);
-    router.push(href);
-  }
+  function handleResultNavigation(href) { setIsOpen(false); router.push(href); }
 
   return (
     <>
-      <form onSubmit={submitSearch} style={{ position: "relative", display: "block" }}>
-        <SearchIcon
-          className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-[var(--ink-faint)]"
-        />
+      {/* Trigger bar */}
+      <form onSubmit={(e) => { e.preventDefault(); if (trimmedQuery.length >= 2) setIsOpen(true); }} style={{ position: "relative", display: "block" }}>
+        <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: "#059669", display: "flex", pointerEvents: "none" }}>
+          <SearchIcon style={{ width: 18, height: 18 }} />
+        </span>
         <input
           value={query}
-          onFocus={openSearch}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setIsOpen(true);
-          }}
+          onFocus={() => setIsOpen(true)}
+          onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
           placeholder="Search districts, places, foods..."
           aria-label="Search Nepal districts and places"
           style={{
             width: "100%",
-            padding: "14px 16px 14px 44px",
-            borderRadius: "var(--radius-md)",
-            border: "1.5px solid var(--border-strong)",
-            background: "var(--bg-card)",
+            padding: "15px 16px 15px 46px",
+            border: "none",
+            background: "#fff",
             fontSize: 14,
-            color: "var(--ink)",
+            color: "#0f172a",
             outline: "none",
-            boxShadow: "var(--shadow-sm)",
+            borderRadius: 20,
           }}
         />
       </form>
 
-      {isOpen ? (
+      {/* Full-screen overlay */}
+      {isOpen && (
         <div
+          onClick={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
           style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 80,
-            background: "rgba(15, 23, 42, 0.42)",
-            backdropFilter: "blur(14px)",
-            padding: "24px 16px",
+            position: "fixed", inset: 0, zIndex: 999,
+            background: "linear-gradient(160deg, rgba(4,40,24,0.92) 0%, rgba(5,90,55,0.88) 100%)",
+            backdropFilter: "blur(20px)",
+            display: "flex", flexDirection: "column",
+            padding: "0",
           }}
         >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Search across Nepal districts and places"
-            style={{
-              width: "100%",
-              maxWidth: 760,
-              margin: "0 auto",
-              borderRadius: 28,
-              overflow: "hidden",
-              background: "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.98) 100%)",
-              border: "1px solid rgba(255,255,255,0.55)",
-              boxShadow: "0 30px 80px rgba(15,23,42,0.22)",
-            }}
-          >
-            <div style={{ padding: "18px 18px 14px", borderBottom: "1px solid rgba(148, 163, 184, 0.18)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <label style={{ position: "relative", flex: 1 }}>
-                  <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-[var(--ink-faint)]" />
-                  <input
-                    autoFocus
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search all districts, places, foods..."
-                    aria-label="Search all districts and places"
-                    style={{
-                      width: "100%",
-                      padding: "14px 16px 14px 44px",
-                      borderRadius: 18,
-                      border: "1.5px solid rgba(15,23,42,0.08)",
-                      background: "#fff",
-                      fontSize: 15,
-                      color: "var(--ink)",
-                      outline: "none",
-                    }}
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={closeSearch}
-                  aria-label="Close search"
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
-                >
-                  <XIcon className="size-5" />
-                </button>
+          {/* Header */}
+          <div style={{
+            background: "rgba(255,255,255,0.06)",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            padding: "12px 16px",
+          }}>
+            {/* Close row */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+              <button
+                onClick={() => setIsOpen(false)}
+                aria-label="Close search"
+                style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "#fff", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+              >
+                <XIcon style={{ width: 16, height: 16 }} />
+              </button>
+            </div>
+
+            {/* Search input */}
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#86efac", display: "flex", pointerEvents: "none" }}>
+                <SearchIcon style={{ width: 18, height: 18 }} />
+              </span>
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search all districts, places, foods..."
+                aria-label="Search all districts and places"
+                style={{
+                  width: "100%",
+                  padding: "13px 16px 13px 44px",
+                  borderRadius: 14,
+                  border: "1.5px solid rgba(134,239,172,0.35)",
+                  background: "rgba(255,255,255,0.1)",
+                  fontSize: 15, fontWeight: 500,
+                  color: "#fff",
+                  outline: "none",
+                  caretColor: "#86efac",
+                }}
+              />
+            </div>
+            <p style={{ marginTop: 8, fontSize: 11, color: "rgba(255,255,255,0.45)", letterSpacing: "0.01em" }}>
+              Search across all 77 districts · places · food · hidden gems
+            </p>
+          </div>
+
+          {/* Results area */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+
+            {/* Empty state — quick links */}
+            {!trimmedQuery ? (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(134,239,172,0.7)", marginBottom: 10 }}>
+                  Quick links
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {FEATURED_SEARCH_LINKS.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        background: "rgba(255,255,255,0.07)",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        borderRadius: 14, padding: "13px 16px",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <span style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{item.label}</span>
+                      <span style={{ fontSize: 11, color: "rgba(134,239,172,0.8)", fontWeight: 600 }}>{item.sub}</span>
+                    </Link>
+                  ))}
+                </div>
               </div>
-              <p style={{ marginTop: 10, fontSize: 12, color: "var(--ink-muted)" }}>
-                Search across districts, attractions, locations, and food-related places.
-              </p>
-            </div>
+            ) : trimmedQuery.length < 2 ? (
+              <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+                Type at least 2 letters to search…
+              </div>
+            ) : status === "loading" ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <div style={{ width: 28, height: 28, border: "3px solid rgba(134,239,172,0.3)", borderTopColor: "#86efac", borderRadius: "50%", margin: "0 auto 12px", animation: "spin 0.8s linear infinite" }} />
+                <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Searching Nepal…</p>
+              </div>
+            ) : status === "error" ? (
+              <div style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 14, padding: "14px 16px", color: "#fca5a5", fontSize: 13 }}>
+                Search unavailable right now. Please try again.
+              </div>
+            ) : totalResults === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+                No results for <strong style={{ color: "#86efac" }}>{trimmedQuery}</strong>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 600 }}>
+                  {totalResults} results for <span style={{ color: "#86efac" }}>{trimmedQuery}</span>
+                </div>
 
-            <div style={{ maxHeight: "min(70vh, 720px)", overflowY: "auto", padding: 18 }}>
-              {!trimmedQuery ? (
-                <div>
-                  <SectionTitle>Quick Links</SectionTitle>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    {FEATURED_SEARCH_LINKS.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeSearch}
-                        className="rounded-3xl border border-black/5 bg-white px-4 py-4 text-sm font-semibold text-slate-800 shadow-[0_14px_30px_rgba(17,24,39,0.05)] transition hover:-translate-y-0.5"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : trimmedQuery.length < 2 ? (
-                <div className="rounded-[24px] border border-dashed border-emerald-200 bg-emerald-50/70 px-5 py-6 text-sm text-emerald-900">
-                  Type at least 2 letters to search all districts and places.
-                </div>
-              ) : status === "loading" ? (
-                <div className="rounded-[24px] border border-black/5 bg-white px-5 py-6 text-sm text-slate-600 shadow-[0_14px_30px_rgba(17,24,39,0.05)]">
-                  Searching for matches across the site...
-                </div>
-              ) : status === "error" ? (
-                <div className="rounded-[24px] border border-rose-100 bg-rose-50 px-5 py-6 text-sm text-rose-700">
-                  Search is unavailable right now. Please try again in a moment.
-                </div>
-              ) : totalResults === 0 ? (
-                <div className="rounded-[24px] border border-black/5 bg-white px-5 py-6 text-sm text-slate-600 shadow-[0_14px_30px_rgba(17,24,39,0.05)]">
-                  No matches found for <strong>{trimmedQuery}</strong>.
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                  <div style={{ fontSize: 12, color: "var(--ink-muted)" }}>
-                    {totalResults} results for <strong>{trimmedQuery}</strong>
-                  </div>
-
-                  {results.places.length ? (
-                    <section>
-                      <SectionTitle>Places</SectionTitle>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                        {results.places.map((place) => (
-                          <button
-                            key={`place-${place.id}`}
-                            type="button"
-                            onClick={() => handleResultNavigation(`/place/${place.id}`)}
-                            className="w-full rounded-[24px] border border-black/5 bg-white px-4 py-4 text-left shadow-[0_14px_30px_rgba(17,24,39,0.05)] transition hover:-translate-y-0.5"
-                          >
-                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                              <div style={{ minWidth: 0 }}>
-                                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>{place.name}</div>
-                                <div className="mt-1 inline-flex items-center gap-1 text-sm text-slate-500">
-                                  <MapPinIcon className="size-4" />
-                                  {place.location || place.districtName}
-                                </div>
-                                <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
-                                  {place.description || `${place.category} in ${place.districtName}`}
+                {/* Places */}
+                {results.places.length > 0 && (
+                  <section>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(134,239,172,0.7)", marginBottom: 8 }}>Places</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {results.places.map((place) => (
+                        <button
+                          key={`place-${place.id}`}
+                          type="button"
+                          onClick={() => handleResultNavigation(`/place/${place.id}`)}
+                          style={{
+                            width: "100%", textAlign: "left",
+                            background: "rgba(255,255,255,0.07)",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            borderRadius: 14, padding: "13px 14px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 3 }}>{place.name}</div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
+                                <MapPinIcon style={{ width: 12, height: 12 }} />
+                                {place.location || place.districtName}
+                              </div>
+                              {place.description && (
+                                <p style={{ marginTop: 4, fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                  {place.description}
                                 </p>
-                              </div>
-                              <div className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                                {place.category || "place"}
-                              </div>
+                              )}
                             </div>
-                          </button>
-                        ))}
-                      </div>
-                    </section>
-                  ) : null}
+                            <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", background: "rgba(134,239,172,0.15)", color: "#86efac", border: "1px solid rgba(134,239,172,0.25)", borderRadius: 999, padding: "3px 9px" }}>
+                              {place.category || "place"}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
 
-                  {results.districts.length ? (
-                    <section>
-                      <SectionTitle>Districts</SectionTitle>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                        {results.districts.map((district) => (
-                          <button
-                            key={`district-${district.id}`}
-                            type="button"
-                            onClick={() => handleResultNavigation(`/districts/${district.id}`)}
-                            className="w-full rounded-[24px] border border-black/5 bg-white px-4 py-4 text-left shadow-[0_14px_30px_rgba(17,24,39,0.05)] transition hover:-translate-y-0.5"
-                          >
-                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                              <div style={{ minWidth: 0 }}>
-                                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>{district.name}</div>
-                                <div className="mt-1 text-sm text-slate-500">{district.province}</div>
-                                <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{district.tagline}</p>
-                              </div>
-                              <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700">
-                                District
-                              </div>
+                {/* Districts */}
+                {results.districts.length > 0 && (
+                  <section>
+                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(134,239,172,0.7)", marginBottom: 8 }}>Districts</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {results.districts.map((district) => (
+                        <button
+                          key={`district-${district.id}`}
+                          type="button"
+                          onClick={() => handleResultNavigation(`/districts/${district.id}`)}
+                          style={{
+                            width: "100%", textAlign: "left",
+                            background: "rgba(255,255,255,0.07)",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            borderRadius: 14, padding: "13px 14px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 3 }}>{district.name}</div>
+                              <div style={{ fontSize: 12, color: "rgba(134,239,172,0.7)" }}>{district.province}</div>
+                              {district.tagline && (
+                                <p style={{ marginTop: 4, fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                                  {district.tagline}
+                                </p>
+                              )}
                             </div>
-                          </button>
-                        ))}
-                      </div>
-                    </section>
-                  ) : null}
-                </div>
-              )}
-            </div>
+                            <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", background: "rgba(99,102,241,0.15)", color: "#a5b4fc", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 999, padding: "3px 9px" }}>
+                              District
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      ) : null}
+      )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </>
   );
 }

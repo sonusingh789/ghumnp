@@ -1,7 +1,9 @@
+'use client';
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import AppShell from "@/components/layout/app-shell";
-import BrandLogo from "@/components/ui/brand-logo";
 import NepalMap from "@/components/ui/nepalmap";
 import DistrictCard from "@/components/cards/district-card";
 import HomeSearch from "@/components/forms/home-search";
@@ -14,58 +16,167 @@ function contributorSlug(name, id) {
   return `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${id}`;
 }
 
+function HeroSection({ initialQuery, carouselImages = [] }) {
+  const [mapOpen, setMapOpen] = useState(false);
+  const [slide, setSlide] = useState(0);
+
+  // Auto-advance carousel every 3.5 s
+  useEffect(() => {
+    if (carouselImages.length < 2) return;
+    const t = setInterval(() => setSlide(s => (s + 1) % carouselImages.length), 3500);
+    return () => clearInterval(t);
+  }, [carouselImages.length]);
+
+  const current = carouselImages[slide];
+
+  return (
+    <div className="fade-up" style={{ position: "relative", padding: "0 0 0" }}>
+      {/* Banner */}
+      <div style={{
+        margin: "-24px -1px 0",
+        padding: "20px 24px 80px",
+        borderRadius: "0 0 36px 36px",
+        position: "relative",
+        overflow: "hidden",
+        minHeight: 220,
+        background: "#064e35", // fallback if no images
+      }}>
+        {/* Carousel background images — blurred when map is visible */}
+        {carouselImages.map((img, i) => (
+          <div
+            key={img.src}
+            style={{
+              position: "absolute", inset: 0,
+              opacity: i === slide ? 1 : 0,
+              transition: "opacity 0.8s ease, filter 0.4s ease",
+              filter: mapOpen ? "blur(8px) brightness(0.55)" : "none",
+              zIndex: 0,
+            }}
+          >
+            <Image
+              src={img.src}
+              alt={img.label}
+              fill
+              style={{ objectFit: "cover", objectPosition: "center" }}
+              sizes="100vw"
+              priority={i === 0}
+            />
+          </div>
+        ))}
+
+        {/* Dark gradient overlay for readability */}
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 1,
+          background: "linear-gradient(to bottom, rgba(4,40,24,0.62) 0%, rgba(5,150,105,0.45) 60%, rgba(4,40,24,0.75) 100%)",
+          borderRadius: "0 0 36px 36px",
+        }} />
+
+        {/* Content */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 2 }}>
+          {/* Logo */}
+          <div style={{ marginBottom: 0, width: 180, height: 180, position: "relative" }}>
+            <Image src="/logo.png" alt="GhumnP" fill style={{ objectFit: "contain" }} priority />
+          </div>
+          <h1 style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 3, letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+            Discover Nepal&apos;s{" "}<span style={{ color: "#86efac" }}>77 Districts</span>
+          </h1>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", marginBottom: 8, lineHeight: 1.4, textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}>
+            Real places, local guides &amp; hidden gems.
+          </p>
+
+          {/* Slide label + dot indicators */}
+          {carouselImages.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, marginBottom: 8 }}>
+              {current?.label && (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.9)",
+                  background: "rgba(0,0,0,0.35)", borderRadius: 999,
+                  padding: "2px 10px", backdropFilter: "blur(4px)",
+                  letterSpacing: "0.03em",
+                }}>📍 {current.label}</span>
+              )}
+              <div style={{ display: "flex", gap: 5 }}>
+                {carouselImages.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSlide(i)}
+                    aria-label={`Slide ${i + 1}`}
+                    style={{
+                      width: i === slide ? 18 : 6, height: 6,
+                      borderRadius: 999,
+                      background: i === slide ? "#86efac" : "rgba(255,255,255,0.45)",
+                      border: "none", cursor: "pointer", padding: 0,
+                      transition: "all 0.3s",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Map collapse toggle */}
+          <button
+            onClick={() => setMapOpen(o => !o)}
+            style={{
+              display: "flex", alignItems: "center", gap: 4,
+              background: "rgba(255,255,255,0.18)",
+              border: "1px solid rgba(255,255,255,0.35)",
+              borderRadius: 999, padding: "4px 14px",
+              fontSize: 12, fontWeight: 700, color: "#fff",
+              cursor: "pointer", marginBottom: mapOpen ? 8 : 0,
+              transition: "all 0.2s",
+            }}
+            aria-label={mapOpen ? "Collapse map" : "Expand map"}
+          >
+            {mapOpen ? "▲ Hide map" : "▼ Show map"}
+          </button>
+
+          {/* Nepal Map — collapsible */}
+          {mapOpen && (
+            <div className="nepal-map-wrapper" style={{ transition: "all 0.3s" }}>
+              <NepalMap />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Search pill — floats over the banner */}
+      <div style={{ margin: "-28px 16px 0", position: "relative", zIndex: 10 }}>
+        <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 8px 32px rgba(6,78,53,0.18)", overflow: "hidden" }}>
+          <HomeSearch initialQuery={initialQuery} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 export default function HomePageClient({
   featuredDistricts,
+  allDistricts = [],
   popularDistricts = [],
   topPlaces,
   topContributors = [],
   initialQuery = "",
 }) {
+  // Shuffle all 77 district images randomly (done once — stable across re-renders via useMemo)
+  const slides = (() => {
+    const pool = (allDistricts.length > 0 ? allDistricts : featuredDistricts)
+      .filter(d => d.image)
+      .map(d => ({ src: d.image, label: d.name }));
+    // Fisher-Yates shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, 12); // show 12 random slides
+  })();
+
   return (
     <AppShell showTopBar={false} className="bg-transparent">
 
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <div className="fade-up" style={{ position: "relative", padding: "0 0 0" }}>
-        {/* Full-bleed green gradient banner */}
-        <div style={{
-          background: "linear-gradient(160deg, #064e35 0%, #0a6644 40%, #0d7a52 70%, #059669 100%)",
-          margin: "-24px -1px 0",
-          padding: "36px 24px 80px",
-          borderRadius: "0 0 36px 36px",
-          position: "relative",
-          overflow: "hidden",
-        }}>
-          {/* decorative blobs */}
-          <div style={{ position: "absolute", top: -40, right: -40, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", bottom: -20, left: -30, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
-
-          {/* Brand + tagline */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 1 }}>
-            <div style={{ marginBottom: 20 }}>
-              <BrandLogo variant="light" size="lg" />
-            </div>
-            <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1.15, marginBottom: 10, letterSpacing: "-0.02em" }}>
-              Discover Nepal&apos;s<br />
-              <span style={{ color: "#86efac" }}>77 Districts</span>
-            </h1>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.72)", maxWidth: 300, lineHeight: 1.6, marginBottom: 16 }}>
-              Real places, local guides & hidden gems — all in one app.
-            </p>
-
-            {/* Nepal Map */}
-            <div style={{ width: "100%", maxWidth: 340, opacity: 0.9 }}>
-              <NepalMap />
-            </div>
-          </div>
-        </div>
-
-        {/* Search pill — floats over the banner */}
-        <div style={{ margin: "-28px 16px 0", position: "relative", zIndex: 10 }}>
-          <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 8px 32px rgba(6,78,53,0.18)", overflow: "hidden" }}>
-            <HomeSearch initialQuery={initialQuery} />
-          </div>
-        </div>
-      </div>
+      <HeroSection initialQuery={initialQuery} carouselImages={slides} />
 
       {/* ── QUICK STATS ──────────────────────────────────────── */}
       <div className="fade-up-1 scrollbar-hide" style={{ display: "flex", gap: 10, padding: "20px 20px 0", overflowX: "auto" }}>

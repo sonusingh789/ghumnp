@@ -65,8 +65,13 @@ export default function ExplorePageClient({
           </p>
 
           {/* Search bar */}
-          <div style={{ position: "relative" }}>
-            <SearchIcon className="pointer-events-none" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", width: 16, height: 16, color: "#94a3b8" }} />
+          <div style={{ position: "relative", width: "100%" }}>
+            <span style={{
+              position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+              display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 1,
+            }}>
+              <SearchIcon style={{ width: 16, height: 16, color: "#94a3b8" }} />
+            </span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -82,13 +87,14 @@ export default function ExplorePageClient({
                 outline: "none",
                 boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
                 boxSizing: "border-box",
+                display: "block",
               }}
             />
             {query ? (
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}
+                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, zIndex: 1 }}
               >
                 <XIcon style={{ width: 12, height: 12, color: "#64748b" }} />
               </button>

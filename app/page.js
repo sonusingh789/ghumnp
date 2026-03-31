@@ -114,6 +114,7 @@ export default async function HomePage({ searchParams }) {
       />
       <HomePageClient
         featuredDistricts={districts.slice(0, 5)}
+        allDistricts={districts}
         popularDistricts={homeCollections.popularDistricts}
         topContributors={topContributorsResult.recordset}
         topPlaces={homeCollections.topPlaces}

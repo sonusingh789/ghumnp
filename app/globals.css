@@ -165,3 +165,21 @@ h1, h2, h3 {
     radial-gradient(circle at 20% 20%, rgba(15, 95, 113, 0.09), transparent 35%),
     radial-gradient(circle at 80% 10%, rgba(22, 163, 74, 0.11), transparent 30%);
 }
+
+.nepal-map-wrapper {
+  width: 100%;
+  max-width: 340px;
+  opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+  .nepal-map-wrapper {
+    max-width: 520px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nepal-map-wrapper {
+    max-width: 700px;
+  }
+}
