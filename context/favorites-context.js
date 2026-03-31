@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-const AUTH_COOKIE_NAME = "prescriptoai_token";
 const STORAGE_KEY = "ghumnp-favorites";
 const defaultFavorites = [];
 
@@ -17,35 +17,16 @@ const FavoritesContext = createContext({
 export function FavoritesProvider({
   children,
   initialFavorites = defaultFavorites,
-  initialAuthenticated = false,
 }) {
   const [favorites, setFavorites] = useState(initialFavorites);
-  const [authenticated, setAuthenticated] = useState(initialAuthenticated);
+  const [authenticated, setAuthenticated] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadFavorites() {
-      // Always try to detect auth cookie first
-      const hasAuthCookie =
-        typeof document !== "undefined" &&
-        document.cookie
-          .split(";")
-          .some((c) => c.trim().startsWith(`${AUTH_COOKIE_NAME}=`));
-
-      if (!initialAuthenticated && !hasAuthCookie) {
-        // Unauthenticated — load from localStorage
-        const local = readLocalFavorites();
-        if (!cancelled) {
-          setFavorites(local);
-          setAuthenticated(false);
-          setLoaded(true);
-        }
-        return;
-      }
-
-      // Authenticated — fetch from server
       try {
         const response = await fetch("/api/favorites", {
           cache: "no-store",
@@ -58,28 +39,23 @@ export function FavoritesProvider({
           const serverFavorites = data.favorites || [];
           setFavorites(serverFavorites);
           setAuthenticated(true);
-          // Cache in localStorage so we have a fallback if the session expires
           persistLocalFavorites(serverFavorites);
         } else {
-          // Session expired — fall back to cached localStorage favorites
           const local = readLocalFavorites();
           setFavorites(local);
           setAuthenticated(false);
         }
-        setLoaded(true);
       } catch {
-        // Network error — fall back to local
         const local = readLocalFavorites();
-        if (!cancelled) {
-          setFavorites(local);
-          setLoaded(true);
-        }
+        if (!cancelled) setFavorites(local);
+      } finally {
+        if (!cancelled) setLoaded(true);
       }
     }
 
     loadFavorites();
     return () => { cancelled = true; };
-  }, [initialAuthenticated]);
+  }, []);
 
   const isFavorite = useCallback(
     (id) => favorites.includes(id),
@@ -88,6 +64,12 @@ export function FavoritesProvider({
 
   const toggleFavorite = useCallback(
     async (id) => {
+      // Only redirect if we've finished loading AND confirmed not authenticated
+      if (loaded && !authenticated) {
+        router.push(`/login?from=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/favorites")}`);
+        return { ok: false, error: "Login required" };
+      }
+
       const isCurrentlyFavorite = favorites.includes(id);
 
       // Optimistic update
@@ -96,12 +78,6 @@ export function FavoritesProvider({
         : [...favorites, id];
 
       setFavorites(next);
-
-      if (!authenticated) {
-        // Unauthenticated — persist locally only
-        persistLocalFavorites(next);
-        return { ok: true, saved: !isCurrentlyFavorite };
-      }
 
       // Authenticated — sync to server
       try {
@@ -144,7 +120,7 @@ export function FavoritesProvider({
         return { ok: false, error: "Network error" };
       }
     },
-    [favorites, authenticated]
+    [favorites, authenticated, loaded, router]
   );
 
   return (

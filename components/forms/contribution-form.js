@@ -13,13 +13,17 @@ import {
   XIcon,
 } from "@/components/ui/icons";
 
-const spotCategories = [
-  "Tourist Attraction",
-  "Local Food",
-  "Restaurant",
-  "Hotel",
-  "Local Stay",
+// Maps the DB value (stored in Places.category) to a human-readable label.
+const PLACE_CATEGORIES = [
+  { value: "attraction", label: "Tourist Attraction" },
+  { value: "food",       label: "Local Food" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "hotel",      label: "Hotel" },
+  { value: "stay",       label: "Local Stay" },
 ];
+
+// Nearby spot categories use the same DB values.
+const spotCategories = PLACE_CATEGORIES.map((c) => c.label);
 
 const MAX_UPLOAD_DIMENSION = 1400;
 const JPEG_QUALITY = 0.76;
@@ -173,6 +177,7 @@ export default function ContributionForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [placeMode, setPlaceMode] = useState("existing");
+  const [placeCategory, setPlaceCategory] = useState("attraction");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedExistingPlace, setSelectedExistingPlace] = useState("");
   const [showSpotForm, setShowSpotForm] = useState(false);
@@ -521,6 +526,7 @@ export default function ContributionForm() {
         body: JSON.stringify({
           mode: placeMode,
           selectedExistingPlace,
+          category: placeCategory,
           name: String(formData.get("name") || ""),
           district: String(formData.get("district") || ""),
           location: String(formData.get("location") || ""),
@@ -810,6 +816,18 @@ export default function ContributionForm() {
                 </div>
                 <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 8 }}>JPG, PNG or WEBP · max 1400px recommended</p>
               </div>
+
+              <Field label="Category">
+                <select
+                  value={placeCategory}
+                  onChange={(e) => setPlaceCategory(e.target.value)}
+                  style={inputStyle}
+                >
+                  {PLACE_CATEGORIES.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </Field>
 
               <Field label="Place Name">
                 <input name="name" style={inputStyle} placeholder="E.g., Boudhanath Stupa" />

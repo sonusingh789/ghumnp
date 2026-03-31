@@ -32,10 +32,18 @@ export default function FavoritesPageClient({
     : allDistricts;
 
   // Track previous favorites to detect additions (removals are handled by filtering above).
-  const prevFavoritesRef = useRef(favorites);
+  // null = "not yet initialized after first load"
+  const prevFavoritesRef = useRef(null);
 
   useEffect(() => {
     if (!loaded) return;
+
+    // On first run after load, seed prevFavoritesRef with the current server-loaded favorites
+    // so we don't treat every item as "newly added".
+    if (prevFavoritesRef.current === null) {
+      prevFavoritesRef.current = favorites;
+      return;
+    }
 
     const prev = prevFavoritesRef.current;
     prevFavoritesRef.current = favorites;

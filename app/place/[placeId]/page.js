@@ -66,10 +66,19 @@ export default async function PlaceDetailPage({ params }) {
     })
     .filter(Boolean);
 
+  const SCHEMA_TYPE_MAP = {
+    attraction: "TouristAttraction",
+    food:       "FoodEstablishment",
+    restaurant: "Restaurant",
+    hotel:      "Hotel",
+    stay:       "LodgingBusiness",
+  };
+  const schemaType = SCHEMA_TYPE_MAP[place.category] || "TouristAttraction";
+
   const schemaItems = [
     {
       "@context": "https://schema.org",
-      "@type": "TouristAttraction",
+      "@type": schemaType,
       name: place.name,
       description: place.description,
       image: place.images?.length ? place.images : [place.image],

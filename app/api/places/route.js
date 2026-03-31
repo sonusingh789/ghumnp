@@ -99,25 +99,28 @@ export async function GET(request) {
   const search = searchParams.get("search")?.trim();
 
   if (search) {
+    const categoryFilter = searchParams.get("category")?.trim();
+    const categoryClause = categoryFilter ? `AND p.category = @category` : "";
     const result = await query(
-      `SELECT TOP 10 p.slug, p.name, p.location_text, d.name AS district_name
+      `SELECT TOP 10 p.slug, p.name, p.category, p.location_text, d.name AS district_name
        FROM Places p
        INNER JOIN Districts d ON d.id = p.district_id
-       WHERE status = 'approved'
-         AND p.category = 'attraction'
+       WHERE p.status = 'approved'
+         ${categoryClause}
          AND (
            p.name LIKE @search
            OR p.location_text LIKE @search
            OR d.name LIKE @search
          )
        ORDER BY p.name`,
-      { search: `%${search}%` }
+      { search: `%${search}%`, ...(categoryFilter ? { category: categoryFilter } : {}) }
     );
 
     return NextResponse.json({
       places: result.recordset.map((row) => ({
         id: row.slug,
         name: row.name,
+        category: row.category,
         location: row.location_text,
         district: row.district_name,
       })),
@@ -149,6 +152,7 @@ async function parseRequestData(request) {
     return {
       mode: String(formData.get("mode") || "new"),
       selectedExistingPlace: String(formData.get("selectedExistingPlace") || "").trim(),
+      category: String(formData.get("category") || "attraction").trim(),
       name: String(formData.get("name") || "").trim(),
       districtSlug: String(formData.get("district") || "").trim(),
       location: String(formData.get("location") || "").trim(),
@@ -182,6 +186,7 @@ async function parseRequestData(request) {
   return {
     mode: String(body?.mode || "new"),
     selectedExistingPlace: String(body?.selectedExistingPlace || "").trim(),
+    category: String(body?.category || "attraction").trim(),
     name: String(body?.name || "").trim(),
     districtSlug: String(body?.district || "").trim(),
     location: String(body?.location || "").trim(),
@@ -211,6 +216,8 @@ async function parseRequestData(request) {
   };
 }
 
+const VALID_CATEGORIES = new Set(["attraction", "food", "restaurant", "hotel", "stay"]);
+
 async function handleRequest(auth, data) {
   const {
     mode,
@@ -224,6 +231,7 @@ async function handleRequest(auth, data) {
     placeSeoContent,
     districtSeoContent,
   } = data;
+  const category = VALID_CATEGORIES.has(data.category) ? data.category : "attraction";
   let { uploadedImageUrls } = data;
   const hasPlaceSeoContent = hasSeoValue(placeSeoContent);
   const hasDistrictSeoContent = hasSeoValue(districtSeoContent);
@@ -310,7 +318,7 @@ async function handleRequest(auth, data) {
         userId: auth.id,
         slug: placeSlug,
         name,
-        category: "attraction",
+        category,
         location,
         description,
         coverImageUrl:

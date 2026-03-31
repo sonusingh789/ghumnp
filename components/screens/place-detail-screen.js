@@ -22,6 +22,14 @@ import {
   XIcon,
 } from "@/components/ui/icons";
 
+const CATEGORY_LABELS = {
+  attraction: "Tourist Attraction",
+  food: "Local Food",
+  restaurant: "Restaurant",
+  hotel: "Hotel",
+  stay: "Local Stay",
+};
+
 async function copyTextFallback(text) {
   if (typeof document === "undefined") return false;
   const textArea = document.createElement("textarea");
@@ -234,7 +242,7 @@ export default function PlaceDetailScreen({ place }) {
         {/* Name + category over image */}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 20px 28px", pointerEvents: "none" }}>
           <span style={{ display: "inline-block", fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#86efac", marginBottom: 6 }}>
-            {place.category}
+            {CATEGORY_LABELS[place.category] || place.category}
           </span>
           <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: 6 }}>
             {place.name}

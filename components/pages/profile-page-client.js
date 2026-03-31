@@ -18,34 +18,38 @@ import {
 
 const fallbackAvatar = "";
 
-function uploadProfileImage(file, folderHint, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const payload = new FormData();
-    payload.append("file", file);
-    payload.append("folderHint", folderHint);
-    payload.append("folderType", "users");
+async function uploadProfileImage(file, folderHint, onProgress) {
+  onProgress(10);
 
-    xhr.open("POST", "/api/uploads/imagekit");
-    xhr.responseType = "json";
-
-    xhr.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
-      onProgress(Math.round((event.loaded / event.total) * 100));
-    };
-
-    xhr.onload = () => {
-      const data = xhr.response || {};
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve(data);
-        return;
-      }
-      reject(new Error(data.error || "Profile image upload failed."));
-    };
-
-    xhr.onerror = () => reject(new Error("Profile image upload failed."));
-    xhr.send(payload);
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => reject(new Error("Could not read image file."));
+    reader.readAsDataURL(file);
   });
+
+  onProgress(50);
+
+  const res = await fetch("/api/uploads/imagekit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify({
+      file: dataUrl,
+      fileName: file.name || `avatar-${Date.now()}`,
+      mimeType: file.type || "image/jpeg",
+      folderHint,
+      folderType: "users",
+    }),
+  });
+
+  onProgress(90);
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Profile image upload failed.");
+
+  onProgress(100);
+  return data;
 }
 
 export default function ProfilePageClient({ initialProfile, userId }) {
