@@ -1,6 +1,6 @@
 import HomePageClient from "@/components/pages/home-page-client";
 import { getDistrictCards, getHomePageCollections } from "@/lib/content";
-import { buildMetadata, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { buildMetadata } from "@/lib/seo";
 import { query } from "@/lib/db";
 
 export const metadata = buildMetadata({
@@ -45,20 +45,6 @@ export default async function HomePage({ searchParams }) {
        ORDER BY contributions DESC`
     ).catch(() => ({ recordset: [] })),
   ]);
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: SITE_NAME,
-    url: `${SITE_URL}/`,
-    description:
-      "Discover the best places to visit in Nepal. Explore all 77 districts with travel guides, top-rated tourist spots, local food, and hidden gems.",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${SITE_URL}/?q={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
-  };
-
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -110,7 +96,7 @@ export default async function HomePage({ searchParams }) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([websiteSchema, faqSchema]) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <HomePageClient
         featuredDistricts={districts.slice(0, 5)}

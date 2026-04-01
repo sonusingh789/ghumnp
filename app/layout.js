@@ -3,6 +3,36 @@ import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: `${SITE_URL}/`,
+  description:
+    "Discover the best places to visit in Nepal. Explore all 77 districts with travel guides, top-rated tourist spots, local food, and hidden gems.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${SITE_URL}/?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE_NAME,
+  url: SITE_URL,
+  logo: {
+    "@type": "ImageObject",
+    url: `${SITE_URL}/logo.png`,
+    width: 512,
+    height: 512,
+  },
+  description:
+    "visitNepal77 is Nepal's travel discovery platform covering all 77 districts with travel guides, top-rated places, local food, hidden gems, and real reviews.",
+  sameAs: ["https://twitter.com/visitnepal77"],
+};
+
 const playfair = Playfair_Display({
   variable: "--font-display",
   subsets: ["latin"],
@@ -52,6 +82,10 @@ export default function RootLayout({ children }) {
       data-scroll-behavior="smooth"
     >
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify([websiteSchema, organizationSchema]) }}
+        />
         <FavoritesProvider>
           {children}
         </FavoritesProvider>
