@@ -71,10 +71,6 @@ async function tryNativeShare(payloads) {
 }
 
 export default function DistrictDetailScreen({ district, districtPlaces }) {
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
-
   const [activeTab, setActiveTab] = useState("All");
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [ratingValue, setRatingValue] = useState(5);

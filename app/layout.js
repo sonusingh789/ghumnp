@@ -1,6 +1,7 @@
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
+import ScrollToTop from "@/components/layout/scroll-to-top";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const websiteSchema = {
@@ -86,6 +87,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify([websiteSchema, organizationSchema]) }}
         />
+        <ScrollToTop />
         <FavoritesProvider>
           {children}
         </FavoritesProvider>
