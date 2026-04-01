@@ -254,7 +254,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
 
         {/* District name + province overlaid at bottom */}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px 24px", pointerEvents: "none" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(5,150,105,0.85)", backdropFilter: "blur(6px)", borderRadius: 999, padding: "4px 12px", marginBottom: 8 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(5,150,105,0.35)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderRadius: 999, padding: "4px 12px", marginBottom: 8, border: "1px solid rgba(255,255,255,0.15)" }}>
             <MapPinIcon style={{ width: 12, height: 12, color: "#fff" }} />
             <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{district.province} Province</span>
           </div>
