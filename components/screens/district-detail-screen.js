@@ -254,9 +254,9 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
 
         {/* District name + province overlaid at bottom */}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px 24px", pointerEvents: "none" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(5,150,105,0.35)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderRadius: 999, padding: "4px 12px", marginBottom: 8, border: "1px solid rgba(255,255,255,0.15)" }}>
-            <MapPinIcon style={{ width: 12, height: 12, color: "#fff" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{district.province} Province</span>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 3, background: "rgba(5,150,105,0.35)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderRadius: 999, padding: "3px 8px", marginBottom: 6, border: "1px solid rgba(255,255,255,0.15)" }}>
+            <MapPinIcon style={{ width: 9, height: 9, color: "rgba(255,255,255,0.85)" }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "0.04em", textTransform: "uppercase" }}>{district.province}</span>
           </div>
           <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 4 }}>{district.name}</h1>
           {district.tagline ? (
