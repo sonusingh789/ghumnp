@@ -21,8 +21,6 @@ export async function generateMetadata({ params }) {
     title: `${district.name} District Travel Guide — Best Places, Things To Do & Tips | visitNepal77`,
     description,
     path: `/districts/${district.id}`,
-    image: district.image,
-    imageAlt: `${district.name} District, ${district.province} Province Nepal — visitNepal77`,
     type: "article",
     keywords: [
       `${district.name} district`,
