@@ -285,21 +285,21 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
         </nav>
 
         {/* Stats chips */}
-        <div style={{ display: "flex", gap: 8, padding: "14px 20px 0", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 8, padding: "14px 20px 0" }}>
           <button
             type="button"
             onClick={openRatingDialog}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#d97706", cursor: "pointer" }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#d97706", cursor: "pointer", whiteSpace: "nowrap" }}
             aria-label="Rate this district"
           >
-            <StarIcon style={{ width: 13, height: 13, color: "#f59e0b" }} />
+            <StarIcon style={{ width: 13, height: 13, color: "#f59e0b", flexShrink: 0 }} />
             {ratingDisplay.toFixed(1)} · Rate
           </button>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 600, color: "#64748b" }}>
-            <MapPinIcon style={{ width: 13, height: 13 }} />
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}>
+            <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
             {formatVisitors(visitorsCount)}
           </div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#059669" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#059669", whiteSpace: "nowrap" }}>
             🏛️ {districtPlaces.length} places
           </div>
         </div>
