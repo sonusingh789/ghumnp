@@ -75,7 +75,7 @@ function HeroSection({ initialQuery, carouselImages = [] }) {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 2 }}>
           {/* Logo */}
           <div style={{ marginBottom: 0, width: 180, height: 180, position: "relative" }}>
-            <Image src="/logo.png" alt="GhumnP" fill style={{ objectFit: "contain" }} priority />
+            <Image src="/logo.png" alt="GhumnP" fill sizes="180px" style={{ objectFit: "contain" }} priority />
           </div>
           <h1 style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 3, letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
             Discover Nepal&apos;s{" "}<span style={{ color: "#86efac" }}>77 Districts</span>
@@ -159,18 +159,26 @@ export default function HomePageClient({
   topContributors = [],
   initialQuery = "",
 }) {
-  // Shuffle all 77 district images randomly (done once — stable across re-renders via useMemo)
-  const slides = (() => {
+  // Maintain stable order for SSR, and shuffle only on the client
+  const [slides, setSlides] = useState(() => {
     const pool = (allDistricts.length > 0 ? allDistricts : featuredDistricts)
       .filter(d => d.image)
       .map(d => ({ src: d.image, label: d.name }));
+    return pool.slice(0, 12);
+  });
+
+  useEffect(() => {
+    const pool = (allDistricts.length > 0 ? allDistricts : featuredDistricts)
+      .filter(d => d.image)
+      .map(d => ({ src: d.image, label: d.name }));
+
     // Fisher-Yates shuffle
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    return pool.slice(0, 12); // show 12 random slides
-  })();
+    setSlides(pool.slice(0, 12));
+  }, [allDistricts, featuredDistricts]);
 
   return (
     <AppShell showTopBar={false} className="bg-transparent">
