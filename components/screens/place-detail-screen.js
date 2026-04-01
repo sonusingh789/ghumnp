@@ -247,10 +247,12 @@ export default function PlaceDetailScreen({ place }) {
           <h1 style={{ fontSize: 26, fontWeight: 900, color: "#fff", lineHeight: 1.15, letterSpacing: "-0.02em", marginBottom: 6 }}>
             {place.name}
           </h1>
-          <p style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>
-            <MapPinIcon style={{ width: 14, height: 14 }} />
-            {place.location}
-            {place.districtId ? <span style={{ color: "rgba(255,255,255,0.5)" }}>· {place.districtId} District</span> : null}
+          <p style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 5, fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 500, lineHeight: 1.5 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <MapPinIcon style={{ width: 14, height: 14, flexShrink: 0 }} />
+              {place.location}
+            </span>
+            {place.districtId ? <span style={{ color: "rgba(255,255,255,0.5)" }}>· {place.districtId.charAt(0).toUpperCase() + place.districtId.slice(1)}</span> : null}
           </p>
         </div>
       </div>
@@ -265,7 +267,7 @@ export default function PlaceDetailScreen({ place }) {
             <li aria-hidden="true">/</li>
             <li><Link href="/districts" style={{ color: "#94a3b8", textDecoration: "none" }}>Districts</Link></li>
             <li aria-hidden="true">/</li>
-            <li><Link href={`/districts/${place.districtId}`} style={{ color: "#94a3b8", textDecoration: "none" }}>{place.districtId}</Link></li>
+            <li><Link href={`/districts/${place.districtId}`} style={{ color: "#94a3b8", textDecoration: "none" }}>{place.districtId.charAt(0).toUpperCase() + place.districtId.slice(1)}</Link></li>
             <li aria-hidden="true">/</li>
             <li style={{ fontWeight: 600, color: "#475569" }} aria-current="page">{place.name}</li>
           </ol>
@@ -510,7 +512,7 @@ export default function PlaceDetailScreen({ place }) {
 
       {/* ── REPORT MODAL ─────────────────────────────────────── */}
       {reportModal ? (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 0 0" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 60, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 0 0" }}>
           <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 480, boxShadow: "0 -8px 40px rgba(15,23,42,0.2)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
               <div>
@@ -565,7 +567,7 @@ export default function PlaceDetailScreen({ place }) {
 
       {/* ── SUGGEST EDIT MODAL ───────────────────────────────── */}
       {editModal ? (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 60, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", padding: 24, width: "100%", maxWidth: 480, boxShadow: "0 -8px 40px rgba(15,23,42,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
               <div>
