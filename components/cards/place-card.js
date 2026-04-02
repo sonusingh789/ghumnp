@@ -125,9 +125,9 @@ export default function PlaceCard({
               {place.rating.toFixed(1)}
             </span>
             <span style={{ color: "#e2e8f0", fontSize: 12 }}>·</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "#94a3b8" }}>
-              <MapPinIcon style={{ width: 12, height: 12 }} />
-              {place.location}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "#94a3b8", minWidth: 0, overflow: "hidden" }}>
+              <MapPinIcon style={{ width: 12, height: 12, flexShrink: 0 }} />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.location}</span>
             </span>
             {place.isVerified ? (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "2px 8px" }}>

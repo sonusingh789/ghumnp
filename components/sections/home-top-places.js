@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import PlaceCard from "@/components/cards/place-card";
 
-const INITIAL_VISIBLE_COUNT = 10;
+const INITIAL_VISIBLE_COUNT = 5;
 const MAX_VISIBLE_COUNT = 20;
 
 export default function HomeTopPlaces({ places = [] }) {

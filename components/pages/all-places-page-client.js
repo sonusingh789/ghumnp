@@ -9,6 +9,15 @@ const PAGE_SIZE = 10;
 
 const CATEGORIES = ["All", "Tourist Attraction", "Local Food", "Restaurant", "Hotel", "Local Stay"];
 
+// Maps display label → DB-stored category value
+const CAT_DB_VALUES = {
+  "Tourist Attraction": "attraction",
+  "Local Food": "food",
+  Restaurant: "restaurant",
+  Hotel: "hotel",
+  "Local Stay": "stay",
+};
+
 const CAT_EMOJIS = {
   All: "🗺️",
   "Tourist Attraction": "🏛️",
@@ -28,7 +37,8 @@ export default function AllPlacesPageClient({ places = [] }) {
   const filteredPlaces = useMemo(() => {
     return places.filter((place) => {
       const matchesCategory =
-        activeCategory === "All" || place.category === activeCategory;
+        activeCategory === "All" ||
+        (place.category || "").toLowerCase() === (CAT_DB_VALUES[activeCategory] ?? activeCategory).toLowerCase();
       if (!matchesCategory) return false;
       if (!search) return true;
       return [place.name, place.location, place.description, place.category, place.districtId]
