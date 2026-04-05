@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
@@ -97,9 +97,19 @@ export default function RootLayout({ children }) {
           {children}
         </FavoritesProvider>
         <Analytics />
-        {process.env.NEXT_PUBLIC_GA_ID ? (
-          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-        ) : null}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-M8K3RQ680H"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', 'G-M8K3RQ680H');
+          `}
+        </Script>
       </body>
     </html>
   );
