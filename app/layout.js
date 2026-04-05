@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
 import ScrollToTop from "@/components/layout/scroll-to-top";
@@ -94,6 +95,7 @@ export default function RootLayout({ children }) {
         <FavoritesProvider>
           {children}
         </FavoritesProvider>
+        <Analytics />
       </body>
     </html>
   );
