@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { FavoritesProvider } from "@/context/favorites-context";
@@ -96,6 +97,9 @@ export default function RootLayout({ children }) {
           {children}
         </FavoritesProvider>
         <Analytics />
+        {process.env.NEXT_PUBLIC_GA_ID ? (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        ) : null}
       </body>
     </html>
   );
