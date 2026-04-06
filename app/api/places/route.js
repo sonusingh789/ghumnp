@@ -210,9 +210,6 @@ async function parseRequestData(request) {
     },
     files: [],
     nearbySpots: Array.isArray(body?.nearbySpots) ? body.nearbySpots : [],
-    uploadedImages: Array.isArray(body?.uploadedImages)
-      ? body.uploadedImages.filter((item) => item?.url && typeof item.url === "string")
-      : [],
     uploadedImageUrls: Array.isArray(body?.uploadedImageUrls)
       ? body.uploadedImageUrls.filter((item) => typeof item === "string" && item.trim())
       : [],
@@ -235,14 +232,7 @@ async function handleRequest(auth, data) {
     districtSeoContent,
   } = data;
   const category = VALID_CATEGORIES.has(data.category) ? data.category : "attraction";
-  // uploadedImages carries {url, fileId} for pre-uploaded images (JSON path)
-  // uploadedImageUrls is the legacy plain-URL array (kept for compat)
-  let uploadedImages = Array.isArray(data.uploadedImages) ? [...data.uploadedImages] : [];
   let { uploadedImageUrls } = data;
-  // Merge so uploadedImageUrls stays consistent with uploadedImages
-  if (uploadedImages.length && !uploadedImageUrls.length) {
-    uploadedImageUrls = uploadedImages.map((img) => img.url);
-  }
   const hasPlaceSeoContent = hasSeoValue(placeSeoContent);
   const hasDistrictSeoContent = hasSeoValue(districtSeoContent);
 
@@ -267,7 +257,6 @@ async function handleRequest(auth, data) {
           folder: `/ghumnp/places/${slugify(mode === "existing" ? selectedExistingPlace : name)}`,
         });
         uploadedImageUrls.push(uploaded.url);
-        uploadedImages.push({ url: uploaded.url, fileId: uploaded.fileId || null });
       }
     } catch (error) {
       return NextResponse.json(
@@ -360,21 +349,15 @@ async function handleRequest(auth, data) {
     const baseSort = maxSortResult.recordset[0]?.maxSort ?? 0;
 
     for (let index = 0; index < uploadedImageUrls.length; index += 1) {
-      const imagekitFileId = uploadedImages[index]?.fileId || null;
-      try {
-        await query(
-          `INSERT INTO PlaceImages (place_id, image_url, imagekit_file_id, sort_order)
-           VALUES (@placeId, @imageUrl, @imagekitFileId, @sortOrder)`,
-          { placeId, imageUrl: uploadedImageUrls[index], imagekitFileId, sortOrder: baseSort + index + 1 }
-        );
-      } catch {
-        // imagekit_file_id column not yet added — fall back until migration is run
-        await query(
-          `INSERT INTO PlaceImages (place_id, image_url, sort_order)
-           VALUES (@placeId, @imageUrl, @sortOrder)`,
-          { placeId, imageUrl: uploadedImageUrls[index], sortOrder: baseSort + index + 1 }
-        );
-      }
+      await query(
+        `INSERT INTO PlaceImages (place_id, image_url, sort_order)
+         VALUES (@placeId, @imageUrl, @sortOrder)`,
+        {
+          placeId,
+          imageUrl: uploadedImageUrls[index],
+          sortOrder: baseSort + index + 1,
+        }
+      );
     }
 
     if (mode === "existing") {

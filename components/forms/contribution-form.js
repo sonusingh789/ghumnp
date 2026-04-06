@@ -159,7 +159,7 @@ async function startImageUpload(itemId, file, folderHint, onUpdate) {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data?.error || `Upload failed (${res.status})`);
 
-    onUpdate({ status: "done", progress: 100, uploadedUrl: data.url, fileId: data.fileId || null });
+    onUpdate({ status: "done", progress: 100, uploadedUrl: data.url });
   } catch (err) {
     onUpdate({ status: "error", progress: 0, error: err.message || "Upload failed." });
   }
@@ -502,11 +502,10 @@ export default function ContributionForm() {
     setLoading(true);
 
     try {
-      // Images are already uploaded — collect URLs and fileIds
-      const uploadedImages = placeImageItems
+      // Images are already uploaded — just collect their URLs
+      const uploadedImageUrls = placeImageItems
         .filter((item) => item.status === "done" && item.uploadedUrl)
-        .map((item) => ({ url: item.uploadedUrl, fileId: item.fileId || null }));
-      const uploadedImageUrls = uploadedImages.map((img) => img.url);
+        .map((item) => item.uploadedUrl);
 
       const nearbySpotsWithUploads = nearbySpots.map((spot) => {
         const imageUrls = (spot.imageFiles || [])
@@ -546,7 +545,6 @@ export default function ContributionForm() {
           districtLocalFoodsCulture: String(formData.get("districtLocalFoodsCulture") || ""),
           districtFaqs: String(formData.get("districtFaqs") || ""),
           nearbySpots: nearbySpotsWithUploads,
-          uploadedImages,
           uploadedImageUrls,
         }),
       });

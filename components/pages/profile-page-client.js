@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import AppShell from "@/components/layout/app-shell";
 import { useFavorites } from "@/context/favorites-context";
 import { buildLoginHref } from "@/utils/navigation";
-import { allDistricts } from "@/data/nepal";
 import {
   CameraIcon,
   LogOutIcon,
@@ -71,11 +70,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
     location: "",
     description: "",
     category: "",
-    district: "",
   });
-  const [contributionImages, setContributionImages] = useState({});
-  const [imageUploading, setImageUploading] = useState(false);
-  const placeFileInputRef = useRef(null);
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     comment: "",
@@ -251,83 +246,16 @@ export default function ProfilePageClient({ initialProfile, userId }) {
     }
   }
 
-  async function loadContributionImages(slug) {
-    try {
-      const res = await fetch(`/api/profile/contributions/${slug}/images`);
-      const data = await res.json().catch(() => ({}));
-      if (res.ok) {
-        setContributionImages((prev) => ({ ...prev, [slug]: data.images || [] }));
-      }
-    } catch {
-      // silent — images section will just be empty
-    }
-  }
-
   function beginContributionEdit(item) {
-    const slug = item.slug || item.id;
-    setEditingContributionId(slug);
+    setEditingContributionId(item.slug || item.id);
     setContributionForm({
       name: item.name || "",
       location: item.location || "",
       description: item.description || "",
       category: item.category || "attraction",
-      district: item.district || "",
     });
     setError("");
     setSuccess("");
-    loadContributionImages(slug);
-  }
-
-  async function handleContributionImageUpload(slug, file) {
-    if (!file) return;
-    setImageUploading(true);
-    setError("");
-    try {
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = () => reject(new Error("Could not read image file."));
-        reader.readAsDataURL(file);
-      });
-      const uploadRes = await fetch("/api/uploads/imagekit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          file: dataUrl,
-          fileName: file.name || `place-${Date.now()}`,
-          mimeType: file.type || "image/jpeg",
-          folderHint: contributionForm.name || slug,
-          folderType: "places",
-        }),
-      });
-      const uploadData = await uploadRes.json().catch(() => ({}));
-      if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed.");
-      const res = await fetch(`/api/profile/contributions/${slug}/images`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: uploadData.url, fileId: uploadData.fileId || null }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setError(data.error || "Image upload failed."); return; }
-      await loadContributionImages(slug);
-    } catch (err) {
-      setError(err.message || "Image upload failed.");
-    } finally {
-      setImageUploading(false);
-    }
-  }
-
-  async function handleContributionImageDelete(slug, imageId) {
-    setError("");
-    const res = await fetch(`/api/profile/contributions/${slug}/images`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageId }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) { setError(data.error || "Could not remove image."); return; }
-    await loadContributionImages(slug);
   }
 
   async function handleContributionSave(slug) {
@@ -337,13 +265,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
     const response = await fetch(`/api/profile/contributions/${slug}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: contributionForm.name,
-        location: contributionForm.location,
-        description: contributionForm.description,
-        category: contributionForm.category,
-        district: contributionForm.district,
-      }),
+      body: JSON.stringify(contributionForm),
     });
     const data = await response.json().catch(() => ({}));
 
@@ -680,61 +602,14 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                         <input value={contributionForm.name} onChange={(e) => setContributionForm((c) => ({ ...c, name: e.target.value }))} style={inputStyle} placeholder="Place name" />
                         <input value={contributionForm.location} onChange={(e) => setContributionForm((c) => ({ ...c, location: e.target.value }))} style={inputStyle} placeholder="Location" />
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-                        <select value={contributionForm.category} onChange={(e) => setContributionForm((c) => ({ ...c, category: e.target.value }))} style={inputStyle}>
-                          <option value="attraction">Attraction</option>
-                          <option value="food">Food</option>
-                          <option value="restaurant">Restaurant</option>
-                          <option value="hotel">Hotel</option>
-                          <option value="stay">Stay</option>
-                        </select>
-                        <select value={contributionForm.district} onChange={(e) => setContributionForm((c) => ({ ...c, district: e.target.value }))} style={inputStyle}>
-                          <option value="">District</option>
-                          {allDistricts.map((d) => (
-                            <option key={d} value={d}>{d}</option>
-                          ))}
-                        </select>
-                      </div>
+                      <select value={contributionForm.category} onChange={(e) => setContributionForm((c) => ({ ...c, category: e.target.value }))} style={{ ...inputStyle, marginBottom: 10 }}>
+                        <option value="attraction">Attraction</option>
+                        <option value="food">Food</option>
+                        <option value="restaurant">Restaurant</option>
+                        <option value="hotel">Hotel</option>
+                        <option value="stay">Stay</option>
+                      </select>
                       <textarea rows={3} value={contributionForm.description} onChange={(e) => setContributionForm((c) => ({ ...c, description: e.target.value }))} style={{ ...inputStyle, resize: "none", marginBottom: 10 }} placeholder="Description" />
-
-                      {/* ── PHOTOS ── */}
-                      <div style={{ marginBottom: 10 }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Photos</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-                          {(contributionImages[item.slug || item.id] || []).map((img) => (
-                            <div key={img.id} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: "1.5px solid #e2e8f0", flexShrink: 0 }}>
-                              <Image src={img.image_url} alt="place photo" fill sizes="72px" className="object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => handleContributionImageDelete(item.slug || item.id, img.id)}
-                                style={{ position: "absolute", top: 2, right: 2, width: 18, height: 18, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, lineHeight: 1 }}
-                                aria-label="Remove photo"
-                              >✕</button>
-                            </div>
-                          ))}
-                          <button
-                            type="button"
-                            disabled={imageUploading}
-                            onClick={() => { placeFileInputRef.current?.click(); }}
-                            style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: imageUploading ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 600, flexShrink: 0, opacity: imageUploading ? 0.6 : 1 }}
-                          >
-                            <CameraIcon style={{ width: 16, height: 16 }} />
-                            {imageUploading ? "..." : "Add"}
-                          </button>
-                          <input
-                            ref={placeFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              e.target.value = "";
-                              if (f) handleContributionImageUpload(item.slug || item.id, f);
-                            }}
-                          />
-                        </div>
-                      </div>
-
                       <div style={{ display: "flex", gap: 8 }}>
                         <button type="button" onClick={() => handleContributionSave(item.slug || item.id)} style={saveBtn}>Save</button>
                         <button type="button" onClick={() => setEditingContributionId("")} style={cancelBtn}>Cancel</button>
