@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getAuthFromRequest } from "@/lib/auth-request";
 import { query } from "@/lib/db";
+import { deleteFromImageKit } from "@/lib/imagekit";
 
 const categoryMap = {
   "Tourist Attraction": "attraction",
@@ -24,9 +25,19 @@ export async function PATCH(request, { params }) {
   const description = String(body?.description || "").trim();
   const categoryInput = String(body?.category || "").trim();
   const category = categoryMap[categoryInput] || categoryInput.toLowerCase();
+  const districtInput = String(body?.district || "").trim();
 
   if (!name || !location || !description || !category) {
     return NextResponse.json({ error: "All contribution fields are required." }, { status: 400 });
+  }
+
+  let districtId = null;
+  if (districtInput) {
+    const districtResult = await query(
+      `SELECT id FROM Districts WHERE name = @name`,
+      { name: districtInput }
+    );
+    districtId = districtResult.recordset[0]?.id ?? null;
   }
 
   const updateResult = await query(
@@ -35,6 +46,7 @@ export async function PATCH(request, { params }) {
          location_text = @location,
          description = @description,
          category = @category,
+         ${districtId !== null ? "district_id = @districtId," : ""}
          updated_at = SYSDATETIME()
      WHERE slug = @slug AND created_by_user_id = @userId`,
     {
@@ -44,6 +56,7 @@ export async function PATCH(request, { params }) {
       location,
       description,
       category,
+      ...(districtId !== null ? { districtId } : {}),
     }
   );
 
@@ -77,6 +90,17 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ error: "Contribution not found." }, { status: 404 });
   }
 
+  // Collect ImageKit file IDs before cascade-deleting PlaceImages
+  let placeImagesResult = { recordset: [] };
+  try {
+    placeImagesResult = await query(
+      `SELECT imagekit_file_id FROM PlaceImages WHERE place_id = @placeId AND imagekit_file_id IS NOT NULL`,
+      { placeId: place.id }
+    );
+  } catch {
+    // imagekit_file_id column not yet added — skip ImageKit cleanup until migration runs
+  }
+
   await query(`DELETE FROM Reports WHERE place_id = @placeId`, { placeId: place.id });
   await query(`DELETE FROM EditSuggestions WHERE place_id = @placeId`, { placeId: place.id });
 
@@ -88,6 +112,15 @@ export async function DELETE(request, { params }) {
       userId: Number(auth.id),
     }
   );
+
+  // Delete images from ImageKit after DB rows are gone (best-effort)
+  for (const row of placeImagesResult.recordset) {
+    try {
+      await deleteFromImageKit(row.imagekit_file_id);
+    } catch (err) {
+      console.error("[contributions] ImageKit delete failed for fileId", row.imagekit_file_id, err.message);
+    }
+  }
 
   if (!deleteResult.rowsAffected?.[0]) {
     return NextResponse.json({ error: "Contribution not found." }, { status: 404 });
