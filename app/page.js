@@ -1,5 +1,5 @@
 import HomePageClient from "@/components/pages/home-page-client";
-import { getDistrictCards, getHomePageCollections } from "@/lib/content";
+import { getDistrictCards, getFeaturedDistricts, getHomePageCollections } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { query } from "@/lib/db";
 
@@ -32,8 +32,9 @@ export default async function HomePage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
   const initialQuery =
     typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q.trim() : "";
-  const [districts, homeCollections, topContributorsResult] = await Promise.all([
+  const [districts, featuredDistricts, homeCollections, topContributorsResult] = await Promise.all([
     getDistrictCards(),
+    getFeaturedDistricts(),
     getHomePageCollections(),
     query(
       `SELECT TOP 3
@@ -100,7 +101,7 @@ export default async function HomePage({ searchParams }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <HomePageClient
-        featuredDistricts={districts.slice(0, 5)}
+        featuredDistricts={featuredDistricts}
         allDistricts={districts}
         popularDistricts={homeCollections.popularDistricts}
         topContributors={topContributorsResult.recordset}
