@@ -749,23 +749,26 @@ export default function ProfilePageClient({ initialProfile, userId }) {
 
                 {/* Pagination */}
                 {Math.ceil(contributionItems.length / CONTRIB_PER_PAGE) > 1 && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "14px 18px", borderTop: "1px solid #f1f5f9" }}>
-                    {Array.from({ length: Math.ceil(contributionItems.length / CONTRIB_PER_PAGE) }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        type="button"
-                        onClick={() => setContribPage(page)}
-                        style={{
-                          width: 32, height: 32, borderRadius: "50%", border: "1.5px solid",
-                          borderColor: contribPage === page ? "#059669" : "#e2e8f0",
-                          background: contribPage === page ? "#059669" : "#fff",
-                          color: contribPage === page ? "#fff" : "#64748b",
-                          fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                        }}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                  <div style={{ overflowX: "auto", borderTop: "1px solid #f1f5f9", padding: "12px 18px" }}>
+                    <div style={{ display: "flex", gap: 6, width: "max-content" }}>
+                      {Array.from({ length: Math.ceil(contributionItems.length / CONTRIB_PER_PAGE) }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          type="button"
+                          onClick={() => setContribPage(page)}
+                          style={{
+                            width: 30, height: 30, borderRadius: "50%", border: "1.5px solid",
+                            borderColor: contribPage === page ? "#059669" : "#e2e8f0",
+                            background: contribPage === page ? "#059669" : "#fff",
+                            color: contribPage === page ? "#fff" : "#64748b",
+                            fontSize: 12, fontWeight: 700, cursor: "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          }}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </>

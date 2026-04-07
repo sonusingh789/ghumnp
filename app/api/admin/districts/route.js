@@ -30,12 +30,24 @@ export async function PATCH(request) {
 
   const body = await request.json().catch(() => ({}));
   const districtId = Number(body?.districtId);
-  const isFeatured = Boolean(body?.isFeatured);
+  if (!districtId) return NextResponse.json({ error: "districtId is required." }, { status: 400 });
 
-  if (!districtId) {
-    return NextResponse.json({ error: "districtId is required." }, { status: 400 });
+  // Update image_url
+  if ("imageUrl" in body) {
+    const imageUrl = body.imageUrl ? String(body.imageUrl).trim() : null;
+    const result = await query(
+      `UPDATE Districts SET image_url = @imageUrl WHERE id = @districtId`,
+      { districtId, imageUrl }
+    );
+    if (!result.rowsAffected?.[0]) return NextResponse.json({ error: "District not found." }, { status: 404 });
+    revalidatePath("/");
+    revalidatePath("/districts");
+    revalidatePath(`/districts`);
+    return NextResponse.json({ ok: true });
   }
 
+  // Update is_featured
+  const isFeatured = Boolean(body?.isFeatured);
   const result = await query(
     `UPDATE Districts SET is_featured = @isFeatured WHERE id = @districtId`,
     { districtId, isFeatured: isFeatured ? 1 : 0 }

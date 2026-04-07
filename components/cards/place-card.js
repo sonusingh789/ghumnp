@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useFavorites } from "@/context/favorites-context";
 import { CheckCircleIcon, HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop&q=75";
+
 export default function PlaceCard({
   place,
   layout = "horizontal",
@@ -32,12 +34,13 @@ export default function PlaceCard({
       >
         <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
           <Image
-            src={place.image}
+            src={place.image || FALLBACK_IMAGE}
             alt={place.name}
             fill
             sizes="50vw"
             priority={imagePriority}
             className="object-cover transition duration-500 group-hover:scale-105"
+            onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
           />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%)" }} />
           <div style={{
@@ -78,12 +81,13 @@ export default function PlaceCard({
           style={{ position: "relative", width: 96, height: 96, flexShrink: 0, borderRadius: 14, overflow: "hidden", display: "block" }}
         >
           <Image
-            src={place.image}
+            src={place.image || FALLBACK_IMAGE}
             alt={place.name}
             fill
             sizes="96px"
             priority={imagePriority}
             className="object-cover"
+            onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
           />
         </Link>
 

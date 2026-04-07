@@ -76,6 +76,8 @@ export default function PlaceDetailScreen({ place }) {
   const [editFields, setEditFields] = useState({ name: place.name, description: place.description, location: place.location });
   const [editLoading, setEditLoading] = useState(false);
   const [editDone, setEditDone] = useState(false);
+  const [suggestImages, setSuggestImages] = useState([]); // [{ previewUrl, file, uploading, url, error }]
+  const suggestFileRef = useRef(null);
   const shareTimerRef = useRef(null);
   const reviewsSectionRef = useRef(null);
   const router = useRouter();
@@ -97,11 +99,60 @@ export default function PlaceDetailScreen({ place }) {
     }
   }
 
+  async function handleSuggestImageAdd(files) {
+    const newItems = Array.from(files).map((file) => ({
+      id: `${Date.now()}-${Math.random()}`,
+      previewUrl: URL.createObjectURL(file),
+      file,
+      uploading: false,
+      url: null,
+      error: null,
+    }));
+    setSuggestImages((prev) => [...prev, ...newItems]);
+  }
+
   async function handleSuggestEdit() {
     const changes = Object.fromEntries(
       Object.entries(editFields).filter(([k, v]) => v !== place[k === "location" ? "location" : k])
     );
-    if (!Object.keys(changes).length) return;
+
+    // Upload any pending images
+    let uploadedUrls = [];
+    if (suggestImages.length > 0) {
+      setEditLoading(true);
+      const results = await Promise.all(
+        suggestImages.map(async (item) => {
+          if (item.url) return item.url; // already uploaded
+          try {
+            const dataUrl = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.onerror = () => reject(new Error("Read failed"));
+              reader.readAsDataURL(item.file);
+            });
+            const res = await fetch("/api/uploads/imagekit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                file: dataUrl,
+                fileName: item.file.name || `suggest-${Date.now()}`,
+                mimeType: item.file.type || "image/jpeg",
+                folderType: "places",
+              }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || "Upload failed");
+            return data.url;
+          } catch {
+            return null;
+          }
+        })
+      );
+      uploadedUrls = results.filter(Boolean);
+      if (uploadedUrls.length) changes.suggested_images = uploadedUrls;
+    }
+
+    if (!Object.keys(changes).length) { setEditLoading(false); return; }
     setEditLoading(true);
     try {
       await fetch(`/api/places/${place.id}/suggest-edit`, {
@@ -604,6 +655,42 @@ export default function PlaceDetailScreen({ place }) {
                   <div>
                     <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#0f172a", marginBottom: 5 }}>Description</label>
                     <textarea value={editFields.description} onChange={(e) => setEditFields((f) => ({ ...f, description: e.target.value }))} rows={4} style={{ ...inputStyle, resize: "none" }} />
+                  </div>
+
+                  {/* ── PHOTO SUGGESTIONS ── */}
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#0f172a", marginBottom: 8 }}>Suggest Photos <span style={{ fontWeight: 400, color: "#94a3b8" }}>(optional)</span></label>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {suggestImages.map((img, i) => (
+                        <div key={img.id} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
+                          <img src={img.previewUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <button
+                            type="button"
+                            onClick={() => setSuggestImages((prev) => prev.filter((_, idx) => idx !== i))}
+                            style={{ position: "absolute", top: 2, right: 2, width: 18, height: 18, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, lineHeight: 1 }}
+                          >✕</button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => suggestFileRef.current?.click()}
+                        style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 600, flexShrink: 0 }}
+                      >
+                        <PlusCircleIcon style={{ width: 18, height: 18 }} />
+                        Add
+                      </button>
+                      <input
+                        ref={suggestFileRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        hidden
+                        onChange={(e) => {
+                          if (e.target.files?.length) handleSuggestImageAdd(e.target.files);
+                          e.target.value = "";
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 10, marginTop: 16 }}>

@@ -8,6 +8,8 @@ import { HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
 import { useFavorites } from "@/context/favorites-context";
 import { cn, formatVisitors } from "@/lib/utils";
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop&q=75";
+
 export default function DistrictCard({ district, compact = false, imagePriority = false }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const router = useRouter();
@@ -61,12 +63,13 @@ export default function DistrictCard({ district, compact = false, imagePriority 
       {/* ── IMAGE ──────────────────────────────────────────── */}
       <div style={{ position: "relative", overflow: "hidden", height: compact ? 168 : 148 }}>
         <Image
-          src={district.image}
+          src={district.image || FALLBACK_IMAGE}
           alt={district.name}
           fill
           sizes={compact ? "280px" : "50vw"}
           className="object-cover transition duration-500 group-hover:scale-105"
           priority={imagePriority}
+          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
         {/* Gradient overlay */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.18) 50%, transparent 100%)" }} />

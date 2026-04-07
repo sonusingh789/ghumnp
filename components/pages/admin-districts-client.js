@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import AdminShell from "@/components/layout/admin-shell";
+
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop&q=75";
 
 const PROVINCE_COLORS = {
   "Koshi":          { color: "#0891b2", bg: "#ecfeff" },
@@ -24,8 +25,10 @@ export default function AdminDistrictsClient({ initialDistricts }) {
     initialDistricts.map((d) => ({ ...d, is_featured: Boolean(d.is_featured) }))
   );
   const [toggling, setToggling] = useState({});
+  const [uploadingPhoto, setUploadingPhoto] = useState({});
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState({ msg: "", ok: true });
+  const fileInputRefs = useRef({});
 
   function showToast(msg, ok = true) {
     setToast({ msg, ok });
@@ -66,6 +69,68 @@ export default function AdminDistrictsClient({ initialDistricts }) {
       showToast("Network error. Please try again.", false);
     } finally {
       setToggling((prev) => ({ ...prev, [district.id]: false }));
+    }
+  }
+
+  async function handlePhotoUpload(district, file) {
+    if (!file) return;
+    setUploadingPhoto((prev) => ({ ...prev, [district.id]: true }));
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error("Could not read file."));
+        reader.readAsDataURL(file);
+      });
+
+      const uploadRes = await fetch("/api/uploads/imagekit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file: dataUrl,
+          fileName: `district-${district.slug}-${Date.now()}`,
+          mimeType: file.type || "image/jpeg",
+          folderType: "districts",
+        }),
+      });
+      const uploadData = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed.");
+
+      const patchRes = await fetch("/api/admin/districts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ districtId: district.id, imageUrl: uploadData.url }),
+      });
+      if (!patchRes.ok) throw new Error("Failed to save image URL.");
+
+      setDistricts((prev) =>
+        prev.map((d) => (d.id === district.id ? { ...d, image_url: uploadData.url } : d))
+      );
+      showToast(`${district.name} cover photo updated`);
+    } catch (err) {
+      showToast(err.message || "Upload failed.", false);
+    } finally {
+      setUploadingPhoto((prev) => ({ ...prev, [district.id]: false }));
+    }
+  }
+
+  async function handlePhotoRemove(district) {
+    setUploadingPhoto((prev) => ({ ...prev, [district.id]: true }));
+    try {
+      const res = await fetch("/api/admin/districts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ districtId: district.id, imageUrl: null }),
+      });
+      if (!res.ok) throw new Error("Failed to remove photo.");
+      setDistricts((prev) =>
+        prev.map((d) => (d.id === district.id ? { ...d, image_url: null } : d))
+      );
+      showToast(`${district.name} cover photo removed`);
+    } catch (err) {
+      showToast(err.message || "Remove failed.", false);
+    } finally {
+      setUploadingPhoto((prev) => ({ ...prev, [district.id]: false }));
     }
   }
 
@@ -139,20 +204,65 @@ export default function AdminDistrictsClient({ initialDistricts }) {
                   transition: "background 0.2s",
                 }}
               >
-                {/* Thumbnail */}
-                <div style={{ width: 44, height: 44, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "#f1f5f9" }}>
-                  {district.image_url ? (
-                    <Image
-                      src={district.image_url}
+                {/* Thumbnail + photo actions */}
+                <div style={{ position: "relative", width: 44, height: 44, flexShrink: 0 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 10, overflow: "hidden", background: "#f1f5f9" }}>
+                    <img
+                      src={district.image_url || FALLBACK_IMAGE}
                       alt={district.name}
-                      width={44}
-                      height={44}
+                      onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏔️</div>
-                  )}
+                  </div>
+                  {/* Upload overlay */}
+                  <button
+                    type="button"
+                    disabled={uploadingPhoto[district.id]}
+                    onClick={() => fileInputRefs.current[district.id]?.click()}
+                    title="Change cover photo"
+                    style={{
+                      position: "absolute", inset: 0, borderRadius: 10, border: "none",
+                      background: "rgba(0,0,0,0.38)", color: "#fff",
+                      fontSize: 16, cursor: uploadingPhoto[district.id] ? "not-allowed" : "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      opacity: uploadingPhoto[district.id] ? 1 : 0,
+                      transition: "opacity 0.15s",
+                    }}
+                    className="photo-overlay"
+                    onMouseEnter={(e) => { if (!uploadingPhoto[district.id]) e.currentTarget.style.opacity = 1; }}
+                    onMouseLeave={(e) => { if (!uploadingPhoto[district.id]) e.currentTarget.style.opacity = 0; }}
+                  >
+                    {uploadingPhoto[district.id] ? "⏳" : "📷"}
+                  </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    ref={(el) => { fileInputRefs.current[district.id] = el; }}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (f) handlePhotoUpload(district, f);
+                    }}
+                  />
                 </div>
+                {/* Remove photo button (only shown when image exists) */}
+                {district.image_url && (
+                  <button
+                    type="button"
+                    disabled={uploadingPhoto[district.id]}
+                    onClick={() => handlePhotoRemove(district)}
+                    title="Remove cover photo"
+                    style={{
+                      width: 22, height: 22, borderRadius: "50%", border: "1.5px solid #fca5a5",
+                      background: "#fef2f2", color: "#dc2626", fontSize: 11, cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      opacity: uploadingPhoto[district.id] ? 0.5 : 1,
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>

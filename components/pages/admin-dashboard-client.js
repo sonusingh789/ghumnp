@@ -21,6 +21,7 @@ const QUICK_ACTIONS = [
   { href: "/admin/users",     label: "Manage Users",            desc: "View, ban, or promote users",         color: "#6366f1" },
   { href: "/admin/places",    label: "Browse All Places",       desc: "Search and filter all listings",      color: "#059669" },
   { href: "/admin/districts", label: "Featured Districts",      desc: "Choose which districts appear on home", color: "#0891b2" },
+  { href: "/admin/reports",  label: "Reports & Suggestions",   desc: "Review flagged places and edit proposals", color: "#dc2626" },
 ];
 
 export default function AdminDashboardClient({ stats }) {
