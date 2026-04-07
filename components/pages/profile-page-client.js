@@ -65,6 +65,8 @@ export default function ProfilePageClient({ initialProfile, userId }) {
   const [isEditing, setIsEditing] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [editingContributionId, setEditingContributionId] = useState("");
+  const [contribPage, setContribPage] = useState(1);
+  const CONTRIB_PER_PAGE = 5;
   const [editingReviewId, setEditingReviewId] = useState("");
   const [contributionForm, setContributionForm] = useState({
     name: "",
@@ -651,98 +653,122 @@ export default function ProfilePageClient({ initialProfile, userId }) {
           </div>
           <div>
             {contributionItems.length ? (
-              contributionItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  style={{ padding: "14px 18px", borderBottom: index < contributionItems.length - 1 ? "1px solid #f1f5f9" : "none" }}
-                >
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", wordBreak: "break-word" }}>{item.name}</p>
-                      <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{item.location} · {item.dateLabel}</p>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                      <span style={{
-                        fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "3px 10px",
-                        background: item.status === "Published" ? "#ecfdf5" : "#fffbeb",
-                        color: item.status === "Published" ? "#059669" : "#d97706",
-                      }}>
-                        {item.status}
-                      </span>
-                      <ActionBtn label="Edit" onClick={() => beginContributionEdit(item)} icon={PencilIcon} />
-                      <ActionBtn label="Delete" onClick={() => handleContributionDelete(item.slug || item.id)} icon={TrashIcon} danger />
-                    </div>
-                  </div>
-
-                  {editingContributionId === (item.slug || item.id) ? (
-                    <div style={{ marginTop: 12, borderRadius: 16, background: "#f8fafc", border: "1.5px solid #e2e8f0", padding: "14px" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-                        <input value={contributionForm.name} onChange={(e) => setContributionForm((c) => ({ ...c, name: e.target.value }))} style={inputStyle} placeholder="Place name" />
-                        <input value={contributionForm.location} onChange={(e) => setContributionForm((c) => ({ ...c, location: e.target.value }))} style={inputStyle} placeholder="Location" />
+              <>
+                {contributionItems.slice((contribPage - 1) * CONTRIB_PER_PAGE, contribPage * CONTRIB_PER_PAGE).map((item, index, arr) => (
+                  <div
+                    key={item.id}
+                    style={{ padding: "14px 18px", borderBottom: index < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}
+                  >
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", wordBreak: "break-word" }}>{item.name}</p>
+                        <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{item.location} · {item.dateLabel}</p>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-                        <select value={contributionForm.category} onChange={(e) => setContributionForm((c) => ({ ...c, category: e.target.value }))} style={inputStyle}>
-                          <option value="attraction">Attraction</option>
-                          <option value="food">Food</option>
-                          <option value="restaurant">Restaurant</option>
-                          <option value="hotel">Hotel</option>
-                          <option value="stay">Stay</option>
-                        </select>
-                        <select value={contributionForm.district} onChange={(e) => setContributionForm((c) => ({ ...c, district: e.target.value }))} style={inputStyle}>
-                          <option value="">District</option>
-                          {allDistricts.map((d) => (
-                            <option key={d} value={d}>{d}</option>
-                          ))}
-                        </select>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                        <span style={{
+                          fontSize: 11, fontWeight: 700, borderRadius: 999, padding: "3px 10px",
+                          background: item.status === "Published" ? "#ecfdf5" : "#fffbeb",
+                          color: item.status === "Published" ? "#059669" : "#d97706",
+                        }}>
+                          {item.status}
+                        </span>
+                        <ActionBtn label="Edit" onClick={() => beginContributionEdit(item)} icon={PencilIcon} />
+                        <ActionBtn label="Delete" onClick={() => handleContributionDelete(item.slug || item.id)} icon={TrashIcon} danger />
                       </div>
-                      <textarea rows={3} value={contributionForm.description} onChange={(e) => setContributionForm((c) => ({ ...c, description: e.target.value }))} style={{ ...inputStyle, resize: "none", marginBottom: 10 }} placeholder="Description" />
+                    </div>
 
-                      {/* ── PHOTOS ── */}
-                      <div style={{ marginBottom: 10 }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Photos</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
-                          {(contributionImages[item.slug || item.id] || []).map((img) => (
-                            <div key={img.id} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: "1.5px solid #e2e8f0", flexShrink: 0 }}>
-                              <Image src={img.image_url} alt="place photo" fill sizes="72px" className="object-cover" />
-                              <button
-                                type="button"
-                                onClick={() => handleContributionImageDelete(item.slug || item.id, img.id)}
-                                style={{ position: "absolute", top: 2, right: 2, width: 18, height: 18, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, lineHeight: 1 }}
-                                aria-label="Remove photo"
-                              >✕</button>
-                            </div>
-                          ))}
-                          <button
-                            type="button"
-                            disabled={imageUploading}
-                            onClick={() => { placeFileInputRef.current?.click(); }}
-                            style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: imageUploading ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 600, flexShrink: 0, opacity: imageUploading ? 0.6 : 1 }}
-                          >
-                            <CameraIcon style={{ width: 16, height: 16 }} />
-                            {imageUploading ? "..." : "Add"}
-                          </button>
-                          <input
-                            ref={placeFileInputRef}
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            onChange={(e) => {
-                              const f = e.target.files?.[0];
-                              e.target.value = "";
-                              if (f) handleContributionImageUpload(item.slug || item.id, f);
-                            }}
-                          />
+                    {editingContributionId === (item.slug || item.id) ? (
+                      <div style={{ marginTop: 12, borderRadius: 16, background: "#f8fafc", border: "1.5px solid #e2e8f0", padding: "14px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                          <input value={contributionForm.name} onChange={(e) => setContributionForm((c) => ({ ...c, name: e.target.value }))} style={inputStyle} placeholder="Place name" />
+                          <input value={contributionForm.location} onChange={(e) => setContributionForm((c) => ({ ...c, location: e.target.value }))} style={inputStyle} placeholder="Location" />
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                          <select value={contributionForm.category} onChange={(e) => setContributionForm((c) => ({ ...c, category: e.target.value }))} style={inputStyle}>
+                            <option value="attraction">Attraction</option>
+                            <option value="food">Food</option>
+                            <option value="restaurant">Restaurant</option>
+                            <option value="hotel">Hotel</option>
+                            <option value="stay">Stay</option>
+                          </select>
+                          <select value={contributionForm.district} onChange={(e) => setContributionForm((c) => ({ ...c, district: e.target.value }))} style={inputStyle}>
+                            <option value="">District</option>
+                            {allDistricts.map((d) => (
+                              <option key={d} value={d}>{d}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <textarea rows={3} value={contributionForm.description} onChange={(e) => setContributionForm((c) => ({ ...c, description: e.target.value }))} style={{ ...inputStyle, resize: "none", marginBottom: 10 }} placeholder="Description" />
+
+                        {/* ── PHOTOS ── */}
+                        <div style={{ marginBottom: 10 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Photos</p>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                            {(contributionImages[item.slug || item.id] || []).map((img) => (
+                              <div key={img.id} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: "1.5px solid #e2e8f0", flexShrink: 0 }}>
+                                <Image src={img.image_url} alt="place photo" fill sizes="72px" className="object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => handleContributionImageDelete(item.slug || item.id, img.id)}
+                                  style={{ position: "absolute", top: 2, right: 2, width: 18, height: 18, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, lineHeight: 1 }}
+                                  aria-label="Remove photo"
+                                >✕</button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              disabled={imageUploading}
+                              onClick={() => { placeFileInputRef.current?.click(); }}
+                              style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: imageUploading ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 600, flexShrink: 0, opacity: imageUploading ? 0.6 : 1 }}
+                            >
+                              <CameraIcon style={{ width: 16, height: 16 }} />
+                              {imageUploading ? "..." : "Add"}
+                            </button>
+                            <input
+                              ref={placeFileInputRef}
+                              type="file"
+                              accept="image/*"
+                              hidden
+                              onChange={(e) => {
+                                const f = e.target.files?.[0];
+                                e.target.value = "";
+                                if (f) handleContributionImageUpload(item.slug || item.id, f);
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button type="button" onClick={() => handleContributionSave(item.slug || item.id)} style={saveBtn}>Save</button>
+                          <button type="button" onClick={() => setEditingContributionId("")} style={cancelBtn}>Cancel</button>
                         </div>
                       </div>
+                    ) : null}
+                  </div>
+                ))}
 
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button type="button" onClick={() => handleContributionSave(item.slug || item.id)} style={saveBtn}>Save</button>
-                        <button type="button" onClick={() => setEditingContributionId("")} style={cancelBtn}>Cancel</button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              ))
+                {/* Pagination */}
+                {Math.ceil(contributionItems.length / CONTRIB_PER_PAGE) > 1 && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "14px 18px", borderTop: "1px solid #f1f5f9" }}>
+                    {Array.from({ length: Math.ceil(contributionItems.length / CONTRIB_PER_PAGE) }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => setContribPage(page)}
+                        style={{
+                          width: 32, height: 32, borderRadius: "50%", border: "1.5px solid",
+                          borderColor: contribPage === page ? "#059669" : "#e2e8f0",
+                          background: contribPage === page ? "#059669" : "#fff",
+                          color: contribPage === page ? "#fff" : "#64748b",
+                          fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                        }}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <div style={{ padding: "32px 18px", textAlign: "center", fontSize: 13, color: "#94a3b8" }}>No contributions yet. <Link href="/add" style={{ color: "#059669", fontWeight: 700 }}>Add one →</Link></div>
             )}
