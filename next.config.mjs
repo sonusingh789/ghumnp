@@ -8,10 +8,7 @@ const nextConfig = {
     proxyClientMaxBodySize: '20mb',
   },
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "**" },
-      { protocol: "http",  hostname: "**" },
-    ],
+    unoptimized: true,
   },
   allowedDevOrigins: ['192.168.1.75'],
 };
