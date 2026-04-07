@@ -35,6 +35,14 @@ export async function GET(request, { params }) {
     images = result.recordset;
   }
 
+  // Include cover_image_url as a synthetic entry if it's not already in PlaceImages
+  if (place.cover_image_url) {
+    const alreadyIn = images.some((img) => img.image_url === place.cover_image_url);
+    if (!alreadyIn) {
+      images = [{ id: "cover", image_url: place.cover_image_url, imagekit_file_id: null, sort_order: -1 }, ...images];
+    }
+  }
+
   return NextResponse.json({ images });
 }
 
@@ -97,7 +105,20 @@ export async function DELETE(request, { params }) {
   if (!place) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await request.json().catch(() => ({}));
-  const imageId = Number(body?.imageId);
+  const rawImageId = body?.imageId;
+  if (!rawImageId) return NextResponse.json({ error: "imageId is required." }, { status: 400 });
+
+  // Handle synthetic "cover" entry (cover_image_url not yet in PlaceImages)
+  if (rawImageId === "cover") {
+    if (!place.cover_image_url) return NextResponse.json({ error: "No cover image to remove." }, { status: 404 });
+    await query(
+      `UPDATE Places SET cover_image_url = NULL, updated_at = SYSDATETIME() WHERE id = @placeId`,
+      { placeId: place.id }
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  const imageId = Number(rawImageId);
   if (!imageId) return NextResponse.json({ error: "imageId is required." }, { status: 400 });
 
   let img;

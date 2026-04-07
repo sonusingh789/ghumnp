@@ -756,13 +756,10 @@ export default function ContributionForm() {
                       key={preview.id}
                       style={{ position: "relative", width: 96, height: 96, borderRadius: 14, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}
                     >
-                      <Image
+                      <img
                         src={preview.previewUrl}
                         alt={preview.name}
-                        fill
-                        sizes="96px"
-                        unoptimized
-                        className="object-cover"
+                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                       />
 
                       {/* Uploading overlay */}
@@ -973,13 +970,10 @@ export default function ContributionForm() {
                       key={image.id}
                       style={{ position: "relative", width: 80, height: 80, borderRadius: 12, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}
                     >
-                      <Image
+                      <img
                         src={image.previewUrl}
                         alt={image.name || "Spot preview"}
-                        fill
-                        sizes="80px"
-                        unoptimized
-                        className="object-cover"
+                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                       />
 
                       {/* Uploading overlay */}
