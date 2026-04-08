@@ -106,7 +106,7 @@ export default function FavoritesPageClient({
         borderRadius: "0 0 32px 32px",
         position: "relative",
         overflow: "hidden",
-      }} className="fade-up">
+      }} className="fade-up desktop-page-header">
         <div style={{ position: "absolute", top: -50, right: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: -30, left: -20, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
 
@@ -198,7 +198,7 @@ export default function FavoritesPageClient({
                     </span>
                   </p>
                 </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {favDistricts.map((district) => (
                     <DistrictCard key={district.id} district={district} />
                   ))}
@@ -219,9 +219,9 @@ export default function FavoritesPageClient({
                     </span>
                   </p>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {favPlaces.map((place) => (
-                    <PlaceCard key={place.id} place={place} />
+                    <PlaceCard key={place.id} place={place} layout="grid" />
                   ))}
                 </div>
               </section>

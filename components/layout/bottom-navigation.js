@@ -19,7 +19,7 @@ export default function BottomNavigation() {
   const addActive = pathname === "/add";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full md:bottom-4 md:max-w-[620px] md:rounded-full md:shadow-[0_8px_36px_rgba(15,23,42,0.14)]"
+    <nav className="fixed inset-x-0 bottom-0 z-50 mx-auto w-full md:bottom-4 md:max-w-[620px] md:rounded-full md:shadow-[0_8px_36px_rgba(15,23,42,0.14)] lg:hidden"
       style={{
         background: "rgba(255,255,255,0.96)",
         backdropFilter: "blur(24px)",

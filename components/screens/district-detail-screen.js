@@ -72,6 +72,7 @@ async function tryNativeShare(payloads) {
 
 export default function DistrictDetailScreen({ district, districtPlaces }) {
   const [activeTab, setActiveTab] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [ratingValue, setRatingValue] = useState(5);
   const [ratingDisplay, setRatingDisplay] = useState(Number(district.rating || 0));
@@ -93,6 +94,8 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
     Boolean(seo.localFoodsCulture) ||
     Boolean(seo.faqs?.length);
 
+  const PLACES_PER_PAGE = 15;
+
   const filteredPlaces = districtPlaces.filter((place) => {
     if (activeTab === "All") return true;
     const normalizedCategory = String(place.category || "").trim().toLowerCase();
@@ -106,6 +109,9 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
     };
     return (categoryAliases[normalizedTab] || [normalizedTab]).includes(normalizedCategory);
   });
+
+  const totalPages = Math.ceil(filteredPlaces.length / PLACES_PER_PAGE);
+  const paginatedPlaces = filteredPlaces.slice((currentPage - 1) * PLACES_PER_PAGE, currentPage * PLACES_PER_PAGE);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -202,8 +208,9 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
 
   return (
     <AppShell contentClassName="pt-0">
+
       {/* ── HERO IMAGE ─────────────────────────────────────── */}
-      <div style={{ position: "relative", height: 300, margin: "-24px -1px 0", overflow: "hidden" }}>
+      <div className="district-hero" style={{ position: "relative", height: 300, margin: "-24px -1px 0", overflow: "hidden" }}>
         <Image
           src={district.image}
           alt={`${district.name} district, ${district.province} Province, Nepal`}
@@ -266,18 +273,35 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
       </div>
 
       {/* ── PULL-UP CONTENT ────────────────────────────────── */}
-      <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1 }}>
+      <div className="district-content" style={{ background: "transparent", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1, overflow: "hidden" }}>
+
+        {/* Blurred cover image as content background */}
+        <div style={{ position: "absolute", top: -40, left: 0, right: 0, bottom: 0, zIndex: -1, pointerEvents: "none" }} aria-hidden="true">
+          <Image
+            src={district.image}
+            alt=""
+            fill
+            sizes="100vw"
+            style={{
+              objectFit: "cover",
+              filter: "blur(60px) saturate(3.2) brightness(0.75)",
+              transform: "scale(1.2)",
+            }}
+          />
+          {/* Frosted white overlay — strong enough for text, subtle tint in middle */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 10%, rgba(255,255,255,0.82) 28%, rgba(255,255,255,0.82) 68%, rgba(255,255,255,0.96) 88%, rgba(255,255,255,1) 100%)" }} />
+        </div>
 
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" style={{ padding: "16px 20px 0" }}>
           <ol style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 4, listStyle: "none", margin: 0, padding: 0 }}>
             {[["Home", "/"], ["Districts", "/districts"], [district.name, null]].map(([label, href], i) => (
               <li key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                {i > 0 && <span style={{ color: "#cbd5e1", fontSize: 11 }}>/</span>}
+                {i > 0 && <span style={{ color: "#94a3b8", fontSize: 11 }}>/</span>}
                 {href ? (
-                  <Link href={href} style={{ fontSize: 11, color: "#94a3b8", textDecoration: "none" }}>{label}</Link>
+                  <Link href={href} style={{ fontSize: 11, color: "#64748b", textDecoration: "none" }}>{label}</Link>
                 ) : (
-                  <span style={{ fontSize: 11, color: "#475569", fontWeight: 600 }}>{label}</span>
+                  <span style={{ fontSize: 11, color: "#1e293b", fontWeight: 600 }}>{label}</span>
                 )}
               </li>
             ))}
@@ -289,17 +313,17 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           <button
             type="button"
             onClick={openRatingDialog}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#d97706", cursor: "pointer", whiteSpace: "nowrap" }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(255,251,235,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(253,230,138,0.6)", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#d97706", cursor: "pointer", whiteSpace: "nowrap" }}
             aria-label="Rate this district"
           >
             <StarIcon style={{ width: 13, height: 13, color: "#f59e0b", flexShrink: 0 }} />
             {ratingDisplay.toFixed(1)} · Rate
           </button>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(248,250,252,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(226,232,240,0.6)", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}>
             <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
             {formatVisitors(visitorsCount)}
           </div>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#059669", whiteSpace: "nowrap" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(236,253,245,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(209,250,229,0.6)", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#059669", whiteSpace: "nowrap" }}>
             🏛️ {districtPlaces.length} places
           </div>
         </div>
@@ -312,16 +336,18 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               <button
                 key={tab}
                 type="button"
-                onClick={() => setActiveTab(tab)}
+                onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
                 style={{
                   display: "flex", alignItems: "center", gap: 5,
                   borderRadius: 999, padding: "8px 14px",
-                  border: active ? "none" : "1.5px solid #e2e8f0",
+                  border: active ? "none" : "1.5px solid rgba(226,232,240,0.55)",
                   cursor: "pointer", fontSize: 12, fontWeight: 700,
                   whiteSpace: "nowrap", flexShrink: 0,
-                  background: active ? "#059669" : "#fff",
+                  background: active ? "#059669" : "rgba(255,255,255,0.65)",
+                  backdropFilter: active ? "none" : "blur(10px)",
+                  WebkitBackdropFilter: active ? "none" : "blur(10px)",
                   color: active ? "#fff" : "#475569",
-                  boxShadow: active ? "0 4px 14px rgba(5,150,105,0.3)" : "0 1px 4px rgba(15,23,42,0.06)",
+                  boxShadow: active ? "0 4px 14px rgba(5,150,105,0.3)" : "0 1px 4px rgba(15,23,42,0.04)",
                   transition: "all 0.15s ease",
                 }}
               >
@@ -336,7 +362,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
         <div style={{ padding: "20px 16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <div>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#059669", marginBottom: 2 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#047857", marginBottom: 2 }}>
                 {TAB_LABELS[activeTab].eyebrow}
               </p>
               <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
@@ -344,21 +370,60 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               </h2>
             </div>
             {filteredPlaces.length > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "3px 10px" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(236,253,245,0.75)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderRadius: 999, padding: "3px 10px" }}>
                 {filteredPlaces.length}
               </span>
             )}
           </div>
 
           {filteredPlaces.length ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {filteredPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
-            </div>
+            <>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {paginatedPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 20 }}>
+                  {/* Prev */}
+                  <button
+                    type="button"
+                    onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    disabled={currentPage === 1}
+                    style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(226,232,240,0.7)", background: currentPage === 1 ? "rgba(248,250,252,0.5)" : "rgba(255,255,255,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", cursor: currentPage === 1 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: currentPage === 1 ? "#cbd5e1" : "#475569", fontSize: 14, fontWeight: 700, transition: "all 0.15s", flexShrink: 0 }}
+                    aria-label="Previous page"
+                  >‹</button>
+
+                  {/* Page numbers */}
+                  <div className="scrollbar-hide" style={{ display: "flex", gap: 6, overflowX: "auto", maxWidth: 260 }}>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                        style={{ flexShrink: 0, minWidth: 34, height: 34, borderRadius: 999, border: page === currentPage ? "none" : "1.5px solid rgba(226,232,240,0.7)", background: page === currentPage ? "#059669" : "rgba(255,255,255,0.72)", backdropFilter: page === currentPage ? "none" : "blur(10px)", WebkitBackdropFilter: page === currentPage ? "none" : "blur(10px)", color: page === currentPage ? "#fff" : "#475569", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: page === currentPage ? "0 4px 12px rgba(5,150,105,0.3)" : "none", transition: "all 0.15s" }}
+                        aria-label={`Page ${page}`}
+                        aria-current={page === currentPage ? "page" : undefined}
+                      >{page}</button>
+                    ))}
+                  </div>
+
+                  {/* Next */}
+                  <button
+                    type="button"
+                    onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    disabled={currentPage === totalPages}
+                    style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(226,232,240,0.7)", background: currentPage === totalPages ? "rgba(248,250,252,0.5)" : "rgba(255,255,255,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", cursor: currentPage === totalPages ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: currentPage === totalPages ? "#cbd5e1" : "#475569", fontSize: 14, fontWeight: 700, transition: "all 0.15s", flexShrink: 0 }}
+                    aria-label="Next page"
+                  >›</button>
+                </div>
+              )}
+            </>
           ) : (
-            <div style={{ textAlign: "center", padding: "40px 20px", background: "#f8fafc", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
+            <div style={{ textAlign: "center", padding: "40px 20px", background: "rgba(248,250,252,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 20, border: "1.5px dashed rgba(226,232,240,0.7)" }}>
               <p style={{ fontSize: 28, marginBottom: 10 }}>🗺️</p>
               <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No places yet</p>
-              <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16 }}>Be the first to add a place here!</p>
+              <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>Be the first to add a place here!</p>
               <Link
                 href="/add"
                 style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "#fff", borderRadius: 999, padding: "10px 22px", fontSize: 13, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 14px rgba(5,150,105,0.3)" }}
@@ -371,92 +436,117 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
 
         {/* ── TRAVEL GUIDE ───────────────────────────────────── */}
         {hasExtendedInfo ? (
-          <div style={{ padding: "0 16px 32px" }}>
+          <div style={{ padding: "0 16px 40px" }}>
             {/* Section header */}
-            <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#059669", marginBottom: 2 }}>Travel Guide</p>
+            <div style={{ marginBottom: 22 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#047857", marginBottom: 2 }}>Travel Guide</p>
               <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", lineHeight: 1.2, letterSpacing: "-0.01em" }}>
                 {district.name} — Complete Guide
               </h2>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {/* About */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+
+              {/* About — borderless flowing text with icon badge */}
               {seo.intro ? (
-                <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e2e8f0", padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>🏔️</div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(236,253,245,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(209,250,229,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🏔️</div>
                     <div>
-                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669" }}>About</p>
+                      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#047857" }}>About</p>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>About {district.name}</h3>
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, borderLeft: "2px solid rgba(5,150,105,0.3)", paddingLeft: 14 }}>
                     {seo.intro.split(/\n{2,}/).map((p) => (
-                      <p key={p} style={{ fontSize: 13, lineHeight: 1.7, color: "#475569" }}>{p}</p>
+                      <p key={p} style={{ fontSize: 13, lineHeight: 1.75, color: "#334155" }}>{p}</p>
                     ))}
                   </div>
                 </div>
               ) : null}
 
-              {/* Info cards grid */}
+              {/* Quick info — horizontal scrollable cards */}
               {(seo.bestTimeToVisit || seo.howToReach || seo.localFoodsCulture) ? (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {seo.bestTimeToVisit ? <InfoCard emoji="🌤️" label="Best Time" title="When to Visit" content={seo.bestTimeToVisit} /> : null}
-                  {seo.howToReach ? <InfoCard emoji="🚌" label="Travel" title="How to Reach" content={seo.howToReach} /> : null}
-                  {seo.localFoodsCulture ? (
-                    <div style={{ gridColumn: (seo.bestTimeToVisit && seo.howToReach) ? "1 / -1" : undefined }}>
-                      <InfoCard emoji="🍜" label="Culture" title="Local Food & Culture" content={seo.localFoodsCulture} />
-                    </div>
-                  ) : null}
+                <div>
+                  <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#64748b", marginBottom: 12 }}>Quick Info</p>
+                  <div className="scrollbar-hide" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4, marginLeft: -2, paddingLeft: 2 }}>
+                    {seo.bestTimeToVisit ? (
+                      <div style={{ flexShrink: 0, width: 185, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
+                        <div style={{ fontSize: 22, marginBottom: 8 }}>🌤️</div>
+                        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Best Time</p>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>When to Visit</p>
+                        <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }}>{seo.bestTimeToVisit}</p>
+                      </div>
+                    ) : null}
+                    {seo.howToReach ? (
+                      <div style={{ flexShrink: 0, width: 185, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
+                        <div style={{ fontSize: 22, marginBottom: 8 }}>🚌</div>
+                        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Getting There</p>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>How to Reach</p>
+                        <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }}>{seo.howToReach}</p>
+                      </div>
+                    ) : null}
+                    {seo.localFoodsCulture ? (
+                      <div style={{ flexShrink: 0, width: 185, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
+                        <div style={{ fontSize: 22, marginBottom: 8 }}>🍜</div>
+                        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Culture</p>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>Food & Culture</p>
+                        <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }}>{seo.localFoodsCulture}</p>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
 
-              {/* Top things to do */}
+              {/* Top things to do — horizontal scrollable numbered tiles */}
               {seo.topThingsToDo?.length ? (
-                <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e2e8f0", padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>⭐</div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,251,235,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(253,230,138,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>⭐</div>
                     <div>
-                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669" }}>Activities</p>
+                      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#d97706" }}>Activities</p>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>Top Things To Do</h3>
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div className="scrollbar-hide" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4, marginLeft: -2, paddingLeft: 2 }}>
                     {seo.topThingsToDo.map((item, i) => (
-                      <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 12, background: "#f8fafc", border: "1px solid #f1f5f9" }}>
-                        <span style={{ width: 22, height: 22, borderRadius: 999, background: "#ecfdf5", color: "#059669", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
-                        <p style={{ fontSize: 13, color: "#334155", lineHeight: 1.5, fontWeight: 500 }}>{item}</p>
+                      <div key={item} style={{ flexShrink: 0, width: 148, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "14px", border: "1.5px solid rgba(226,232,240,0.6)", display: "flex", flexDirection: "column", gap: 10 }}>
+                        <span style={{ width: 28, height: 28, borderRadius: 999, background: "linear-gradient(135deg, #059669, #047857)", color: "#fff", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                        <p style={{ fontSize: 12, color: "#334155", lineHeight: 1.55, fontWeight: 600 }}>{item}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : null}
 
-              {/* FAQs */}
+              {/* FAQs — single glass panel, divider-separated rows */}
               {seo.faqs?.length ? (
-                <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid #e2e8f0", padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg, #fffbeb, #fde68a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>❓</div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,251,235,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(253,230,138,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>❓</div>
                     <div>
-                      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#d97706" }}>FAQ</p>
+                      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#d97706" }}>FAQ</p>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>Before You Go</h3>
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ background: "rgba(255,255,255,0.6)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderRadius: 20, border: "1.5px solid rgba(226,232,240,0.55)", overflow: "hidden" }}>
                     {seo.faqs.map((item, index) => {
                       const [question, ...rest] = item.split("::");
                       const answer = rest.join("::").trim();
                       return (
-                        <div key={`${question}-${index}`} style={{ borderRadius: 14, background: "#f8fafc", border: "1px solid #f1f5f9", padding: "12px 14px" }}>
-                          <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: answer ? 6 : 0 }}>{question?.trim()}</p>
-                          {answer ? <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>{answer}</p> : null}
+                        <div key={`${question}-${index}`} style={{ padding: "14px 16px", borderBottom: index < seo.faqs.length - 1 ? "1px solid rgba(226,232,240,0.45)" : "none" }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: answer ? 6 : 0, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                            <span style={{ color: "#059669", fontWeight: 900, flexShrink: 0 }}>Q.</span>
+                            {question?.trim()}
+                          </p>
+                          {answer ? <p style={{ fontSize: 13, color: "#64748b", lineHeight: 1.65, paddingLeft: 20 }}>{answer}</p> : null}
                         </div>
                       );
                     })}
                   </div>
                 </div>
               ) : null}
+
             </div>
           </div>
         ) : null}
@@ -527,16 +617,5 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
         </div>
       ) : null}
     </AppShell>
-  );
-}
-
-function InfoCard({ emoji, label, title, content }) {
-  return (
-    <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", padding: "14px", boxShadow: "0 2px 10px rgba(15,23,42,0.05)", height: "100%" }}>
-      <div style={{ fontSize: 20, marginBottom: 6 }}>{emoji}</div>
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 2 }}>{label}</p>
-      <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>{title}</p>
-      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>{content}</p>
-    </div>
   );
 }

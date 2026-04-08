@@ -107,20 +107,14 @@ export default function AdminPlacesClient({ initialPlaces, initialTotal, initial
         <p style={{ fontSize: 13, color: "#64748b" }}>{total} place{total !== 1 ? "s" : ""} found</p>
       </div>
 
-      {toast ? (
-        <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 12, background: "#0f172a", color: "#fff", fontSize: 13, fontWeight: 600 }}>
-          {toast}
-        </div>
-      ) : null}
-
       {/* Status tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 14, overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 14, overflowX: "auto", background: "#f1f5f9", borderRadius: 12, padding: 4 }}>
         {STATUS_TABS.map(({ key, label }) => (
           <button
             key={key}
             type="button"
             onClick={() => handleTabChange(key)}
-            style={{ padding: "7px 16px", borderRadius: 999, border: "1.5px solid", borderColor: status === key ? "#0f172a" : "#e2e8f0", background: status === key ? "#0f172a" : "#fff", color: status === key ? "#fff" : "#475569", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
+            style={{ flex: 1, padding: "7px 14px", borderRadius: 9, border: "none", background: status === key ? "#fff" : "transparent", color: status === key ? "#0f172a" : "#64748b", fontSize: 13, fontWeight: status === key ? 700 : 500, cursor: "pointer", whiteSpace: "nowrap", boxShadow: status === key ? "0 1px 4px rgba(15,23,42,0.08)" : "none", transition: "all 0.15s" }}
           >
             {label}
           </button>
@@ -137,7 +131,18 @@ export default function AdminPlacesClient({ initialPlaces, initialTotal, initial
       />
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: "32px 0", color: "#94a3b8", fontSize: 14 }}>Loading...</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {[1,2,3].map((i) => (
+            <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", padding: "12px 14px", display: "flex", gap: 12, alignItems: "center" }}>
+              <div style={{ width: 72, height: 72, borderRadius: 12, background: "#f1f5f9", flexShrink: 0 }} />
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ width: "60%", height: 14, borderRadius: 6, background: "#f1f5f9" }} />
+                <div style={{ width: "40%", height: 11, borderRadius: 6, background: "#f8fafc" }} />
+                <div style={{ width: "25%", height: 11, borderRadius: 6, background: "#f8fafc" }} />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {places.length === 0 ? (
@@ -225,6 +230,13 @@ export default function AdminPlacesClient({ initialPlaces, initialTotal, initial
           })}
         </div>
       )}
+
+      {/* Toast */}
+      {toast ? (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "#0f172a", color: "#fff", borderRadius: 999, padding: "10px 20px", fontSize: 13, fontWeight: 600, boxShadow: "0 4px 20px rgba(0,0,0,0.18)", zIndex: 9999, whiteSpace: "nowrap" }}>
+          {toast}
+        </div>
+      ) : null}
 
       {/* Pagination */}
       {pages > 1 ? (

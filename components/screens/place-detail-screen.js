@@ -241,7 +241,7 @@ export default function PlaceDetailScreen({ place }) {
   return (
     <AppShell>
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <div style={{ position: "relative", height: 420, margin: "-24px -1px 0", overflow: "hidden" }}>
+      <div className="district-hero" style={{ position: "relative", height: 420, margin: "-24px -1px 0", overflow: "hidden" }}>
         {/* Swipeable image carousel */}
         <HeroCarousel images={place.images?.length ? place.images : [place.image]} alt={place.name} />
 
@@ -308,257 +308,371 @@ export default function PlaceDetailScreen({ place }) {
         </div>
       </div>
 
-      {/* ── PULL-UP WHITE CONTENT ───────────────────────────── */}
-      <div style={{ background: "#fff", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1, padding: "20px 20px 0" }}>
+      {/* ── PULL-UP CONTENT ─────────────────────────────────── */}
+      <div className="district-content" style={{ background: "transparent", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1, padding: "20px 20px 0", overflow: "hidden" }}>
+
+        {/* Blurred cover image as content background */}
+        <div style={{ position: "absolute", top: -40, left: 0, right: 0, bottom: 0, zIndex: -1, pointerEvents: "none" }} aria-hidden="true">
+          <Image
+            src={place.image}
+            alt=""
+            fill
+            sizes="100vw"
+            style={{ objectFit: "cover", filter: "blur(60px) saturate(3.2) brightness(0.75)", transform: "scale(1.2)" }}
+          />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 10%, rgba(255,255,255,0.82) 28%, rgba(255,255,255,0.82) 68%, rgba(255,255,255,0.96) 88%, rgba(255,255,255,1) 100%)" }} />
+        </div>
 
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" style={{ marginBottom: 14 }}>
-          <ol style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "2px 6px", fontSize: 11, color: "#94a3b8", listStyle: "none", padding: 0, margin: 0 }}>
-            <li><Link href="/" style={{ color: "#94a3b8", textDecoration: "none" }}>Home</Link></li>
-            <li aria-hidden="true">/</li>
-            <li><Link href="/districts" style={{ color: "#94a3b8", textDecoration: "none" }}>Districts</Link></li>
-            <li aria-hidden="true">/</li>
-            <li><Link href={`/districts/${place.districtId}`} style={{ color: "#94a3b8", textDecoration: "none" }}>{place.districtId.charAt(0).toUpperCase() + place.districtId.slice(1)}</Link></li>
-            <li aria-hidden="true">/</li>
-            <li style={{ fontWeight: 600, color: "#475569" }} aria-current="page">{place.name}</li>
+          <ol style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "2px 6px", fontSize: 11, color: "#64748b", listStyle: "none", padding: 0, margin: 0 }}>
+            <li><Link href="/" style={{ color: "#64748b", textDecoration: "none" }}>Home</Link></li>
+            <li aria-hidden="true" style={{ color: "#94a3b8" }}>/</li>
+            <li><Link href="/districts" style={{ color: "#64748b", textDecoration: "none" }}>Districts</Link></li>
+            <li aria-hidden="true" style={{ color: "#94a3b8" }}>/</li>
+            <li><Link href={`/districts/${place.districtId}`} style={{ color: "#64748b", textDecoration: "none" }}>{place.districtId.charAt(0).toUpperCase() + place.districtId.slice(1)}</Link></li>
+            <li aria-hidden="true" style={{ color: "#94a3b8" }}>/</li>
+            <li style={{ fontWeight: 600, color: "#1e293b" }} aria-current="page">{place.name}</li>
           </ol>
         </nav>
 
-        {/* Stats chips */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#b45309" }}>
-            <StarIcon style={{ width: 14, height: 14, color: "#f59e0b" }} />
-            {place.rating.toFixed(1)}
-          </span>
-          <button
-            type="button"
-            onClick={() => scrollToReviews()}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#475569", cursor: "pointer" }}
-          >
-            {reviews.length} review{reviews.length !== 1 ? "s" : ""}
-          </button>
-          {place.isVerified ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#1d4ed8" }}>
-              <BadgeIcon style={{ width: 14, height: 14 }} />
-              Verified
-            </span>
-          ) : null}
-          <Link
-            href={`/districts/${place.districtId}`}
-            style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#059669", textDecoration: "none" }}
-          >
-            {place.districtId} →
-          </Link>
-        </div>
+        {/* ── DESKTOP 2-COLUMN GRID ────────────────────────────
+            Left: description + travel guide + reviews
+            Right (sticky): stats + contributor + actions
+        ─────────────────────────────────────────────────────── */}
+        <div className="lg:grid lg:gap-8" style={{ ["--tw-col-template"]: "1fr 300px" }} >
+        <div className="place-detail-grid">
 
-        {/* Description */}
-        {place.description ? (
-          <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.65, marginBottom: 20 }}>
-            {place.description}
-          </p>
-        ) : null}
+          {/* ── LEFT COLUMN ─────────────────────────────────── */}
+          <div className="place-detail-main">
 
-      </div>
+            {/* Stats chips (mobile) */}
+            <div className="lg:hidden" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,251,235,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(253,230,138,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#b45309" }}>
+                <StarIcon style={{ width: 14, height: 14, color: "#f59e0b" }} />
+                {place.rating.toFixed(1)}
+              </span>
+              <button type="button" onClick={() => scrollToReviews()}
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(248,250,252,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(226,232,240,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#475569", cursor: "pointer" }}>
+                {reviews.length} review{reviews.length !== 1 ? "s" : ""}
+              </button>
+              {place.isVerified ? (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(239,246,255,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(191,219,254,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#1d4ed8" }}>
+                  <BadgeIcon style={{ width: 14, height: 14 }} /> Verified
+                </span>
+              ) : null}
+              <Link href={`/districts/${place.districtId}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(236,253,245,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(209,250,229,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#059669", textDecoration: "none" }}>
+                {place.districtId} →
+              </Link>
+            </div>
 
-      {/* ── CONTRIBUTOR CARD ─────────────────────────────────── */}
-      {place.contributor ? (
-        <div style={{ margin: "0 0 0", padding: "0 20px 0" }}>
-          <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "16px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)", marginBottom: 12 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#94a3b8", marginBottom: 12 }}>
-              Contributed by
-            </p>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ position: "relative", width: 42, height: 42, borderRadius: "50%", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
-                  {place.contributor.avatar ? (
-                    <Image src={place.contributor.avatar} alt={place.contributor.name} fill sizes="42px" className="object-cover" />
-                  ) : null}
-                </div>
-                <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{place.contributor.name}</p>
-                  <Link
-                    href={`/contributors/${place.contributor.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${place.contributor.id}`}
-                    style={{ fontSize: 12, fontWeight: 600, color: "#059669", textDecoration: "none" }}
-                  >
-                    View Profile →
-                  </Link>
+            {/* Description */}
+            {place.description ? (
+              <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.65, marginBottom: 20 }}>
+                {place.description}
+              </p>
+            ) : null}
+
+            {/* ── CONTRIBUTOR CARD (mobile only) ────────────────────── */}
+            {place.contributor ? (
+              <div className="lg:hidden" style={{ margin: "0 0 0", padding: "0" }}>
+                <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.7)", borderRadius: 20, padding: "16px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 12 }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", marginBottom: 12 }}>
+                    Contributed by
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ position: "relative", width: 42, height: 42, borderRadius: "50%", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
+                        {place.contributor.avatar ? (
+                          <Image src={place.contributor.avatar} alt={place.contributor.name} fill sizes="42px" className="object-cover" />
+                        ) : null}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{place.contributor.name}</p>
+                        <Link
+                          href={`/contributors/${place.contributor.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${place.contributor.id}`}
+                          style={{ fontSize: 12, fontWeight: 600, color: "#059669", textDecoration: "none" }}
+                        >
+                          View Profile →
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ borderTop: "1px solid #f1f5f9", marginTop: 14, paddingTop: 14, display: "flex", gap: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setReportDone(false); setReportModal(true); }}
+                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", borderRadius: 999, border: "1.5px solid #fecaca", background: "#fff5f5", color: "#dc2626", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      <FlagIcon style={{ width: 14, height: 14 }} />
+                      Report
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setEditDone(false); setEditModal(true); }}
+                      style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", borderRadius: 999, border: "1.5px solid rgba(226,232,240,0.7)", background: "rgba(248,250,252,0.75)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: "#475569", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                    >
+                      <PencilIcon style={{ width: 14, height: 14 }} />
+                      Suggest Edit
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div style={{ borderTop: "1px solid #f1f5f9", marginTop: 14, paddingTop: 14, display: "flex", gap: 10 }}>
-              <button
-                type="button"
-                onClick={() => { setReportDone(false); setReportModal(true); }}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", borderRadius: 999, border: "1.5px solid #fecaca", background: "#fff5f5", color: "#dc2626", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-              >
-                <FlagIcon style={{ width: 14, height: 14 }} />
-                Report
-              </button>
-              <button
-                type="button"
-                onClick={() => { setEditDone(false); setEditModal(true); }}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", borderRadius: 999, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-              >
-                <PencilIcon style={{ width: 14, height: 14 }} />
-                Suggest Edit
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* ── TRAVEL GUIDE ─────────────────────────────────────── */}
-      <div style={{ padding: "8px 20px 0" }}>
-
-        {/* About */}
-        {seo.longDescription ? (
-          <InfoCard eyebrow="About" title={`Why Visit ${place.name}`}>
-            {seo.longDescription.split(/\n{2,}/).map((p) => (
-              <p key={p} style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, marginBottom: 8 }}>{p}</p>
-            ))}
-          </InfoCard>
-        ) : null}
-
-        {/* Highlights */}
-        {seo.highlights?.length ? (
-          <InfoCard eyebrow="Highlights" title={`What Makes ${place.name} Special`}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {seo.highlights.map((item, i) => (
-                <div key={item} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                  <span style={{ width: 24, height: 24, borderRadius: 8, background: "#ecfdf5", color: "#059669", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                    {i + 1}
-                  </span>
-                  <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.55, fontWeight: 500 }}>{item}</p>
-                </div>
-              ))}
-            </div>
-          </InfoCard>
-        ) : null}
-
-        {/* Tips + Season 2-col */}
-        {(seo.practicalTips || seo.bestSeason) ? (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-            {seo.practicalTips ? (
-              <SmallInfoCard eyebrow="Tips" title="Practical Tips" content={seo.practicalTips} />
             ) : null}
-            {seo.bestSeason ? (
-              <SmallInfoCard eyebrow="Season" title="Best Time" content={seo.bestSeason} />
-            ) : null}
-          </div>
-        ) : null}
 
-        {/* Access */}
-        {seo.entryAccessInfo ? (
-          <InfoCard eyebrow="Access" title="Entry &amp; Access Info">
-            <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7 }}>{seo.entryAccessInfo}</p>
-          </InfoCard>
-        ) : null}
+            {/* ── TRAVEL GUIDE ─────────────────────────────────────── */}
+            <div style={{ padding: "8px 0 0" }}>
 
-        {/* Nearby attractions */}
-        {seo.nearbyAttractions?.length ? (
-          <InfoCard eyebrow="Around Here" title={`Nearby Attractions`}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {seo.nearbyAttractions.map((item) => (
-                <span key={item} style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 999, padding: "5px 14px", fontSize: 12, fontWeight: 600, color: "#374151" }}>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </InfoCard>
-        ) : null}
+              {/* About */}
+              {seo.longDescription ? (
+                <InfoCard eyebrow="About" title={`Why Visit ${place.name}`}>
+                  {seo.longDescription.split(/\n{2,}/).map((p) => (
+                    <p key={p} style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, marginBottom: 8 }}>{p}</p>
+                  ))}
+                </InfoCard>
+              ) : null}
 
-        {/* Nearby spots */}
-        <InfoCard eyebrow="Nearby" title="Nearby Spots">
-          {place.nearbySpots?.length ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {place.nearbySpots.map((spot) => (
-                <div key={spot.id} style={{ display: "flex", gap: 12, background: "#f8fafc", borderRadius: 16, padding: 12, border: "1px solid #f1f5f9" }}>
-                  <div style={{ position: "relative", width: 72, height: 72, borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
-                    <Image src={spot.image || place.image} alt={spot.name} fill sizes="72px" className="object-cover" />
+              {/* Highlights */}
+              {seo.highlights?.length ? (
+                <InfoCard eyebrow="Highlights" title={`What Makes ${place.name} Special`}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {seo.highlights.map((item, i) => (
+                      <div key={item} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                        <span style={{ width: 24, height: 24, borderRadius: 8, background: "rgba(236,253,245,0.85)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", color: "#059669", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                          {i + 1}
+                        </span>
+                        <p style={{ fontSize: 14, color: "#374151", lineHeight: 1.55, fontWeight: 500 }}>{item}</p>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "#059669", marginBottom: 3 }}>{spot.category}</p>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", lineHeight: 1.2, marginBottom: 4 }}>{spot.name}</p>
-                    <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{spot.description}</p>
+                </InfoCard>
+              ) : null}
+
+              {/* Tips + Season 2-col */}
+              {(seo.practicalTips || seo.bestSeason) ? (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                  {seo.practicalTips ? (
+                    <SmallInfoCard eyebrow="Tips" title="Practical Tips" content={seo.practicalTips} />
+                  ) : null}
+                  {seo.bestSeason ? (
+                    <SmallInfoCard eyebrow="Season" title="Best Time" content={seo.bestSeason} />
+                  ) : null}
+                </div>
+              ) : null}
+
+              {/* Access */}
+              {seo.entryAccessInfo ? (
+                <InfoCard eyebrow="Access" title="Entry &amp; Access Info">
+                  <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7 }}>{seo.entryAccessInfo}</p>
+                </InfoCard>
+              ) : null}
+
+              {/* Nearby attractions */}
+              {seo.nearbyAttractions?.length ? (
+                <InfoCard eyebrow="Around Here" title={`Nearby Attractions`}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {seo.nearbyAttractions.map((item) => (
+                      <span key={item} style={{ background: "rgba(248,250,252,0.72)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1.5px solid rgba(226,232,240,0.6)", borderRadius: 999, padding: "5px 14px", fontSize: 12, fontWeight: 600, color: "#374151" }}>
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </InfoCard>
+              ) : null}
+
+              {/* Nearby spots */}
+              <InfoCard eyebrow="Nearby" title="Nearby Spots">
+                {place.nearbySpots?.length ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {place.nearbySpots.map((spot) => (
+                      <div key={spot.id} style={{ display: "flex", gap: 12, background: "rgba(248,250,252,0.65)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderRadius: 16, padding: 12, border: "1px solid rgba(241,245,249,0.7)" }}>
+                        <div style={{ position: "relative", width: 72, height: 72, borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
+                          <Image src={spot.image || place.image} alt={spot.name} fill sizes="72px" className="object-cover" />
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "#059669", marginBottom: 3 }}>{spot.category}</p>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", lineHeight: 1.2, marginBottom: 4 }}>{spot.name}</p>
+                          <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{spot.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 13, color: "#94a3b8" }}>No nearby spots added yet.</p>
+                )}
+              </InfoCard>
+
+              {/* Location */}
+              <InfoCard eyebrow="Explore" title="Location">
+                <div style={{ height: 120, background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)", borderRadius: 16, border: "1.5px dashed #a7f3d0", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#fff", boxShadow: "0 4px 16px rgba(5,150,105,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <MapPinIcon style={{ width: 22, height: 22, color: "#059669" }} />
+                  </div>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{place.location}</p>
+                </div>
+                <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end" }}>
+                  <Link href="/explore" style={{ fontSize: 12, fontWeight: 700, color: "#059669", textDecoration: "none" }}>
+                    Open in explore →
+                  </Link>
+                </div>
+              </InfoCard>
+
+              {/* FAQs */}
+              {seo.faqs?.length ? (
+                <InfoCard eyebrow="FAQ" title={`${place.name} — FAQs`}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {seo.faqs.map((item, index) => {
+                      const [question, ...rest] = item.split("::");
+                      const answer = rest.join("::").trim();
+                      return (
+                        <div key={`${question}-${index}`} style={{ background: "rgba(248,250,252,0.65)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderRadius: 14, border: "1px solid rgba(241,245,249,0.7)", padding: "12px 14px" }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 1.4, marginBottom: answer ? 6 : 0 }}>{question}</p>
+                          {answer ? <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{answer}</p> : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </InfoCard>
+              ) : null}
+            </div>
+
+            {/* ── REVIEWS ──────────────────────────────────────────── */}
+            <div style={{ padding: "8px 0 32px" }} ref={reviewsSectionRef}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#047857", marginBottom: 4 }}>Community</p>
+                  <h2 style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em" }}>Traveler Reviews</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => scrollToReviews({ openForm: !showForm })}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 999, background: "rgba(236,253,245,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1.5px solid rgba(209,250,229,0.6)", color: "#059669", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                >
+                  <PlusCircleIcon style={{ width: 15, height: 15 }} />
+                  {showForm ? "Hide" : "Add Review"}
+                </button>
+              </div>
+
+              {error ? (
+                <div style={{ background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 14, padding: "12px 16px", fontSize: 13, color: "#dc2626", marginBottom: 12 }}>
+                  {error}
+                </div>
+              ) : null}
+
+              {showForm ? <ReviewForm onSubmit={handleReviewSubmit} onCancel={() => setShowForm(false)} /> : null}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {reviews.length ? (
+                  reviews.map((review) => <ReviewCard key={review.id} review={review} />)
+                ) : (
+                  <div style={{ background: "rgba(248,250,252,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px dashed rgba(226,232,240,0.7)", borderRadius: 20, padding: "40px 20px", textAlign: "center" }}>
+                    <p style={{ fontSize: 28, marginBottom: 8 }}>✍️</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No reviews yet</p>
+                    <p style={{ fontSize: 13, color: "#64748b" }}>Be the first to share your experience</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>{/* end place-detail-main */}
+
+          {/* ── RIGHT SIDEBAR (desktop only) ─────────────────── */}
+          <div className="place-detail-aside">
+
+            {/* Stats card */}
+            <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(226,232,240,0.6)", borderRadius: 20, padding: "20px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 16 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", marginBottom: 14 }}>Quick Info</p>
+
+              {/* Rating */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid rgba(241,245,249,0.7)" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(255,251,235,0.8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <StarIcon style={{ width: 18, height: 18, color: "#f59e0b" }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", lineHeight: 1 }}>{place.rating.toFixed(1)}</p>
+                  <p style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{reviews.length} review{reviews.length !== 1 ? "s" : ""}</p>
+                </div>
+              </div>
+
+              {/* Category */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid rgba(241,245,249,0.7)" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(236,253,245,0.8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
+                  🏛️
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, color: "#64748b", marginBottom: 2 }}>Category</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{CATEGORY_LABELS[place.category] || place.category}</p>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(240,253,244,0.8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <MapPinIcon style={{ width: 18, height: 18, color: "#059669" }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, color: "#64748b", marginBottom: 2 }}>Location</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{place.location}</p>
+                </div>
+              </div>
+
+              {/* Verified badge */}
+              {place.isVerified ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "10px 14px", marginBottom: 16 }}>
+                  <BadgeIcon style={{ width: 16, height: 16, color: "#1d4ed8", flexShrink: 0 }} />
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "#1d4ed8" }}>Verified Place</p>
+                </div>
+              ) : null}
+
+              {/* Actions */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <Link href={`/districts/${place.districtId}`}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 16px", borderRadius: 12, background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none", boxShadow: "0 4px 14px rgba(5,150,105,0.3)" }}>
+                  View {place.districtId} District →
+                </Link>
+                <button type="button" onClick={() => scrollToReviews({ openForm: true })}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 16px", borderRadius: 12, background: "#f8fafc", border: "1.5px solid #e2e8f0", color: "#0f172a", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                  Write a Review
+                </button>
+              </div>
+            </div>
+
+            {/* Contributor (desktop sidebar) */}
+            {place.contributor ? (
+              <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.7)", borderRadius: 20, padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 16 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", marginBottom: 14 }}>Contributed by</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                  <div style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
+                    {place.contributor.avatar ? (
+                      <Image src={place.contributor.avatar} alt={place.contributor.name} fill sizes="44px" className="object-cover" />
+                    ) : null}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>{place.contributor.name}</p>
+                    <Link href={`/contributors/${place.contributor.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${place.contributor.id}`}
+                      style={{ fontSize: 12, fontWeight: 600, color: "#059669", textDecoration: "none" }}>
+                      View Profile →
+                    </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p style={{ fontSize: 13, color: "#94a3b8" }}>No nearby spots added yet.</p>
-          )}
-        </InfoCard>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" onClick={() => { setReportDone(false); setReportModal(true); }}
+                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px", borderRadius: 10, border: "1.5px solid #fecaca", background: "#fff5f5", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                    <FlagIcon style={{ width: 13, height: 13 }} /> Report
+                  </button>
+                  <button type="button" onClick={() => { setEditDone(false); setEditModal(true); }}
+                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                    <PencilIcon style={{ width: 13, height: 13 }} /> Suggest Edit
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
-        {/* Location */}
-        <InfoCard eyebrow="Explore" title="Location">
-          <div style={{ height: 120, background: "linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)", borderRadius: 16, border: "1.5px dashed #a7f3d0", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10 }}>
-            <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#fff", boxShadow: "0 4px 16px rgba(5,150,105,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <MapPinIcon style={{ width: 22, height: 22, color: "#059669" }} />
-            </div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{place.location}</p>
-          </div>
-          <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end" }}>
-            <Link href="/explore" style={{ fontSize: 12, fontWeight: 700, color: "#059669", textDecoration: "none" }}>
-              Open in explore →
-            </Link>
-          </div>
-        </InfoCard>
-
-        {/* FAQs */}
-        {seo.faqs?.length ? (
-          <InfoCard eyebrow="FAQ" title={`${place.name} — FAQs`}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {seo.faqs.map((item, index) => {
-                const [question, ...rest] = item.split("::");
-                const answer = rest.join("::").trim();
-                return (
-                  <div key={`${question}-${index}`} style={{ background: "#f8fafc", borderRadius: 14, border: "1px solid #f1f5f9", padding: "12px 14px" }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 1.4, marginBottom: answer ? 6 : 0 }}>{question}</p>
-                    {answer ? <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.6 }}>{answer}</p> : null}
-                  </div>
-                );
-              })}
-            </div>
-          </InfoCard>
-        ) : null}
-      </div>
-
-      {/* ── REVIEWS ──────────────────────────────────────────── */}
-      <div style={{ padding: "8px 20px 32px" }} ref={reviewsSectionRef}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#059669", marginBottom: 4 }}>Community</p>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em" }}>Traveler Reviews</h2>
-          </div>
-          <button
-            type="button"
-            onClick={() => scrollToReviews({ openForm: !showForm })}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 999, background: "#ecfdf5", border: "1.5px solid #d1fae5", color: "#059669", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
-          >
-            <PlusCircleIcon style={{ width: 15, height: 15 }} />
-            {showForm ? "Hide" : "Add Review"}
-          </button>
+          </div>{/* end place-detail-aside */}
+        </div>{/* end place-detail-grid */}
         </div>
 
-        {error ? (
-          <div style={{ background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 14, padding: "12px 16px", fontSize: 13, color: "#dc2626", marginBottom: 12 }}>
-            {error}
-          </div>
-        ) : null}
-
-        {showForm ? <ReviewForm onSubmit={handleReviewSubmit} onCancel={() => setShowForm(false)} /> : null}
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {reviews.length ? (
-            reviews.map((review) => <ReviewCard key={review.id} review={review} />)
-          ) : (
-            <div style={{ background: "#fff", border: "1.5px dashed #e2e8f0", borderRadius: 20, padding: "40px 20px", textAlign: "center" }}>
-              <p style={{ fontSize: 28, marginBottom: 8 }}>✍️</p>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No reviews yet</p>
-              <p style={{ fontSize: 13, color: "#94a3b8" }}>Be the first to share your experience</p>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* ── REPORT MODAL ─────────────────────────────────────── */}
@@ -717,8 +831,8 @@ export default function PlaceDetailScreen({ place }) {
 
 function InfoCard({ eyebrow, title, children }) {
   return (
-    <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "16px 18px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)", marginBottom: 12 }}>
-      <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#059669", marginBottom: 4 }}>
+    <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.6)", borderRadius: 20, padding: "16px 18px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 12 }}>
+      <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#047857", marginBottom: 4 }}>
         {eyebrow}
       </p>
       <h2 style={{ fontSize: 17, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em", marginBottom: 12 }}>
@@ -731,8 +845,8 @@ function InfoCard({ eyebrow, title, children }) {
 
 function SmallInfoCard({ eyebrow, title, content }) {
   return (
-    <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "14px 16px", boxShadow: "0 4px 16px rgba(15,23,42,0.05)" }}>
-      <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#059669", marginBottom: 3 }}>{eyebrow}</p>
+    <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.6)", borderRadius: 20, padding: "14px 16px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)" }}>
+      <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#047857", marginBottom: 3 }}>{eyebrow}</p>
       <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>{title}</p>
       <p style={{ fontSize: 12, color: "#475569", lineHeight: 1.6 }}>{content}</p>
     </div>
@@ -743,9 +857,10 @@ function HeroCarousel({ images, alt }) {
   const [index, setIndex] = useState(0);
   const touchStartX = useRef(null);
   const dragging = useRef(false);
+  const total = images.length;
 
-  function showNext() { setIndex((i) => (i + 1) % images.length); }
-  function showPrev() { setIndex((i) => (i - 1 + images.length) % images.length); }
+  function showNext() { setIndex((i) => (i + 1) % total); }
+  function showPrev() { setIndex((i) => (i - 1 + total) % total); }
 
   function onTouchStart(e) {
     touchStartX.current = e.touches[0].clientX;
@@ -756,12 +871,44 @@ function HeroCarousel({ images, alt }) {
     if (Math.abs(e.touches[0].clientX - touchStartX.current) > 5) dragging.current = true;
   }
   function onTouchEnd(e) {
-    if (!touchStartX.current || images.length < 2) return;
+    if (!touchStartX.current || total < 2) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     if (dragging.current && Math.abs(dx) > 40) dx < 0 ? showNext() : showPrev();
     touchStartX.current = null;
     dragging.current = false;
   }
+
+  const ArrowBtn = ({ onClick, children, label, side }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        position: "absolute",
+        top: "50%",
+        [side]: 14,
+        transform: "translateY(-50%)",
+        zIndex: 10,
+        width: 40,
+        height: 40,
+        borderRadius: "50%",
+        background: "rgba(255,255,255,0.88)",
+        backdropFilter: "blur(8px)",
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.22)",
+        color: "#0f172a",
+        fontSize: 18,
+        fontWeight: 700,
+        transition: "background 0.15s, transform 0.15s",
+      }}
+    >
+      {children}
+    </button>
+  );
 
   return (
     <div
@@ -774,13 +921,37 @@ function HeroCarousel({ images, alt }) {
       <div style={{ display: "flex", width: "100%", height: "100%", transform: `translateX(-${index * 100}%)`, transition: "transform 0.4s ease" }}>
         {images.map((src, i) => (
           <div key={`${src}-${i}`} style={{ position: "relative", minWidth: "100%", height: "100%" }}>
-            <Image src={src} alt={alt} fill sizes="100vw" className="object-cover" priority={i === 0} />
+            {/* Blurred background — desktop only, fills the empty sides with the image's own colors */}
+            <div className="hidden lg:block" style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+              <Image
+                src={src}
+                alt=""
+                fill
+                sizes="100vw"
+                className="object-cover"
+                style={{ filter: "blur(28px) brightness(0.7) saturate(1.4)", transform: "scale(1.08)" }}
+                priority={i === 0}
+                aria-hidden="true"
+              />
+            </div>
+            {/* Sharp image on top */}
+            <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+              <Image src={src} alt={alt} fill sizes="100vw" className="object-cover lg:object-contain" priority={i === 0} />
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Dot indicators — right-aligned, between category label and place name */}
-      {images.length > 1 ? (
+      {/* ← → Arrow buttons — desktop only */}
+      {total > 1 ? (
+        <div className="hidden lg:block">
+          <ArrowBtn onClick={showPrev} label="Previous image" side="left">←</ArrowBtn>
+          <ArrowBtn onClick={showNext} label="Next image" side="right">→</ArrowBtn>
+        </div>
+      ) : null}
+
+      {/* Dot indicators — original position (right-aligned, bottom 94) */}
+      {total > 1 ? (
         <div style={{ position: "absolute", bottom: 94, right: 20, display: "flex", gap: 5, zIndex: 5 }}>
           {images.map((_, i) => (
             <button
@@ -797,6 +968,19 @@ function HeroCarousel({ images, alt }) {
               aria-label={`Image ${i + 1}`}
             />
           ))}
+        </div>
+      ) : null}
+
+      {/* Image counter — desktop only */}
+      {total > 1 ? (
+        <div className="hidden lg:flex" style={{
+          position: "absolute", top: 16, right: 16, zIndex: 10,
+          background: "rgba(0,0,0,0.45)", backdropFilter: "blur(8px)",
+          borderRadius: 999, padding: "4px 12px",
+          fontSize: 12, fontWeight: 700, color: "#fff",
+          alignItems: "center", gap: 4,
+        }}>
+          📷 {index + 1} / {total}
         </div>
       ) : null}
     </div>

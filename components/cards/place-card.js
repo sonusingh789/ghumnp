@@ -69,8 +69,10 @@ export default function PlaceCard({
   return (
     <div style={{
       borderRadius: 20,
-      border: "1.5px solid #f1f5f9",
-      background: "#fff",
+      border: "1.5px solid rgba(241,245,249,0.7)",
+      background: "rgba(255,255,255,0.72)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
       padding: "12px",
       boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
     }}>

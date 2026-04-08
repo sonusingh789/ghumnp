@@ -99,6 +99,74 @@ img {
   }
 }
 
+
+/* Search overlay: full-screen on mobile, offset by sidebar on desktop */
+@media (min-width: 1024px) {
+  .search-fullscreen-overlay {
+    left: 260px !important;
+    border-radius: 0 0 0 0;
+  }
+}
+
+/* Desktop: clean white background, sidebar handles visual edge */
+@media (min-width: 1024px) {
+  .mobile-shell {
+    background: #f7faf7;
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  /* Pages with mobile negative-margin green header */
+  .desktop-page-header {
+    margin: 0 0 24px !important;
+    border-radius: 20px !important;
+    padding: 32px 36px 36px !important;
+  }
+
+  /* Detail screens: remove mobile negative-margin hero bleed on desktop */
+  .district-hero {
+    margin: 0 !important;
+    border-radius: 20px !important;
+    height: 480px !important;
+  }
+
+
+  .district-content {
+    border-radius: 20px !important;
+    margin-top: 16px !important;
+    background: transparent !important;
+    overflow: hidden !important;
+  }
+
+  /* Place detail 2-column grid */
+  .place-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .place-detail-main {
+    min-width: 0;
+  }
+
+  .place-detail-aside {
+    position: sticky;
+    top: 24px;
+  }
+}
+
+/* Mobile: collapse place detail grid to single column */
+@media (max-width: 1023px) {
+  .place-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .place-detail-aside {
+    display: none !important;
+  }
+}
+
 .scrollbar-hide {
   scrollbar-width: none;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useEffect, useDeferredValue, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPinIcon, SearchIcon, XIcon } from "@/components/ui/icons";
@@ -15,6 +16,8 @@ export default function HomeSearch({ initialQuery = "" }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [isOpen, setIsOpen] = useState(Boolean(initialQuery));
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [results, setResults] = useState({ districts: [], places: [] });
   const [status, setStatus] = useState(initialQuery.trim().length >= 2 ? "loading" : "idle");
   const deferredQuery = useDeferredValue(query);
@@ -85,16 +88,18 @@ export default function HomeSearch({ initialQuery = "" }) {
             color: "#0f172a",
             outline: "none",
             borderRadius: 20,
+            boxSizing: "border-box",
           }}
         />
       </form>
 
-      {/* Full-screen overlay */}
-      {isOpen && (
+      {/* Full-screen overlay — rendered via portal to avoid z-index/backdrop-filter compositing conflicts with sticky sidebar */}
+      {isOpen && mounted && createPortal(
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
+          className="search-fullscreen-overlay"
           style={{
-            position: "fixed", inset: 0, zIndex: 999,
+            position: "fixed", top: 0, right: 0, bottom: 0, left: 0, zIndex: 9999,
             background: "linear-gradient(160deg, rgba(4,40,24,0.92) 0%, rgba(5,90,55,0.88) 100%)",
             backdropFilter: "blur(20px)",
             display: "flex", flexDirection: "column",
@@ -286,7 +291,8 @@ export default function HomeSearch({ initialQuery = "" }) {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
