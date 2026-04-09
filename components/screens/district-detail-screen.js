@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import BlurImage from "@/components/ui/blur-image";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/layout/app-shell";
-import PlaceCard from "@/components/cards/place-card";
+import PlaceCard, { PlaceCardSkeleton } from "@/components/cards/place-card";
 import { useFavorites } from "@/context/favorites-context";
 import { buildLoginHref } from "@/utils/navigation";
 import {
@@ -83,6 +84,10 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
   const { isFavorite, toggleFavorite, authenticated } = useFavorites();
   const router = useRouter();
   const shareTimerRef = useRef(null);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [district.id]);
   const seo = district.seoContent || {};
   const districtFavoriteId = `district:${district.id}`;
   const isSaved = isFavorite(districtFavoriteId);
@@ -94,7 +99,18 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
     Boolean(seo.localFoodsCulture) ||
     Boolean(seo.faqs?.length);
 
-  const PLACES_PER_PAGE = 15;
+  const [cardsLoading, setCardsLoading] = useState(false);
+  const cardsTimerRef = useRef(null);
+
+  function triggerCardsLoading() {
+    setCardsLoading(true);
+    clearTimeout(cardsTimerRef.current);
+    cardsTimerRef.current = setTimeout(() => setCardsLoading(false), 400);
+  }
+
+  useEffect(() => () => clearTimeout(cardsTimerRef.current), []);
+
+  const PLACES_PER_PAGE = 7;
 
   const filteredPlaces = districtPlaces.filter((place) => {
     if (activeTab === "All") return true;
@@ -210,8 +226,8 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
     <AppShell contentClassName="pt-0">
 
       {/* ── HERO IMAGE ─────────────────────────────────────── */}
-      <div className="district-hero" style={{ position: "relative", height: 300, margin: "-24px -1px 0", overflow: "hidden" }}>
-        <Image
+      <div className="district-hero" style={{ position: "relative", height: 300, margin: "-24px -1px 0", overflow: "hidden", background: "#1a3a2a", transform: "translateZ(0)" }}>
+        <BlurImage
           src={district.image}
           alt={`${district.name} district, ${district.province} Province, Nepal`}
           fill
@@ -273,23 +289,18 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
       </div>
 
       {/* ── PULL-UP CONTENT ────────────────────────────────── */}
-      <div className="district-content" style={{ background: "transparent", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1, overflow: "hidden" }}>
+      <div className="district-content" style={{ background: "rgba(247,250,247,1)", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1, overflow: "hidden" }}>
 
-        {/* Blurred cover image as content background */}
-        <div style={{ position: "absolute", top: -40, left: 0, right: 0, bottom: 0, zIndex: -1, pointerEvents: "none" }} aria-hidden="true">
+        {/* Blurred tint — fixed height so it never grows with content */}
+        <div style={{ position: "absolute", top: -40, left: 0, right: 0, height: 480, zIndex: -1, pointerEvents: "none", overflow: "hidden" }} aria-hidden="true">
           <Image
             src={district.image}
             alt=""
             fill
             sizes="100vw"
-            style={{
-              objectFit: "cover",
-              filter: "blur(60px) saturate(3.2) brightness(0.75)",
-              transform: "scale(1.2)",
-            }}
+            style={{ objectFit: "cover", filter: "blur(40px) saturate(2) brightness(0.8)", transform: "scale(1.1)" }}
           />
-          {/* Frosted white overlay — strong enough for text, subtle tint in middle */}
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 10%, rgba(255,255,255,0.82) 28%, rgba(255,255,255,0.82) 68%, rgba(255,255,255,0.96) 88%, rgba(255,255,255,1) 100%)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 60%, rgba(255,255,255,1) 100%)" }} />
         </div>
 
         {/* Breadcrumb */}
@@ -313,17 +324,17 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           <button
             type="button"
             onClick={openRatingDialog}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(255,251,235,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(253,230,138,0.6)", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#d97706", cursor: "pointer", whiteSpace: "nowrap" }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#d97706", cursor: "pointer", whiteSpace: "nowrap" }}
             aria-label="Rate this district"
           >
             <StarIcon style={{ width: 13, height: 13, color: "#f59e0b", flexShrink: 0 }} />
             {ratingDisplay.toFixed(1)} · Rate
           </button>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(248,250,252,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(226,232,240,0.6)", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}>
             <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
             {formatVisitors(visitorsCount)}
           </div>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "rgba(236,253,245,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(209,250,229,0.6)", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#059669", whiteSpace: "nowrap" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 999, padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#059669", whiteSpace: "nowrap" }}>
             🏛️ {districtPlaces.length} places
           </div>
         </div>
@@ -336,7 +347,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               <button
                 key={tab}
                 type="button"
-                onClick={() => { setActiveTab(tab); setCurrentPage(1); }}
+                onClick={() => { setActiveTab(tab); setCurrentPage(1); triggerCardsLoading(); }}
                 style={{
                   display: "flex", alignItems: "center", gap: 5,
                   borderRadius: 999, padding: "8px 14px",
@@ -344,8 +355,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                   cursor: "pointer", fontSize: 12, fontWeight: 700,
                   whiteSpace: "nowrap", flexShrink: 0,
                   background: active ? "#059669" : "rgba(255,255,255,0.65)",
-                  backdropFilter: active ? "none" : "blur(10px)",
-                  WebkitBackdropFilter: active ? "none" : "blur(10px)",
+                                    WebkitBackdropFilter: active ? "none" : "blur(10px)",
                   color: active ? "#fff" : "#475569",
                   boxShadow: active ? "0 4px 14px rgba(5,150,105,0.3)" : "0 1px 4px rgba(15,23,42,0.04)",
                   transition: "all 0.15s ease",
@@ -370,7 +380,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               </h2>
             </div>
             {filteredPlaces.length > 0 && (
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "rgba(236,253,245,0.75)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", borderRadius: 999, padding: "3px 10px" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "3px 10px" }}>
                 {filteredPlaces.length}
               </span>
             )}
@@ -379,7 +389,12 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           {filteredPlaces.length ? (
             <>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {paginatedPlaces.map((place) => <PlaceCard key={place.id} place={place} />)}
+                {cardsLoading
+                  ? Array.from({ length: Math.min(paginatedPlaces.length || 5, 8) }).map((_, i) => (
+                      <PlaceCardSkeleton key={i} />
+                    ))
+                  : paginatedPlaces.map((place) => <PlaceCard key={place.id} place={place} />)
+                }
               </div>
 
               {/* Pagination */}
@@ -388,7 +403,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                   {/* Prev */}
                   <button
                     type="button"
-                    onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    onClick={() => { setCurrentPage((p) => Math.max(1, p - 1)); triggerCardsLoading(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     disabled={currentPage === 1}
                     style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(226,232,240,0.7)", background: currentPage === 1 ? "rgba(248,250,252,0.5)" : "rgba(255,255,255,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", cursor: currentPage === 1 ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: currentPage === 1 ? "#cbd5e1" : "#475569", fontSize: 14, fontWeight: 700, transition: "all 0.15s", flexShrink: 0 }}
                     aria-label="Previous page"
@@ -400,7 +415,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                       <button
                         key={page}
                         type="button"
-                        onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                        onClick={() => { setCurrentPage(page); triggerCardsLoading(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                         style={{ flexShrink: 0, minWidth: 34, height: 34, borderRadius: 999, border: page === currentPage ? "none" : "1.5px solid rgba(226,232,240,0.7)", background: page === currentPage ? "#059669" : "rgba(255,255,255,0.72)", backdropFilter: page === currentPage ? "none" : "blur(10px)", WebkitBackdropFilter: page === currentPage ? "none" : "blur(10px)", color: page === currentPage ? "#fff" : "#475569", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: page === currentPage ? "0 4px 12px rgba(5,150,105,0.3)" : "none", transition: "all 0.15s" }}
                         aria-label={`Page ${page}`}
                         aria-current={page === currentPage ? "page" : undefined}
@@ -411,7 +426,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                   {/* Next */}
                   <button
                     type="button"
-                    onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                    onClick={() => { setCurrentPage((p) => Math.min(totalPages, p + 1)); triggerCardsLoading(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                     disabled={currentPage === totalPages}
                     style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid rgba(226,232,240,0.7)", background: currentPage === totalPages ? "rgba(248,250,252,0.5)" : "rgba(255,255,255,0.72)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", cursor: currentPage === totalPages ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: currentPage === totalPages ? "#cbd5e1" : "#475569", fontSize: 14, fontWeight: 700, transition: "all 0.15s", flexShrink: 0 }}
                     aria-label="Next page"
@@ -420,7 +435,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               )}
             </>
           ) : (
-            <div style={{ textAlign: "center", padding: "40px 20px", background: "rgba(248,250,252,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 20, border: "1.5px dashed rgba(226,232,240,0.7)" }}>
+            <div style={{ textAlign: "center", padding: "40px 20px", background: "#f8fafc", borderRadius: 20, border: "1.5px dashed rgba(226,232,240,0.7)" }}>
               <p style={{ fontSize: 28, marginBottom: 10 }}>🗺️</p>
               <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No places yet</p>
               <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>Be the first to add a place here!</p>
@@ -451,7 +466,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               {seo.intro ? (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(236,253,245,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(209,250,229,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🏔️</div>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "#ecfdf5", border: "1px solid #d1fae5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🏔️</div>
                     <div>
                       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#047857" }}>About</p>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>About {district.name}</h3>
@@ -471,7 +486,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                   <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#64748b", marginBottom: 12 }}>Quick Info</p>
                   <div className="scrollbar-hide" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4, marginLeft: -2, paddingLeft: 2 }}>
                     {seo.bestTimeToVisit ? (
-                      <div style={{ flexShrink: 0, width: 185, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
+                      <div style={{ flexShrink: 0, width: 185, background: "#fff", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
                         <div style={{ fontSize: 22, marginBottom: 8 }}>🌤️</div>
                         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Best Time</p>
                         <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>When to Visit</p>
@@ -479,7 +494,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                       </div>
                     ) : null}
                     {seo.howToReach ? (
-                      <div style={{ flexShrink: 0, width: 185, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
+                      <div style={{ flexShrink: 0, width: 185, background: "#fff", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
                         <div style={{ fontSize: 22, marginBottom: 8 }}>🚌</div>
                         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Getting There</p>
                         <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>How to Reach</p>
@@ -487,7 +502,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                       </div>
                     ) : null}
                     {seo.localFoodsCulture ? (
-                      <div style={{ flexShrink: 0, width: 185, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
+                      <div style={{ flexShrink: 0, width: 185, background: "#fff", borderRadius: 18, padding: "16px", border: "1.5px solid rgba(226,232,240,0.6)" }}>
                         <div style={{ fontSize: 22, marginBottom: 8 }}>🍜</div>
                         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Culture</p>
                         <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>Food & Culture</p>
@@ -502,7 +517,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               {seo.topThingsToDo?.length ? (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,251,235,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(253,230,138,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>⭐</div>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "#fffbeb", border: "1px solid #fde68a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>⭐</div>
                     <div>
                       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#d97706" }}>Activities</p>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>Top Things To Do</h3>
@@ -510,7 +525,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                   </div>
                   <div className="scrollbar-hide" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4, marginLeft: -2, paddingLeft: 2 }}>
                     {seo.topThingsToDo.map((item, i) => (
-                      <div key={item} style={{ flexShrink: 0, width: 148, background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderRadius: 18, padding: "14px", border: "1.5px solid rgba(226,232,240,0.6)", display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div key={item} style={{ flexShrink: 0, width: 148, background: "#fff", borderRadius: 18, padding: "14px", border: "1.5px solid rgba(226,232,240,0.6)", display: "flex", flexDirection: "column", gap: 10 }}>
                         <span style={{ width: 28, height: 28, borderRadius: 999, background: "linear-gradient(135deg, #059669, #047857)", color: "#fff", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
                         <p style={{ fontSize: 12, color: "#334155", lineHeight: 1.55, fontWeight: 600 }}>{item}</p>
                       </div>
@@ -523,13 +538,13 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               {seo.faqs?.length ? (
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,251,235,0.85)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(253,230,138,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>❓</div>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: "#fffbeb", border: "1px solid #fde68a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>❓</div>
                     <div>
                       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#d97706" }}>FAQ</p>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>Before You Go</h3>
                     </div>
                   </div>
-                  <div style={{ background: "rgba(255,255,255,0.6)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderRadius: 20, border: "1.5px solid rgba(226,232,240,0.55)", overflow: "hidden" }}>
+                  <div style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(226,232,240,0.55)", overflow: "hidden" }}>
                     {seo.faqs.map((item, index) => {
                       const [question, ...rest] = item.split("::");
                       const answer = rest.join("::").trim();

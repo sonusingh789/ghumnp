@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getAuthFromRequest } from "@/lib/auth-request";
 import { query } from "@/lib/db";
 import { deleteFromImageKit } from "@/lib/imagekit";
@@ -93,6 +94,7 @@ export async function POST(request, { params }) {
     );
   }
 
+  revalidatePath(`/place/${slug}`);
   return NextResponse.json({ ok: true, id: insertedId });
 }
 
@@ -167,5 +169,6 @@ export async function DELETE(request, { params }) {
     );
   }
 
+  revalidatePath(`/place/${slug}`);
   return NextResponse.json({ ok: true });
 }

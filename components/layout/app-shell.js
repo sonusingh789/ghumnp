@@ -26,7 +26,7 @@ export default function AppShell({
           // Tablet
           "md:mx-auto md:max-w-[900px] md:px-2 md:pb-32",
           // Desktop — flex-1 fills sidebar remainder, no bottom-nav padding
-          "lg:flex-1 lg:mx-0 lg:max-w-none lg:px-10 lg:pb-14 lg:pt-0",
+          "lg:flex-1 lg:w-auto lg:min-w-0 lg:mx-0 lg:max-w-none lg:px-10 lg:pb-14 lg:pt-0",
           contentClassName
         )}
       >

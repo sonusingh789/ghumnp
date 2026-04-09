@@ -78,6 +78,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
   const [contributionImages, setContributionImages] = useState({});
   const [imageUploading, setImageUploading] = useState(false);
   const placeFileInputRef = useRef(null);
+  const activeUploadSlug = useRef(null);
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     comment: "",
@@ -705,8 +706,15 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                           <p style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Photos</p>
                           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
                             {(contributionImages[item.slug || item.id] || []).map((img) => (
-                              <div key={img.id} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: "1.5px solid #e2e8f0", flexShrink: 0 }}>
-                                <Image src={img.image_url} alt="place photo" fill sizes="72px" className="object-cover" />
+                              <div key={img.id} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", border: "1.5px solid #e2e8f0", flexShrink: 0, background: "#f1f5f9" }}>
+                                {img.image_url ? (
+                                  <img
+                                    src={img.image_url}
+                                    alt=""
+                                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                  />
+                                ) : null}
                                 <button
                                   type="button"
                                   onClick={() => handleContributionImageDelete(item.slug || item.id, img.id)}
@@ -718,23 +726,15 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                             <button
                               type="button"
                               disabled={imageUploading}
-                              onClick={() => { placeFileInputRef.current?.click(); }}
+                              onClick={() => {
+                                activeUploadSlug.current = item.slug || item.id;
+                                placeFileInputRef.current?.click();
+                              }}
                               style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: imageUploading ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 600, flexShrink: 0, opacity: imageUploading ? 0.6 : 1 }}
                             >
                               <CameraIcon style={{ width: 16, height: 16 }} />
                               {imageUploading ? "..." : "Add"}
                             </button>
-                            <input
-                              ref={placeFileInputRef}
-                              type="file"
-                              accept="image/*"
-                              hidden
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                e.target.value = "";
-                                if (f) handleContributionImageUpload(item.slug || item.id, f);
-                              }}
-                            />
                           </div>
                         </div>
 
@@ -746,6 +746,20 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                     ) : null}
                   </div>
                 ))}
+
+                {/* Single shared file input — activeUploadSlug.current tracks which place */}
+                <input
+                  ref={placeFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    const slug = activeUploadSlug.current;
+                    if (f && slug) handleContributionImageUpload(slug, f);
+                  }}
+                />
 
                 {/* Pagination */}
                 {Math.ceil(contributionItems.length / CONTRIB_PER_PAGE) > 1 && (

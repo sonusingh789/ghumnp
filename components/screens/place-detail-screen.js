@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import BlurImage from "@/components/ui/blur-image";
 import { useRouter } from "next/navigation";
 import AppShell from "@/components/layout/app-shell";
 import ReviewCard from "@/components/cards/review-card";
@@ -12,6 +13,8 @@ import {
   ArrowLeftIcon,
   BadgeIcon,
   CheckCircleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   FlagIcon,
   HeartIcon,
   MapPinIcon,
@@ -241,7 +244,7 @@ export default function PlaceDetailScreen({ place }) {
   return (
     <AppShell>
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <div className="district-hero" style={{ position: "relative", height: 420, margin: "-24px -1px 0", overflow: "hidden" }}>
+      <div className="district-hero" style={{ position: "relative", height: 420, margin: "-24px -1px 0", overflow: "hidden", background: "#1a3a2a", transform: "translateZ(0)" }}>
         {/* Swipeable image carousel */}
         <HeroCarousel images={place.images?.length ? place.images : [place.image]} alt={place.name} />
 
@@ -309,18 +312,18 @@ export default function PlaceDetailScreen({ place }) {
       </div>
 
       {/* ── PULL-UP CONTENT ─────────────────────────────────── */}
-      <div className="district-content" style={{ background: "transparent", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1, padding: "20px 20px 0", overflow: "hidden" }}>
+      <div className="district-content" style={{ background: "rgba(247,250,247,1)", borderRadius: "24px 24px 0 0", marginTop: -20, position: "relative", zIndex: 1, padding: "20px 20px 0", overflow: "hidden" }}>
 
-        {/* Blurred cover image as content background */}
-        <div style={{ position: "absolute", top: -40, left: 0, right: 0, bottom: 0, zIndex: -1, pointerEvents: "none" }} aria-hidden="true">
+        {/* Blurred tint — fixed height so it never grows with content */}
+        <div style={{ position: "absolute", top: -40, left: 0, right: 0, height: 480, zIndex: -1, pointerEvents: "none", overflow: "hidden" }} aria-hidden="true">
           <Image
             src={place.image}
             alt=""
             fill
             sizes="100vw"
-            style={{ objectFit: "cover", filter: "blur(60px) saturate(3.2) brightness(0.75)", transform: "scale(1.2)" }}
+            style={{ objectFit: "cover", filter: "blur(40px) saturate(2) brightness(0.8)", transform: "scale(1.1)" }}
           />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.96) 10%, rgba(255,255,255,0.82) 28%, rgba(255,255,255,0.82) 68%, rgba(255,255,255,0.96) 88%, rgba(255,255,255,1) 100%)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 60%, rgba(255,255,255,1) 100%)" }} />
         </div>
 
         {/* Breadcrumb */}
@@ -348,21 +351,21 @@ export default function PlaceDetailScreen({ place }) {
 
             {/* Stats chips (mobile) */}
             <div className="lg:hidden" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,251,235,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(253,230,138,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#b45309" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#b45309" }}>
                 <StarIcon style={{ width: 14, height: 14, color: "#f59e0b" }} />
                 {place.rating.toFixed(1)}
               </span>
               <button type="button" onClick={() => scrollToReviews()}
-                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(248,250,252,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(226,232,240,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#475569", cursor: "pointer" }}>
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#475569", cursor: "pointer" }}>
                 {reviews.length} review{reviews.length !== 1 ? "s" : ""}
               </button>
               {place.isVerified ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(239,246,255,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(191,219,254,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#1d4ed8" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#1d4ed8" }}>
                   <BadgeIcon style={{ width: 14, height: 14 }} /> Verified
                 </span>
               ) : null}
               <Link href={`/districts/${place.districtId}`}
-                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(236,253,245,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1px solid rgba(209,250,229,0.6)", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#059669", textDecoration: "none" }}>
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#ecfdf5", border: "1px solid #d1fae5", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#059669", textDecoration: "none" }}>
                 {place.districtId} →
               </Link>
             </div>
@@ -377,7 +380,7 @@ export default function PlaceDetailScreen({ place }) {
             {/* ── CONTRIBUTOR CARD (mobile only) ────────────────────── */}
             {place.contributor ? (
               <div className="lg:hidden" style={{ margin: "0 0 0", padding: "0" }}>
-                <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.7)", borderRadius: 20, padding: "16px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 12 }}>
+                <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "16px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 12 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", marginBottom: 12 }}>
                     Contributed by
                   </p>
@@ -547,7 +550,7 @@ export default function PlaceDetailScreen({ place }) {
                 <button
                   type="button"
                   onClick={() => scrollToReviews({ openForm: !showForm })}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 999, background: "rgba(236,253,245,0.75)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", border: "1.5px solid rgba(209,250,229,0.6)", color: "#059669", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px", borderRadius: 999, background: "#ecfdf5", border: "1.5px solid #d1fae5", color: "#059669", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
                 >
                   <PlusCircleIcon style={{ width: 15, height: 15 }} />
                   {showForm ? "Hide" : "Add Review"}
@@ -566,7 +569,7 @@ export default function PlaceDetailScreen({ place }) {
                 {reviews.length ? (
                   reviews.map((review) => <ReviewCard key={review.id} review={review} />)
                 ) : (
-                  <div style={{ background: "rgba(248,250,252,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px dashed rgba(226,232,240,0.7)", borderRadius: 20, padding: "40px 20px", textAlign: "center" }}>
+                  <div style={{ background: "#f8fafc", border: "1.5px dashed #e2e8f0", borderRadius: 20, padding: "40px 20px", textAlign: "center" }}>
                     <p style={{ fontSize: 28, marginBottom: 8 }}>✍️</p>
                     <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No reviews yet</p>
                     <p style={{ fontSize: 13, color: "#64748b" }}>Be the first to share your experience</p>
@@ -581,7 +584,7 @@ export default function PlaceDetailScreen({ place }) {
           <div className="place-detail-aside">
 
             {/* Stats card */}
-            <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(226,232,240,0.6)", borderRadius: 20, padding: "20px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 16 }}>
+            <div style={{ background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 20, padding: "20px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 16 }}>
               <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", marginBottom: 14 }}>Quick Info</p>
 
               {/* Rating */}
@@ -640,7 +643,7 @@ export default function PlaceDetailScreen({ place }) {
 
             {/* Contributor (desktop sidebar) */}
             {place.contributor ? (
-              <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.7)", borderRadius: 20, padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 16 }}>
+              <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "18px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 16 }}>
                 <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", marginBottom: 14 }}>Contributed by</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                   <div style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
@@ -831,7 +834,7 @@ export default function PlaceDetailScreen({ place }) {
 
 function InfoCard({ eyebrow, title, children }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.6)", borderRadius: 20, padding: "16px 18px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 12 }}>
+    <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "16px 18px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 12 }}>
       <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#047857", marginBottom: 4 }}>
         {eyebrow}
       </p>
@@ -845,7 +848,7 @@ function InfoCard({ eyebrow, title, children }) {
 
 function SmallInfoCard({ eyebrow, title, content }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.72)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1.5px solid rgba(241,245,249,0.6)", borderRadius: 20, padding: "14px 16px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)" }}>
+    <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "14px 16px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)" }}>
       <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#047857", marginBottom: 3 }}>{eyebrow}</p>
       <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>{title}</p>
       <p style={{ fontSize: 12, color: "#475569", lineHeight: 1.6 }}>{content}</p>
@@ -900,9 +903,6 @@ function HeroCarousel({ images, alt }) {
         alignItems: "center",
         justifyContent: "center",
         boxShadow: "0 2px 12px rgba(0,0,0,0.22)",
-        color: "#0f172a",
-        fontSize: 18,
-        fontWeight: 700,
         transition: "background 0.15s, transform 0.15s",
       }}
     >
@@ -936,7 +936,7 @@ function HeroCarousel({ images, alt }) {
             </div>
             {/* Sharp image on top */}
             <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
-              <Image src={src} alt={alt} fill sizes="100vw" className="object-cover lg:object-contain" priority={i === 0} />
+              <BlurImage src={src} alt={alt} fill sizes="100vw" className="object-cover lg:object-contain" priority={i === 0} />
             </div>
           </div>
         ))}
@@ -945,8 +945,12 @@ function HeroCarousel({ images, alt }) {
       {/* ← → Arrow buttons — desktop only */}
       {total > 1 ? (
         <div className="hidden lg:block">
-          <ArrowBtn onClick={showPrev} label="Previous image" side="left">←</ArrowBtn>
-          <ArrowBtn onClick={showNext} label="Next image" side="right">→</ArrowBtn>
+          <ArrowBtn onClick={showPrev} label="Previous image" side="left">
+            <ChevronLeftIcon style={{ width: 18, height: 18, color: "#0f172a" }} />
+          </ArrowBtn>
+          <ArrowBtn onClick={showNext} label="Next image" side="right">
+            <ChevronRightIcon style={{ width: 18, height: 18, color: "#0f172a" }} />
+          </ArrowBtn>
         </div>
       ) : null}
 
@@ -971,18 +975,6 @@ function HeroCarousel({ images, alt }) {
         </div>
       ) : null}
 
-      {/* Image counter — desktop only */}
-      {total > 1 ? (
-        <div className="hidden lg:flex" style={{
-          position: "absolute", top: 16, right: 16, zIndex: 10,
-          background: "rgba(0,0,0,0.45)", backdropFilter: "blur(8px)",
-          borderRadius: 999, padding: "4px 12px",
-          fontSize: 12, fontWeight: 700, color: "#fff",
-          alignItems: "center", gap: 4,
-        }}>
-          📷 {index + 1} / {total}
-        </div>
-      ) : null}
     </div>
   );
 }

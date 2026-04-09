@@ -36,7 +36,7 @@ function HeroSection({ initialQuery, carouselImages = [] }) {
     <div className="fade-up" style={{ position: "relative", padding: "0 0 0" }}>
       <div style={{
         margin: "-24px -1px 0",
-        padding: "20px 24px 80px",
+        padding: "74px 24px 80px",
         borderRadius: "0 0 36px 36px",
         position: "relative",
         overflow: "hidden",
@@ -65,16 +65,33 @@ function HeroSection({ initialQuery, carouselImages = [] }) {
           </div>
         ))}
 
+        {/* Dark overlay */}
         <div style={{
           position: "absolute", inset: 0, zIndex: 1,
           background: "linear-gradient(to bottom, rgba(4,40,24,0.62) 0%, rgba(5,150,105,0.45) 60%, rgba(4,40,24,0.75) 100%)",
           borderRadius: "0 0 36px 36px",
         }} />
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 2 }}>
-          <div style={{ marginBottom: 0, width: 180, height: 180, position: "relative" }}>
-            <Image src="/logo.png" alt="GhumnP" fill sizes="180px" style={{ objectFit: "contain" }} priority />
+        {/* White gradient at top — logo sits on this */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: 104,
+          background: "linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0.65) 60%, rgba(255,255,255,0) 100%)",
+          zIndex: 2, pointerEvents: "none",
+        }} />
+
+        {/* Logo centred over the white gradient */}
+        <div style={{
+          position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+          height: 74,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 3,
+        }}>
+          <div style={{ width: 160, height: 56, position: "relative" }}>
+            <Image src="/logo.png" alt="visitNepal77" fill sizes="160px" style={{ objectFit: "contain" }} priority />
           </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative", zIndex: 2 }}>
           <h1 style={{ fontSize: 20, fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: 3, letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
             Discover Nepal&apos;s{" "}<span style={{ color: "#86efac" }}>77 Districts</span>
           </h1>

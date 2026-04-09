@@ -1,11 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import BlurImage from "@/components/ui/blur-image";
 import { useFavorites } from "@/context/favorites-context";
+
+/* ── Skeleton card — standard wave shimmer ── */
+export function PlaceCardSkeleton() {
+  return (
+    <div style={{
+      borderRadius: 20,
+      border: "1.5px solid #f1f5f9",
+      background: "#fff",
+      padding: 12,
+      boxShadow: "0 2px 8px rgba(15,23,42,0.04)",
+    }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <div className="img-skeleton" style={{ width: 96, height: 96, borderRadius: 14, flexShrink: 0 }} />
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="img-skeleton" style={{ height: 14, borderRadius: 6, width: "60%" }} />
+          <div className="img-skeleton" style={{ height: 11, borderRadius: 6, width: "90%" }} />
+          <div className="img-skeleton" style={{ height: 11, borderRadius: 6, width: "75%" }} />
+          <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
+            <div className="img-skeleton" style={{ height: 20, width: 56, borderRadius: 999 }} />
+            <div className="img-skeleton" style={{ height: 20, width: 72, borderRadius: 999 }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 import { CheckCircleIcon, HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop&q=75";
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop";
 
 export default function PlaceCard({
   place,
@@ -32,8 +58,8 @@ export default function PlaceCard({
         }}
         className="group"
       >
-        <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
-          <Image
+        <div style={{ position: "relative", height: 160, overflow: "hidden", background: "#e8edf2", transform: "translateZ(0)" }}>
+          <BlurImage
             src={place.image || FALLBACK_IMAGE}
             alt={place.name}
             fill
@@ -69,20 +95,18 @@ export default function PlaceCard({
   return (
     <div style={{
       borderRadius: 20,
-      border: "1.5px solid rgba(241,245,249,0.7)",
-      background: "rgba(255,255,255,0.72)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
+      border: "1.5px solid #f1f5f9",
+      background: "#fff",
       padding: "12px",
-      boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
+      boxShadow: "0 2px 12px rgba(15,23,42,0.06)",
     }}>
       <div style={{ display: "flex", gap: 12 }}>
         {/* Thumbnail */}
         <Link
           href={`/place/${place.id}`}
-          style={{ position: "relative", width: 96, height: 96, flexShrink: 0, borderRadius: 14, overflow: "hidden", display: "block" }}
+          style={{ position: "relative", width: 96, height: 96, flexShrink: 0, borderRadius: 14, overflow: "hidden", display: "block", background: "#e8edf2", transform: "translateZ(0)" }}
         >
-          <Image
+          <BlurImage
             src={place.image || FALLBACK_IMAGE}
             alt={place.name}
             fill

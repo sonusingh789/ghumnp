@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import BlurImage from "@/components/ui/blur-image";
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { HeartIcon, MapPinIcon, StarIcon } from "@/components/ui/icons";
 import { useFavorites } from "@/context/favorites-context";
 import { cn, formatVisitors } from "@/lib/utils";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop&q=75";
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop";
 
 export default function DistrictCard({ district, compact = false, imagePriority = false }) {
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -61,8 +61,8 @@ export default function DistrictCard({ district, compact = false, imagePriority 
       )}
     >
       {/* ── IMAGE ──────────────────────────────────────────── */}
-      <div style={{ position: "relative", overflow: "hidden", height: compact ? 168 : 148 }}>
-        <Image
+      <div style={{ position: "relative", overflow: "hidden", height: compact ? 168 : 148, background: "#e8edf2", transform: "translateZ(0)" }}>
+        <BlurImage
           src={district.image || FALLBACK_IMAGE}
           alt={district.name}
           fill

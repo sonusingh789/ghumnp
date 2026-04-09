@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import AdminShell from "@/components/layout/admin-shell";
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&auto=format&fit=crop&q=75";
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop";
 
 const PROVINCE_COLORS = {
   "Koshi":          { color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc" },
