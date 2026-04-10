@@ -21,6 +21,29 @@ import { formatVisitors } from "@/lib/utils";
 
 const tabs = ["All", "Tourist Attraction", "Local Food", "Restaurant", "Hotel", "Local Stay"];
 
+/** Render rich HTML or fall back to plain-text paragraphs */
+function RichContent({ text, className = "", style }) {
+  if (!text) return null;
+  const isHtml = /<[a-z][\s\S]*>/i.test(text);
+  if (isHtml) {
+    return (
+      <div
+        className={`rich-content ${className}`}
+        style={style}
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
+    );
+  }
+  // Legacy plain text — split on double newlines
+  return (
+    <div className={className} style={style}>
+      {text.split(/\n{2,}/).map((p, i) => (
+        <p key={i} style={{ margin: "0 0 0.6em" }}>{p}</p>
+      ))}
+    </div>
+  );
+}
+
 const TAB_LABELS = {
   All: { eyebrow: "All Places", heading: (name) => `All Places in ${name}` },
   "Tourist Attraction": { eyebrow: "Tourist Attractions", heading: (name) => `Top Tourist Attractions in ${name}` },
@@ -472,10 +495,8 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>About {district.name}</h3>
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10, borderLeft: "2px solid rgba(5,150,105,0.3)", paddingLeft: 14 }}>
-                    {seo.intro.split(/\n{2,}/).map((p) => (
-                      <p key={p} style={{ fontSize: 13, lineHeight: 1.75, color: "#334155" }}>{p}</p>
-                    ))}
+                  <div style={{ borderLeft: "2px solid rgba(5,150,105,0.3)", paddingLeft: 14 }}>
+                    <RichContent text={seo.intro} style={{ fontSize: 13, lineHeight: 1.75, color: "#334155" }} />
                   </div>
                 </div>
               ) : null}
@@ -490,7 +511,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                         <div style={{ fontSize: 22, marginBottom: 8 }}>🌤️</div>
                         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Best Time</p>
                         <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>When to Visit</p>
-                        <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }}>{seo.bestTimeToVisit}</p>
+                        <RichContent text={seo.bestTimeToVisit} style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }} />
                       </div>
                     ) : null}
                     {seo.howToReach ? (
@@ -498,7 +519,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                         <div style={{ fontSize: 22, marginBottom: 8 }}>🚌</div>
                         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Getting There</p>
                         <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>How to Reach</p>
-                        <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }}>{seo.howToReach}</p>
+                        <RichContent text={seo.howToReach} style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }} />
                       </div>
                     ) : null}
                     {seo.localFoodsCulture ? (
@@ -506,7 +527,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                         <div style={{ fontSize: 22, marginBottom: 8 }}>🍜</div>
                         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#059669", marginBottom: 3 }}>Culture</p>
                         <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 8 }}>Food & Culture</p>
-                        <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }}>{seo.localFoodsCulture}</p>
+                        <RichContent text={seo.localFoodsCulture} style={{ fontSize: 12, color: "#64748b", lineHeight: 1.65 }} />
                       </div>
                     ) : null}
                   </div>

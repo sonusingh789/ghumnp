@@ -241,6 +241,42 @@ article {
   pointer-events: none;
 }
 
+/* RichTextArea — rich content styles */
+.rich-editor p   { margin: 0 0 0.5em; }
+.rich-editor h1, .rich-editor h2, .rich-editor h3,
+.rich-editor h4, .rich-editor h5, .rich-editor h6 {
+  font-weight: 800; color: #0f172a; margin: 0.75em 0 0.3em; line-height: 1.25;
+}
+.rich-editor h1 { font-size: 1.3em; }
+.rich-editor h2 { font-size: 1.15em; }
+.rich-editor h3 { font-size: 1.05em; }
+.rich-editor ul, .rich-editor ol { margin: 0.4em 0 0.4em 1.4em; padding: 0; }
+.rich-editor li { margin-bottom: 0.2em; }
+.rich-editor b, .rich-editor strong { font-weight: 700; }
+.rich-editor em, .rich-editor i   { font-style: italic; }
+.rich-editor blockquote {
+  border-left: 3px solid #d1fae5; margin: 0.5em 0;
+  padding-left: 12px; color: #475569;
+}
+
+/* Render stored rich HTML on public pages */
+.rich-content p  { margin: 0 0 0.6em; }
+.rich-content h1, .rich-content h2, .rich-content h3,
+.rich-content h4, .rich-content h5, .rich-content h6 {
+  font-weight: 800; color: #0f172a; margin: 0.8em 0 0.3em; line-height: 1.25;
+}
+.rich-content h1 { font-size: 1.2em; }
+.rich-content h2 { font-size: 1.1em; }
+.rich-content h3 { font-size: 1em; }
+.rich-content ul, .rich-content ol { margin: 0.4em 0 0.4em 1.4em; padding: 0; }
+.rich-content li { margin-bottom: 0.25em; }
+.rich-content b, .rich-content strong { font-weight: 700; }
+.rich-content em, .rich-content i   { font-style: italic; }
+.rich-content blockquote {
+  border-left: 3px solid #d1fae5; margin: 0.5em 0;
+  padding-left: 12px; color: #475569;
+}
+
 .display {
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.02em;

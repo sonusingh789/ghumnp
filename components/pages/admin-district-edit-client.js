@@ -4,39 +4,87 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AdminShell from "@/components/layout/admin-shell";
 
+// Tags we allow through — everything else is stripped (content kept)
+const ALLOWED_TAGS = new Set([
+  "p","br","b","strong","em","i","u","s","ul","ol","li",
+  "h1","h2","h3","h4","h5","h6","blockquote","span","div",
+]);
+
 /**
- * RichTextArea — contenteditable div that looks like a textarea.
- * The browser handles paste natively (Word, Docs, ChatGPT, websites).
- * We extract innerText for storage — preserves paragraphs and line structure
- * without needing any HTML parsing.
+ * Sanitize HTML: keep only safe tags + remove all event/style/class attrs.
+ * Runs in the browser via DOM so it's fast and correct.
+ */
+function sanitize(html) {
+  if (typeof document === "undefined") return html;
+  const root = document.createElement("div");
+  root.innerHTML = html;
+
+  function clean(node) {
+    if (node.nodeType === Node.TEXT_NODE) return node.cloneNode();
+    if (node.nodeType !== Node.ELEMENT_NODE) return null;
+
+    const tag = node.tagName.toLowerCase();
+    // Strip script/style entirely (no content)
+    if (tag === "script" || tag === "style") return null;
+
+    const out = ALLOWED_TAGS.has(tag)
+      ? document.createElement(tag)
+      : document.createElement("span"); // unknown tag → inline span
+
+    // Only keep href on <a> (we don't allow <a> but future-proof)
+    for (const attr of node.attributes) {
+      if (attr.name === "href" && tag === "a") out.setAttribute("href", attr.value);
+      // strip everything else (class, style, on*, data-*)
+    }
+
+    for (const child of node.childNodes) {
+      const cleaned = clean(child);
+      if (cleaned) out.appendChild(cleaned);
+    }
+    return out;
+  }
+
+  const out = document.createElement("div");
+  for (const child of root.childNodes) {
+    const cleaned = clean(child);
+    if (cleaned) out.appendChild(cleaned);
+  }
+  return out.innerHTML;
+}
+
+/**
+ * RichTextArea — contenteditable div styled as a textarea.
+ * Paste from Word / Docs / ChatGPT / websites preserves bold, headings,
+ * bullets etc. We store sanitized innerHTML so formatting round-trips.
  */
 function RichTextArea({ value, onChange, rows = 4, placeholder, style }) {
   const ref = useRef(null);
   const isComposing = useRef(false);
 
-  // Set initial content once on mount only — never sync back from props
-  // (syncing would reset cursor position on every keystroke)
+  // Mount once — load existing value as HTML (or plain text fallback)
   useEffect(() => {
-    if (ref.current) {
-      ref.current.innerText = value || "";
+    if (!ref.current) return;
+    const looksLikeHtml = /<[a-z][\s\S]*>/i.test(value || "");
+    if (looksLikeHtml) {
+      ref.current.innerHTML = value || "";
+    } else {
+      // Old plain-text content — convert newlines to <br> for display
+      ref.current.innerHTML = (value || "")
+        .split(/\n{2,}/).map((p) => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("") || "";
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function extract() {
-    const text = ref.current?.innerText || "";
-    // Collapse 3+ consecutive newlines to 2
-    return text.replace(/\n{3,}/g, "\n\n").trimEnd();
+    return sanitize(ref.current?.innerHTML || "");
   }
 
   function handleInput() {
     if (!isComposing.current) onChange(extract());
   }
 
-  function handlePaste(e) {
-    // Let the browser insert the pasted content natively into the
-    // contenteditable — it already strips dangerous HTML and keeps structure.
-    // We just need to fire onChange after the paste is committed.
+  function handlePaste() {
+    // Browser inserts rich HTML natively; extract after it commits
     requestAnimationFrame(() => onChange(extract()));
   }
 
@@ -50,13 +98,14 @@ function RichTextArea({ value, onChange, rows = 4, placeholder, style }) {
       onCompositionStart={() => { isComposing.current = true; }}
       onCompositionEnd={() => { isComposing.current = false; handleInput(); }}
       data-placeholder={placeholder}
+      className="rich-editor"
       style={{
         ...style,
-        minHeight: rows * 22,
-        whiteSpace: "pre-wrap",
+        minHeight: rows * 24,
         wordBreak: "break-word",
         cursor: "text",
         outline: "none",
+        whiteSpace: "normal",
       }}
     />
   );
