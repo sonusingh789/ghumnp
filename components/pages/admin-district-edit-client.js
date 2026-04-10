@@ -1,78 +1,65 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import AdminShell from "@/components/layout/admin-shell";
 
 /**
- * Converts pasted HTML (Word, Google Docs, ChatGPT, websites) into clean
- * plain text that preserves structure: headings, bullets, bold, paragraphs.
+ * RichTextArea — contenteditable div that looks like a textarea.
+ * The browser handles paste natively (Word, Docs, ChatGPT, websites).
+ * We extract innerText for storage — preserves paragraphs and line structure
+ * without needing any HTML parsing.
  */
-function htmlToStructuredText(html) {
-  if (typeof document === "undefined") return html;
-  const el = document.createElement("div");
-  el.innerHTML = html;
+function RichTextArea({ value, onChange, rows = 4, placeholder, style }) {
+  const ref = useRef(null);
+  const isComposing = useRef(false);
 
-  function walk(node) {
-    if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+  // Set initial content once on mount only — never sync back from props
+  // (syncing would reset cursor position on every keystroke)
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.innerText = value || "";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    const tag = node.nodeName.toLowerCase();
-    const children = Array.from(node.childNodes).map(walk).join("");
-
-    // Headings → UPPERCASE on its own line
-    if (/^h[1-6]$/.test(tag)) return `\n${children.toUpperCase()}\n`;
-
-    // Block elements → newlines
-    if (["p", "div", "section", "article", "header", "footer", "blockquote"].includes(tag))
-      return `\n${children}\n`;
-
-    // Line break
-    if (tag === "br") return "\n";
-
-    // List items → bullet
-    if (tag === "li") return `\n• ${children.trim()}`;
-
-    // Lists — just return children (li already adds bullets)
-    if (tag === "ul" || tag === "ol") return `\n${children}\n`;
-
-    // Bold / strong → **text**
-    if (tag === "b" || tag === "strong") return `**${children}**`;
-
-    // Italic → _text_
-    if (tag === "i" || tag === "em") return `_${children}_`;
-
-    // Ignore script/style
-    if (tag === "script" || tag === "style") return "";
-
-    return children;
+  function extract() {
+    const text = ref.current?.innerText || "";
+    // Collapse 3+ consecutive newlines to 2
+    return text.replace(/\n{3,}/g, "\n\n").trimEnd();
   }
 
-  return walk(el)
-    .replace(/\n{3,}/g, "\n\n")   // collapse excess blank lines
-    .trim();
-}
+  function handleInput() {
+    if (!isComposing.current) onChange(extract());
+  }
 
-/**
- * Returns an onPaste handler for a textarea that intercepts rich text and
- * converts it to structured plain text, then calls the setter.
- */
-function useRichPaste(setter) {
-  return useCallback((e) => {
-    const html = e.clipboardData?.getData("text/html");
-    if (!html) return; // no HTML — browser will handle plain paste normally
-    e.preventDefault();
-    const plain = htmlToStructuredText(html);
-    const ta = e.currentTarget;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    const current = ta.value;
-    const next = current.slice(0, start) + plain + current.slice(end);
-    setter(next);
-    // Restore cursor position after React re-render
-    requestAnimationFrame(() => {
-      ta.selectionStart = ta.selectionEnd = start + plain.length;
-    });
-  }, [setter]);
+  function handlePaste(e) {
+    // Let the browser insert the pasted content natively into the
+    // contenteditable — it already strips dangerous HTML and keeps structure.
+    // We just need to fire onChange after the paste is committed.
+    requestAnimationFrame(() => onChange(extract()));
+  }
+
+  return (
+    <div
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      onInput={handleInput}
+      onPaste={handlePaste}
+      onCompositionStart={() => { isComposing.current = true; }}
+      onCompositionEnd={() => { isComposing.current = false; handleInput(); }}
+      data-placeholder={placeholder}
+      style={{
+        ...style,
+        minHeight: rows * 22,
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-word",
+        cursor: "text",
+        outline: "none",
+      }}
+    />
+  );
 }
 
 const PROVINCE_COLORS = {
@@ -129,11 +116,6 @@ export default function AdminDistrictEditClient({ district }) {
   const [howToReach, setHowToReach] = useState(district.seo?.howToReach || "");
   const [localFoods, setLocalFoods] = useState(district.seo?.localFoodsCulture || "");
 
-  // Rich-paste handlers for travel guide textareas
-  const onPasteIntro      = useRichPaste(setIntro);
-  const onPasteBestTime   = useRichPaste(setBestTime);
-  const onPasteHowToReach = useRichPaste(setHowToReach);
-  const onPasteLocalFoods = useRichPaste(setLocalFoods);
   const [things, setThings] = useState(district.seo?.topThingsToDo?.length ? district.seo.topThingsToDo : [""]);
   const [faqs, setFaqs] = useState(district.seo?.faqs?.length ? district.seo.faqs.map((f) => {
     const [q, ...rest] = f.split("::");
@@ -296,10 +278,9 @@ export default function AdminDistrictEditClient({ district }) {
             <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>About</h2>
             <p style={{ fontSize: 12, color: "#64748b", marginBottom: 14 }}>Introductory paragraphs shown at the top of the travel guide. Separate paragraphs with a blank line.</p>
             <label style={labelStyle}>Intro Text</label>
-            <textarea
+            <RichTextArea
               value={intro}
-              onChange={(e) => setIntro(e.target.value)}
-              onPaste={onPasteIntro}
+              onChange={setIntro}
               rows={6}
               style={textareaStyle}
               placeholder="Write an engaging introduction about this district…"
@@ -313,15 +294,15 @@ export default function AdminDistrictEditClient({ district }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
                 <label style={labelStyle}>🌤️ Best Time to Visit</label>
-                <textarea value={bestTime} onChange={(e) => setBestTime(e.target.value)} onPaste={onPasteBestTime} rows={3} style={textareaStyle} placeholder="e.g. October to December for clear skies and trekking…" />
+                <RichTextArea value={bestTime} onChange={setBestTime} rows={3} style={textareaStyle} placeholder="e.g. October to December for clear skies and trekking…" />
               </div>
               <div>
                 <label style={labelStyle}>🚌 How to Reach</label>
-                <textarea value={howToReach} onChange={(e) => setHowToReach(e.target.value)} onPaste={onPasteHowToReach} rows={3} style={textareaStyle} placeholder="e.g. Fly into Pokhara Airport, then take a taxi or bus…" />
+                <RichTextArea value={howToReach} onChange={setHowToReach} rows={3} style={textareaStyle} placeholder="e.g. Fly into Pokhara Airport, then take a taxi or bus…" />
               </div>
               <div>
                 <label style={labelStyle}>🍜 Local Food &amp; Culture</label>
-                <textarea value={localFoods} onChange={(e) => setLocalFoods(e.target.value)} onPaste={onPasteLocalFoods} rows={3} style={textareaStyle} placeholder="e.g. Dal Bhat, Newari cuisine, Teej festival…" />
+                <RichTextArea value={localFoods} onChange={setLocalFoods} rows={3} style={textareaStyle} placeholder="e.g. Dal Bhat, Newari cuisine, Teej festival…" />
               </div>
             </div>
           </section>

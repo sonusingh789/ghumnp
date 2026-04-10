@@ -234,6 +234,13 @@ article {
   backdrop-filter: blur(18px);
 }
 
+/* RichTextArea placeholder */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
 .display {
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.02em;
