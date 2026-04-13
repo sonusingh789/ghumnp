@@ -3,6 +3,8 @@ import { query } from "@/lib/db";
 import { buildMetadata, SITE_URL } from "@/lib/seo";
 import ContributorProfileClient from "@/components/pages/contributor-profile-client";
 
+export const revalidate = 300;
+
 export async function generateMetadata({ params }) {
   const { userId } = await params;
   const numericId = parseInt(userId.split('-').pop(), 10);
@@ -66,18 +68,54 @@ export default async function ContributorProfilePage({ params }) {
     badge_level: placesApproved >= 30 ? "pioneer" : placesApproved >= 15 ? "champion" : placesApproved >= 5 ? "local_guide" : placesApproved >= 1 ? "contributor" : "explorer",
   };
 
-  const schemaItems = [{
-    "@context": "https://schema.org",
-    "@type": "ProfilePage",
-    name: `${user.name} — visitNepal77 Contributor`,
-    url: `${SITE_URL}/contributors/${userId}`,
-    mainEntity: {
-      "@type": "Person",
-      name: user.name,
-      description: user.bio || "",
+  const topPlaces = placesResult.recordset.slice(0, 5);
+  const schemaItems = [
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      name: `${user.name} — Nepal Travel Contributor on visitNepal77`,
       url: `${SITE_URL}/contributors/${userId}`,
+      dateCreated: user.created_at
+        ? new Date(user.created_at).toISOString().split("T")[0]
+        : undefined,
+      mainEntity: {
+        "@type": "Person",
+        name: user.name,
+        description: user.bio || `${user.name} is a travel contributor on visitNepal77, sharing Nepal's best places across all 77 districts.`,
+        url: `${SITE_URL}/contributors/${userId}`,
+        image: user.avatar_url || undefined,
+        worksFor: {
+          "@type": "Organization",
+          name: "visitNepal77",
+          url: SITE_URL,
+        },
+        knowsAbout: ["Nepal travel", "Nepal tourism", "Nepal districts"],
+      },
     },
-  }];
+    // ItemList of the contributor's approved places
+    ...(topPlaces.length ? [{
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Places contributed by ${user.name} on visitNepal77`,
+      url: `${SITE_URL}/contributors/${userId}`,
+      numberOfItems: placesApproved,
+      itemListElement: topPlaces.map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: p.name,
+        url: `${SITE_URL}/place/${p.slug}`,
+      })),
+    }] : []),
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: "Contributors", item: `${SITE_URL}/leaderboard` },
+        { "@type": "ListItem", position: 3, name: user.name, item: `${SITE_URL}/contributors/${userId}` },
+      ],
+    },
+  ];
 
   return (
     <>

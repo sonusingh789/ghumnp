@@ -2,7 +2,9 @@ import ExplorePageClient from "@/components/pages/explore-page-client";
 import { getDistrictCards } from "@/lib/content";
 import { buildMetadata, SITE_URL } from "@/lib/seo";
 
-export const metadata = buildMetadata({
+export const revalidate = 300;
+
+const BASE_METADATA = {
   title: "Explore Nepal — Browse All 77 Districts by Province | visitNepal77",
   description:
     "Explore all 77 districts of Nepal organised by province. Find the best travel destinations, local attractions, hidden gems, and travel guides across Nepal's mountains, hills, and Terai plains — on visitNepal77.",
@@ -20,7 +22,13 @@ export const metadata = buildMetadata({
     "Nepal Terai travel",
     "visitNepal77 explore",
   ],
-});
+};
+
+export async function generateMetadata({ searchParams }) {
+  const resolved = await searchParams;
+  const hasQuery = Boolean(resolved?.q?.trim());
+  return buildMetadata({ ...BASE_METADATA, noIndex: hasQuery });
+}
 
 export default async function ExplorePage({ searchParams }) {
   const resolvedSearchParams = await searchParams;

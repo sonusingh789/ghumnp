@@ -2,6 +2,8 @@ import DistrictsPageClient from "@/components/pages/districts-page-client";
 import { getDistrictCards } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 
+export const revalidate = 300;
+
 export const metadata = buildMetadata({
   title: "All 77 Districts of Nepal — Complete Travel Directory | visitNepal77",
   description:

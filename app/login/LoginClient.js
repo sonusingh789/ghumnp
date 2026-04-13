@@ -111,8 +111,9 @@ export default function LoginClient({ initialFrom = "/" }) {
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Email Address</label>
+            <label htmlFor="login-email" style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Email Address</label>
             <input
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -123,8 +124,9 @@ export default function LoginClient({ initialFrom = "/" }) {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Password</label>
+            <label htmlFor="login-password" style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Password</label>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -152,7 +154,7 @@ export default function LoginClient({ initialFrom = "/" }) {
               padding: "14px",
               borderRadius: 14,
               border: "none",
-              background: loading ? "#94a3b8" : "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+              background: loading ? "#6b7280" : "linear-gradient(135deg, #059669 0%, #10b981 100%)",
               color: "#fff",
               fontSize: 15,
               fontWeight: 800,

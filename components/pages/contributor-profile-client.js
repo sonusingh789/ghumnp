@@ -139,7 +139,7 @@ export default function ContributorProfileClient({ contributor }) {
 
         {contributor.places.length === 0 ? (
           <div style={{ padding: "32px 20px", textAlign: "center", background: "#fff", borderRadius: 16, border: "1.5px dashed #e2e8f0" }}>
-            <p style={{ fontSize: 14, color: "#94a3b8" }}>No approved places yet.</p>
+            <p style={{ fontSize: 14, color: "#6b7280" }}>No approved places yet.</p>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -167,7 +167,7 @@ export default function ContributorProfileClient({ contributor }) {
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#d97706", background: "#fffbeb", borderRadius: 999, padding: "3px 8px", marginBottom: 4 }}>
                     ⭐ {Number(place.rating).toFixed(1)}
                   </div>
-                  <div style={{ fontSize: 10, color: "#94a3b8" }}>{place.review_count} reviews</div>
+                  <div style={{ fontSize: 10, color: "#6b7280" }}>{place.review_count} reviews</div>
                 </div>
               </Link>
             ))}

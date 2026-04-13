@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-function Icon({ children, className, viewBox = "0 0 24 24", strokeWidth = 1.8 }) {
+function Icon({ children, className, style, viewBox = "0 0 24 24", strokeWidth = 1.8 }) {
   return (
     <svg
       aria-hidden="true"
@@ -11,24 +11,25 @@ function Icon({ children, className, viewBox = "0 0 24 24", strokeWidth = 1.8 })
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn("size-5", className)}
+      style={style}
     >
       {children}
     </svg>
   );
 }
 
-export function SearchIcon({ className }) {
+export function SearchIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.5-3.5" />
     </Icon>
   );
 }
 
-export function HomeIcon({ className }) {
+export function HomeIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <path d="M3 10.5 12 3l9 7.5" />
       <path d="M5.5 9.8V20h13V9.8" />
       <path d="M9.5 20v-5h5v5" />
@@ -36,9 +37,9 @@ export function HomeIcon({ className }) {
   );
 }
 
-export function CompassIcon({ className }) {
+export function CompassIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <circle cx="12" cy="12" r="9" />
       <path d="m15.5 8.5-2.4 7-7 2.4 2.4-7 7-2.4Z" />
     </Icon>
@@ -55,12 +56,13 @@ export function PlusCircleIcon({ className }) {
   );
 }
 
-export function HeartIcon({ className, filled = false }) {
+export function HeartIcon({ className, style, filled = false }) {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
       className={cn("size-5", className)}
+      style={style}
       fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth="1.8"
@@ -72,46 +74,47 @@ export function HeartIcon({ className, filled = false }) {
   );
 }
 
-export function UserIcon({ className }) {
+export function UserIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <circle cx="12" cy="8" r="3.5" />
       <path d="M5 20c1.4-3.1 4.1-4.7 7-4.7s5.6 1.6 7 4.7" />
     </Icon>
   );
 }
 
-export function ChevronRightIcon({ className }) {
+export function ChevronRightIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <path d="m9 6 6 6-6 6" />
     </Icon>
   );
 }
 
-export function ChevronLeftIcon({ className }) {
+export function ChevronLeftIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <path d="m15 6-6 6 6 6" />
     </Icon>
   );
 }
 
-export function ArrowLeftIcon({ className }) {
+export function ArrowLeftIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <path d="M19 12H5" />
       <path d="m11 18-6-6 6-6" />
     </Icon>
   );
 }
 
-export function StarIcon({ className, filled = true }) {
+export function StarIcon({ className, style, filled = true }) {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
       className={cn("size-4", className)}
+      style={style}
       fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth="1.8"
@@ -123,9 +126,9 @@ export function StarIcon({ className, filled = true }) {
   );
 }
 
-export function MapPinIcon({ className }) {
+export function MapPinIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <path d="M12 21s6-5.8 6-11a6 6 0 1 0-12 0c0 5.2 6 11 6 11Z" />
       <circle cx="12" cy="10" r="2.3" />
     </Icon>
@@ -182,9 +185,9 @@ export function SettingsIcon({ className }) {
   );
 }
 
-export function XIcon({ className }) {
+export function XIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <path d="m6 6 12 12" />
       <path d="M18 6 6 18" />
     </Icon>
@@ -260,9 +263,9 @@ export function FileTextIcon({ className }) {
   );
 }
 
-export function ShareIcon({ className }) {
+export function ShareIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <circle cx="18" cy="5" r="2.5" />
       <circle cx="6" cy="12" r="2.5" />
       <circle cx="18" cy="19" r="2.5" />
@@ -280,9 +283,9 @@ export function ShieldIcon({ className }) {
   );
 }
 
-export function CheckCircleIcon({ className }) {
+export function CheckCircleIcon({ className, style }) {
   return (
-    <Icon className={className}>
+    <Icon className={className} style={style}>
       <circle cx="12" cy="12" r="9" />
       <path d="m8.5 12.5 2.5 2.5 4.5-5" />
     </Icon>
@@ -312,6 +315,38 @@ export function ClockIcon({ className }) {
     <Icon className={className}>
       <circle cx="12" cy="12" r="9" />
       <polyline points="12 7 12 12 15 15" />
+    </Icon>
+  );
+}
+
+export function MapIcon({ className, style }) {
+  return (
+    <Icon className={className} style={style}>
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6" />
+      <line x1="9" x2="9" y1="3" y2="18" />
+      <line x1="15" x2="15" y1="6" y2="21" />
+    </Icon>
+  );
+}
+
+export function TrophyIcon({ className, style }) {
+  return (
+    <Icon className={className} style={style}>
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+      <path d="M4 22h16" />
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+    </Icon>
+  );
+}
+
+export function PlusIcon({ className, style }) {
+  return (
+    <Icon className={className} style={style}>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
     </Icon>
   );
 }

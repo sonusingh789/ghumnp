@@ -63,8 +63,9 @@ export default function PlaceCard({
             src={place.image || FALLBACK_IMAGE}
             alt={place.name}
             fill
-            sizes="50vw"
+            sizes="(max-width: 768px) 50vw, 33vw"
             priority={imagePriority}
+            loading={imagePriority ? "eager" : undefined}
             className="object-cover transition duration-500 group-hover:scale-105"
             onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
           />
@@ -82,7 +83,7 @@ export default function PlaceCard({
         </div>
         <div style={{ padding: "12px 14px" }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", lineHeight: 1.3, marginBottom: 5 }}>{place.name}</h3>
-          <p style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#94a3b8" }}>
+          <p style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6b7280" }}>
             <MapPinIcon style={{ width: 13, height: 13 }} />
             {place.location}
           </p>
@@ -132,7 +133,7 @@ export default function PlaceCard({
                 style={{
                   width: 32, height: 32, flexShrink: 0, borderRadius: "50%", border: "none",
                   background: favorite ? "rgba(255,228,230,0.9)" : "#f8fafc",
-                  color: favorite ? "#f43f5e" : "#94a3b8",
+                  color: favorite ? "#f43f5e" : "#6b7280",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: "pointer", transition: "all 0.15s ease",
                 }}
@@ -154,8 +155,8 @@ export default function PlaceCard({
               <StarIcon style={{ width: 12, height: 12, color: "#f59e0b" }} />
               {place.rating.toFixed(1)}
             </span>
-            <span style={{ color: "#e2e8f0", fontSize: 12 }}>·</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "#94a3b8", minWidth: 0, overflow: "hidden" }}>
+            <span aria-hidden="true" style={{ color: "#e2e8f0", fontSize: 12 }}>·</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, color: "#6b7280", minWidth: 0, overflow: "hidden" }}>
               <MapPinIcon style={{ width: 12, height: 12, flexShrink: 0 }} />
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.location}</span>
             </span>
@@ -169,7 +170,7 @@ export default function PlaceCard({
 
           {/* Contributor */}
           {place.contributorName ? (
-            <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>
+            <p style={{ fontSize: 11, color: "#6b7280", marginTop: 6 }}>
               By{" "}
               <Link
                 href={`/contributors/${place.contributorId}`}

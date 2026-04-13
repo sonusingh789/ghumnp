@@ -637,7 +637,7 @@ export default function ContributionForm() {
             <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
               {placeMode === "existing" ? "Select a Place" : "New Place Details"}
             </h2>
-            <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
+            <p style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
               {placeMode === "existing" ? "Search and pick an existing destination" : "Tell us about this new destination"}
             </p>
           </div>
@@ -648,12 +648,13 @@ export default function ContributionForm() {
             /* ── EXISTING PLACE SEARCH ── */
             <div key="existing" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ position: "relative" }}>
-                <SearchIcon className="pointer-events-none" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "#94a3b8" }} />
+                <SearchIcon className="pointer-events-none" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", width: 15, height: 15, color: "#6b7280" }} />
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") e.preventDefault(); }}
                   placeholder="Search by place name, district or location..."
+                  aria-label="Search existing places"
                   style={{ ...inputStyle, paddingLeft: 40 }}
                 />
               </div>
@@ -706,25 +707,25 @@ export default function ContributionForm() {
                 })}
 
                 {loadingPlaces ? (
-                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#6b7280" }}>
                     Loading places...
                   </div>
                 ) : null}
 
                 {!loadingPlaces && !deferredSearchQuery.trim() ? (
-                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#6b7280" }}>
                     Start typing at least 2 letters to search existing places.
                   </div>
                 ) : null}
 
                 {!loadingPlaces && deferredSearchQuery.trim().length > 0 && deferredSearchQuery.trim().length < 2 ? (
-                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#6b7280" }}>
                     Type 2 or more letters to search.
                   </div>
                 ) : null}
 
                 {!loadingPlaces && deferredSearchQuery.trim().length >= 2 && !existingPlaces.length ? (
-                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+                  <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#6b7280" }}>
                     No match found — switch to &quot;Add New Place&quot; above.
                   </div>
                 ) : null}
@@ -810,10 +811,10 @@ export default function ContributionForm() {
                     style={{ width: 96, height: 96, borderRadius: 14, border: "2px dashed #cbd5e1", background: "#f8fafc", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", flexShrink: 0 }}
                   >
                     <UploadIcon style={{ width: 20, height: 20, color: "#059669" }} />
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8" }}>Upload</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#6b7280" }}>Upload</span>
                   </button>
                 </div>
-                <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 8 }}>JPG, PNG or WEBP · max 1400px recommended</p>
+                <p style={{ fontSize: 11, color: "#6b7280", marginTop: 8 }}>JPG, PNG or WEBP · max 1400px recommended</p>
               </div>
 
               <Field label="Category">
@@ -864,7 +865,7 @@ export default function ContributionForm() {
                 >
                   <div style={{ textAlign: "left" }}>
                     <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Add More Details</p>
-                    <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>Optional: highlights, tips, FAQs</p>
+                    <p style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>Optional: highlights, tips, FAQs</p>
                   </div>
                   <span style={{
                     width: 28, height: 28, borderRadius: "50%", background: "#fff", border: "1.5px solid #e2e8f0",
@@ -923,7 +924,7 @@ export default function ContributionForm() {
             </div>
             <div>
               <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>Nearby Spots</h2>
-              <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>Restaurants, hotels, homestays nearby</p>
+              <p style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>Restaurants, hotels, homestays nearby</p>
             </div>
           </div>
           <button
@@ -934,7 +935,7 @@ export default function ContributionForm() {
               display: "flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 999,
               border: "none", cursor: canAddSpot ? "pointer" : "not-allowed",
               background: canAddSpot ? "#ecfdf5" : "#f1f5f9",
-              color: canAddSpot ? "#059669" : "#94a3b8",
+              color: canAddSpot ? "#059669" : "#6b7280",
               fontSize: 12, fontWeight: 700,
             }}
           >
@@ -945,7 +946,7 @@ export default function ContributionForm() {
 
         <div style={{ padding: "16px 18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
           {!canAddSpot ? (
-            <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#94a3b8" }}>
+            <div style={{ padding: "12px 14px", borderRadius: 14, background: "#f8fafc", fontSize: 13, color: "#6b7280" }}>
               Select a place above to start adding nearby spots.
             </div>
           ) : null}
@@ -1024,7 +1025,7 @@ export default function ContributionForm() {
                     style={{ width: 80, height: 80, borderRadius: 12, border: "2px dashed #86efac", background: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, cursor: "pointer", flexShrink: 0 }}
                   >
                     <UploadIcon style={{ width: 18, height: 18, color: "#059669" }} />
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8" }}>Upload</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "#6b7280" }}>Upload</span>
                   </button>
                 </div>
               </div>
@@ -1149,7 +1150,7 @@ export default function ContributionForm() {
             padding: "16px",
             borderRadius: 18,
             border: "none",
-            background: loading ? "#94a3b8" : "linear-gradient(135deg, #059669 0%, #047857 100%)",
+            background: loading ? "#6b7280" : "linear-gradient(135deg, #059669 0%, #047857 100%)",
             color: "#fff",
             fontSize: 16,
             fontWeight: 800,
@@ -1161,7 +1162,7 @@ export default function ContributionForm() {
         >
           {loading ? "Submitting..." : "Submit Contribution →"}
         </button>
-        <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: 12 }}>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#6b7280", marginTop: 12 }}>
           Your contribution will be reviewed and published to the district page.
         </p>
       </div>

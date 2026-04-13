@@ -63,21 +63,13 @@ const TAB_EMOJIS = {
 };
 
 async function copyTextFallback(text) {
-  if (typeof document === "undefined") return false;
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.setAttribute("readonly", "");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  textArea.style.pointerEvents = "none";
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-  textArea.setSelectionRange(0, text.length);
-  let copied = false;
-  try { copied = document.execCommand("copy"); } catch { copied = false; }
-  document.body.removeChild(textArea);
-  return copied;
+  if (typeof navigator === "undefined") return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function tryNativeShare(payloads) {
@@ -331,7 +323,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           <ol style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 4, listStyle: "none", margin: 0, padding: 0 }}>
             {[["Home", "/"], ["Districts", "/districts"], [district.name, null]].map(([label, href], i) => (
               <li key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                {i > 0 && <span style={{ color: "#94a3b8", fontSize: 11 }}>/</span>}
+                {i > 0 && <span aria-hidden="true" style={{ color: "#6b7280", fontSize: 11 }}>/</span>}
                 {href ? (
                   <Link href={href} style={{ fontSize: 11, color: "#64748b", textDecoration: "none" }}>{label}</Link>
                 ) : (
@@ -342,8 +334,8 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           </ol>
         </nav>
 
-        {/* Stats chips */}
-        <div style={{ display: "flex", gap: 8, padding: "14px 20px 0" }}>
+        {/* Stats chips — .district-meta used by Speakable schema */}
+        <div className="district-meta" style={{ display: "flex", gap: 8, padding: "14px 20px 0" }}>
           <button
             type="button"
             onClick={openRatingDialog}
@@ -363,13 +355,15 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
         </div>
 
         {/* ── CATEGORY TABS ──────────────────────────────────── */}
-        <div className="scrollbar-hide" style={{ display: "flex", gap: 8, padding: "16px 20px 0", overflowX: "auto" }}>
+        <div role="tablist" className="scrollbar-hide" style={{ display: "flex", gap: 8, padding: "16px 20px 0", overflowX: "auto" }}>
           {tabs.map((tab) => {
             const active = activeTab === tab;
             return (
               <button
                 key={tab}
                 type="button"
+                role="tab"
+                aria-selected={active}
                 onClick={() => { setActiveTab(tab); setCurrentPage(1); triggerCardsLoading(); }}
                 style={{
                   display: "flex", alignItems: "center", gap: 5,
@@ -384,12 +378,38 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                   transition: "all 0.15s ease",
                 }}
               >
-                <span>{TAB_EMOJIS[tab]}</span>
+                <span aria-hidden="true">{TAB_EMOJIS[tab]}</span>
                 {tab}
               </button>
             );
           })}
         </div>
+
+        {/* ── TYPED CATEGORY LINKS (crawlable by Google) ─────── */}
+        <nav aria-label="Browse by category" className="scrollbar-hide" style={{ display: "flex", gap: 6, padding: "8px 20px 0", overflowX: "auto" }}>
+          {[
+            { type: "attraction", label: "All Attractions",   emoji: "🏛️" },
+            { type: "food",       label: "Local Food",         emoji: "🍜" },
+            { type: "restaurant", label: "Restaurants",        emoji: "🍽️" },
+            { type: "hotel",      label: "Hotels",             emoji: "🏨" },
+            { type: "stay",       label: "Local Stays",        emoji: "🏠" },
+          ].map(({ type, label, emoji }) => (
+            <Link
+              key={type}
+              href={`/places/${district.id}/${type}`}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                fontSize: 11, fontWeight: 600, color: "#64748b",
+                background: "transparent", borderRadius: 999,
+                padding: "4px 10px", textDecoration: "none",
+                border: "1px solid #e2e8f0", whiteSpace: "nowrap", flexShrink: 0,
+              }}
+            >
+              <span aria-hidden="true">{emoji}</span>
+              {label}
+            </Link>
+          ))}
+        </nav>
 
         {/* ── PLACES LIST ────────────────────────────────────── */}
         <div style={{ padding: "20px 16px" }}>
@@ -495,7 +515,8 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>About {district.name}</h3>
                     </div>
                   </div>
-                  <div style={{ borderLeft: "2px solid rgba(5,150,105,0.3)", paddingLeft: 14 }}>
+                  {/* .district-intro used by Speakable schema */}
+                  <div className="district-intro" style={{ borderLeft: "2px solid rgba(5,150,105,0.3)", paddingLeft: 14 }}>
                     <RichContent text={seo.intro} style={{ fontSize: 13, lineHeight: 1.75, color: "#334155" }} />
                   </div>
                 </div>
@@ -596,7 +617,7 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#059669", marginBottom: 4 }}>Rate District</p>
                 <h2 style={{ fontSize: 20, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em" }}>{district.name}</h2>
-                <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>Tap a star to rate</p>
+                <p style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>Tap a star to rate</p>
               </div>
               <button
                 type="button"

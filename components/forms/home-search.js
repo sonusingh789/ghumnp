@@ -30,9 +30,12 @@ export default function HomeSearch({ initialQuery = "" }) {
 
   useEffect(() => {
     if (!isOpen) return undefined;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    // scrollbar-gutter: stable in globals.css reserves scrollbar space at all times,
+    // so we only need overflow:hidden — no paddingRight compensation needed.
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = "";
+    };
   }, [isOpen]);
 
   useEffect(() => {

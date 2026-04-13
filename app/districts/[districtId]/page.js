@@ -1,7 +1,14 @@
 import { notFound } from "next/navigation";
 import DistrictDetailScreen from "@/components/screens/district-detail-screen";
-import { getDistrictBySlug, getDistrictListingPlacesByDistrictSlug } from "@/lib/content";
+import { getDistrictBySlug, getDistrictCards, getDistrictListingPlacesByDistrictSlug } from "@/lib/content";
 import { buildMetadata, SITE_URL } from "@/lib/seo";
+
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const districts = await getDistrictCards();
+  return districts.map((d) => ({ districtId: d.id }));
+}
 
 export async function generateMetadata({ params }) {
   const { districtId } = await params;
@@ -113,6 +120,23 @@ export default async function DistrictDetailPage({ params }) {
         })),
       },
     },
+    // Standalone ItemList enables Google list rich results
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `Best Places to Visit in ${district.name} District, Nepal`,
+      description: `Top-rated tourist attractions, local food, hotels and hidden gems in ${district.name}, ${district.province} Province.`,
+      url: `${SITE_URL}/districts/${district.id}`,
+      numberOfItems: districtPlaces.length,
+      itemListElement: districtPlaces.slice(0, 10).map((place, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: place.name,
+        url: `${SITE_URL}/place/${place.id}`,
+        image: place.image || undefined,
+        description: place.description?.slice(0, 120) || undefined,
+      })),
+    },
     {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -146,6 +170,17 @@ export default async function DistrictDetailPage({ params }) {
       mainEntity: faqItems,
     });
   }
+
+  schemaItems.push({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `${district.name} District Travel Guide`,
+    url: `${SITE_URL}/districts/${district.id}`,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".district-intro", ".district-meta"],
+    },
+  });
 
   return (
     <>

@@ -2,6 +2,8 @@ import AppShell from "@/components/layout/app-shell";
 import Link from "next/link";
 import { buildMetadata, SITE_URL } from "@/lib/seo";
 
+export const revalidate = 86400; // about page is fully static — revalidate daily
+
 export const metadata = buildMetadata({
   title: "About visitNepal77 — Nepal Travel Guide for All 77 Districts",
   description:
@@ -20,6 +22,37 @@ export const metadata = buildMetadata({
 });
 
 const schemaItems = [
+  {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "About visitNepal77",
+    url: `${SITE_URL}/about`,
+    description: "visitNepal77 is Nepal's complete travel discovery platform covering all 77 districts with travel guides, top-rated places, local food, hidden gems, and real reviews.",
+    mainEntity: {
+      "@type": "Organization",
+      name: "visitNepal77",
+      url: SITE_URL,
+      logo: `${SITE_URL}/logo.png`,
+      description: "Nepal's travel discovery platform covering all 77 districts.",
+      areaServed: { "@type": "Country", name: "Nepal" },
+      knowsAbout: [
+        "Nepal tourism",
+        "Nepal travel guides",
+        "Nepal districts",
+        "Nepal hidden gems",
+        "Nepal local food",
+      ],
+      sameAs: [
+        "https://twitter.com/visitnepal77",
+        "https://www.facebook.com/visitnepal77",
+        "https://www.instagram.com/visitnepal77",
+      ],
+    },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "p"],
+    },
+  },
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",

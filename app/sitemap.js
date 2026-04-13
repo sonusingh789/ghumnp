@@ -1,6 +1,12 @@
 import { getDistrictCards, getRecentPlaces } from "@/lib/content";
 import { SITE_URL, toAbsoluteUrl } from "@/lib/seo";
 
+const PLACE_TYPES = ["attraction", "food", "restaurant", "hotel", "stay"];
+
+function provinceToSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export default async function sitemap() {
   const [districts, places] = await Promise.all([
     getDistrictCards().catch(() => []),
@@ -57,11 +63,30 @@ export default async function sitemap() {
 
   const placeRoutes = places.map((place) => ({
     url: `${SITE_URL}/place/${place.id}`,
-    lastModified: now,
+    lastModified: place.updatedAt ? new Date(place.updatedAt) : now,
     changeFrequency: "weekly",
-    priority: 0.8,
+    priority: place.isFeatured ? 0.9 : 0.8,
     images: place.image ? [toAbsoluteUrl(place.image)] : undefined,
   }));
 
-  return [...staticRoutes, ...districtRoutes, ...placeRoutes];
+  // Typed category pages: /places/[district]/[type] — programmatic SEO surface
+  const typedCategoryRoutes = districts.flatMap((district) =>
+    PLACE_TYPES.map((type) => ({
+      url: `${SITE_URL}/places/${district.id}/${type}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.75,
+    }))
+  );
+
+  // Province pillar pages: /explore/[province]
+  const provinces = Array.from(new Set(districts.map((d) => d.province).filter(Boolean)));
+  const provinceRoutes = provinces.map((province) => ({
+    url: `${SITE_URL}/explore/${provinceToSlug(province)}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...districtRoutes, ...placeRoutes, ...typedCategoryRoutes, ...provinceRoutes];
 }

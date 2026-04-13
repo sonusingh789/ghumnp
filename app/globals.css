@@ -40,21 +40,21 @@ html {
   /* Block horizontal overscroll only — vertical pull-to-refresh stays enabled */
   overscroll-behavior-x: none;
   background-color: #f2f7f2;
+  /* Prevents layout shift when overflow:hidden is toggled (e.g. modal/search open) */
+  scrollbar-gutter: stable;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(21, 128, 61, 0.15), transparent 30%),
-    radial-gradient(circle at top right, rgba(15, 95, 113, 0.12), transparent 28%),
-    linear-gradient(180deg, #f7faf7 0%, #edf5ef 52%, #f2f7f2 100%);
-  /* Solid fallback so fast scroll never reveals white */
+  /* Single linear gradient — avoids multi-layer radial repaint cost on scroll */
+  background: linear-gradient(180deg, #f7faf7 0%, #edf5ef 60%, #f2f7f2 100%);
   background-color: #f2f7f2;
+  /* Gradient is static — attach to element not viewport so no repaint on scroll */
+  background-attachment: local;
   color: var(--foreground);
   font-family: var(--font-body), "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
   overflow-x: hidden;
   overscroll-behavior-x: none;
   /* Smooth momentum scrolling on iOS */
@@ -89,6 +89,12 @@ img {
   background: rgba(22, 163, 74, 0.18);
 }
 
+/* ── Hero carousel fade-in — triggered by key change on slide mount ─── */
+@keyframes heroFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 /* ── Skeleton pulse — used on full card skeletons ────────── */
 @keyframes skeleton-pulse {
   0%, 100% { background-color: #e8edf2; }
@@ -115,10 +121,8 @@ img {
 
 @media (min-width: 768px) {
   .mobile-shell {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(244, 248, 245, 0.97)),
-      radial-gradient(circle at top left, rgba(21, 128, 61, 0.08), transparent 24%),
-      radial-gradient(circle at top right, rgba(15, 95, 113, 0.08), transparent 22%);
+    /* Single layer — removes two radial gradients that cause paint on every scroll */
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 248, 245, 0.97));
   }
 }
 
@@ -126,6 +130,22 @@ img {
 /* ── Scroll performance ──────────────────────────────────── */
 article {
   contain: layout style;
+}
+
+/* content-visibility: auto skips rendering off-screen sections entirely,
+   significantly reducing main-thread work during initial load */
+section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+/* Honour OS-level "reduce motion" preference — disables all animations/transitions */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Search overlay: full-screen on mobile, offset by sidebar on desktop */

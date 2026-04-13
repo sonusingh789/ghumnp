@@ -565,7 +565,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
             ].map(({ label, value, color, bg }) => (
               <div key={label} style={{ background: bg, borderRadius: 14, padding: "12px 6px", textAlign: "center" }}>
                 <div style={{ fontSize: 22, fontWeight: 900, color, lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "#94a3b8", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: "#6b7280", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</div>
               </div>
             ))}
           </div>
@@ -663,7 +663,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", wordBreak: "break-word" }}>{item.name}</p>
-                        <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{item.location} · {item.dateLabel}</p>
+                        <p style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{item.location} · {item.dateLabel}</p>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                         <span style={{
@@ -730,7 +730,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                                 activeUploadSlug.current = item.slug || item.id;
                                 placeFileInputRef.current?.click();
                               }}
-                              style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: imageUploading ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 600, flexShrink: 0, opacity: imageUploading ? 0.6 : 1 }}
+                              style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: imageUploading ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#6b7280", fontSize: 11, fontWeight: 600, flexShrink: 0, opacity: imageUploading ? 0.6 : 1 }}
                             >
                               <CameraIcon style={{ width: 16, height: 16 }} />
                               {imageUploading ? "..." : "Add"}
@@ -787,7 +787,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                 )}
               </>
             ) : (
-              <div style={{ padding: "32px 18px", textAlign: "center", fontSize: 13, color: "#94a3b8" }}>No contributions yet. <Link href="/add" style={{ color: "#059669", fontWeight: 700 }}>Add one →</Link></div>
+              <div style={{ padding: "32px 18px", textAlign: "center", fontSize: 13, color: "#6b7280" }}>No contributions yet. <Link href="/add" style={{ color: "#059669", fontWeight: 700 }}>Add one →</Link></div>
             )}
           </div>
         </div>
@@ -811,7 +811,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{review.placeName}</p>
-                      <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{review.author}</p>
+                      <p style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{review.author}</p>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                       <span style={{ fontSize: 11, fontWeight: 700, background: "#fffbeb", color: "#d97706", borderRadius: 999, padding: "3px 10px" }}>★ {review.rating}.0</span>
@@ -838,7 +838,7 @@ export default function ProfilePageClient({ initialProfile, userId }) {
                 </div>
               ))
             ) : (
-              <div style={{ padding: "32px 18px", textAlign: "center", fontSize: 13, color: "#94a3b8" }}>No reviews yet.</div>
+              <div style={{ padding: "32px 18px", textAlign: "center", fontSize: 13, color: "#6b7280" }}>No reviews yet.</div>
             )}
           </div>
         </div>

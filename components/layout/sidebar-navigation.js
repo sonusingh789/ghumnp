@@ -3,18 +3,18 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Compass, Heart, House, Map, Plus, Trophy, User } from "lucide-react";
+import { CompassIcon, HeartIcon, HomeIcon, MapIcon, TrophyIcon, UserIcon, PlusIcon } from "@/components/ui/icons";
 
 const PRIMARY_NAV = [
-  { href: "/",          label: "Home",       icon: House   },
-  { href: "/explore",   label: "Explore",    icon: Compass },
-  { href: "/districts", label: "Districts",  icon: Map     },
-  { href: "/favorites", label: "Saved",      icon: Heart   },
+  { href: "/",          label: "Home",      icon: HomeIcon    },
+  { href: "/explore",   label: "Explore",   icon: CompassIcon },
+  { href: "/districts", label: "Districts", icon: MapIcon     },
+  { href: "/favorites", label: "Saved",     icon: HeartIcon   },
 ];
 
 const SECONDARY_NAV = [
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/profile",     label: "Profile",     icon: User   },
+  { href: "/leaderboard", label: "Leaderboard", icon: TrophyIcon },
+  { href: "/profile",     label: "Profile",     icon: UserIcon   },
 ];
 
 export default function SidebarNavigation() {
@@ -72,7 +72,7 @@ export default function SidebarNavigation() {
             fontWeight: 700,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
-            color: "#94a3b8",
+            color: "#6b7280",
             padding: "0 8px",
             marginBottom: 6,
           }}>
@@ -82,11 +82,7 @@ export default function SidebarNavigation() {
             const active = isActive(href);
             return (
               <NavLink key={href} href={href} label={label} active={active}>
-                <Icon
-                  size={17}
-                  strokeWidth={active ? 2.5 : 2}
-                  fill={active && href === "/favorites" ? "currentColor" : "none"}
-                />
+                <Icon style={{ width: 17, height: 17 }} />
               </NavLink>
             );
           })}
@@ -101,7 +97,7 @@ export default function SidebarNavigation() {
             fontWeight: 700,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
-            color: "#94a3b8",
+            color: "#6b7280",
             padding: "0 8px",
             marginBottom: 6,
           }}>
@@ -111,7 +107,7 @@ export default function SidebarNavigation() {
             const active = isActive(href);
             return (
               <NavLink key={href} href={href} label={label} active={active}>
-                <Icon size={17} strokeWidth={active ? 2.5 : 2} />
+                <Icon style={{ width: 17, height: 17 }} />
               </NavLink>
             );
           })}
@@ -141,12 +137,12 @@ export default function SidebarNavigation() {
           }}
           className="hover:scale-[1.02] hover:shadow-[0_8px_26px_rgba(5,150,105,0.45)]"
         >
-          <Plus size={16} strokeWidth={2.8} />
+          <PlusIcon style={{ width: 16, height: 16 }} />
           Add a Place
         </Link>
         <p style={{
           fontSize: 10,
-          color: "#94a3b8",
+          color: "#6b7280",
           textAlign: "center",
           marginTop: 8,
           lineHeight: 1.4,

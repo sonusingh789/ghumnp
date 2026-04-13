@@ -27,6 +27,7 @@ export default function DistrictCard({ district, compact = false, imagePriority 
   return (
     <article
       role="link"
+      aria-label={district.name}
       tabIndex={0}
       onPointerDown={(e) => {
         pointerStartRef.current = { x: e.clientX, y: e.clientY };
@@ -66,9 +67,10 @@ export default function DistrictCard({ district, compact = false, imagePriority 
           src={district.image || FALLBACK_IMAGE}
           alt={district.name}
           fill
-          sizes={compact ? "280px" : "50vw"}
+          sizes={compact ? "280px" : "(max-width: 768px) 100vw, 50vw"}
           className="object-cover transition duration-500 group-hover:scale-105"
           priority={imagePriority}
+          loading={imagePriority ? "eager" : undefined}
           onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
         {/* Gradient overlay */}
@@ -133,7 +135,7 @@ export default function DistrictCard({ district, compact = false, imagePriority 
           <Link
             href={href}
             onClick={(e) => e.stopPropagation()}
-            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#94a3b8", textDecoration: "none", fontWeight: 500 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6b7280", textDecoration: "none", fontWeight: 500 }}
           >
             <MapPinIcon style={{ width: 13, height: 13 }} />
             {formatVisitors(district.visitorsCount)}

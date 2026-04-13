@@ -50,6 +50,7 @@ export default function ReviewForm({ onSubmit, onCancel }) {
         onChange={(event) => setComment(event.target.value)}
         rows={4}
         placeholder="Share what stood out, tips for other travelers, or your favorite moment..."
+        aria-label="Review comment"
         className="mt-4 w-full rounded-[22px] border border-black/10 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400 focus:border-primary/30"
       />
       <div className="mt-4 flex gap-3">

@@ -1,7 +1,11 @@
 import HomePageClient from "@/components/pages/home-page-client";
-import { getDistrictCards, getFeaturedDistricts, getHomePageCollections } from "@/lib/content";
+import { getDistrictCarouselSlides, getFeaturedDistricts, getHomePageCollections } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { query } from "@/lib/db";
+
+// Cache the full rendered page for 5 minutes (same as unstable_cache TTL).
+// On cache miss or after expiry, Next.js regenerates in the background.
+export const revalidate = 300;
 
 export const metadata = buildMetadata({
   title: "Best Places to Visit in Nepal — Explore All 77 Districts | visitNepal77",
@@ -32,8 +36,8 @@ export default async function HomePage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
   const initialQuery =
     typeof resolvedSearchParams?.q === "string" ? resolvedSearchParams.q.trim() : "";
-  const [districts, featuredDistricts, homeCollections, topContributorsResult] = await Promise.all([
-    getDistrictCards(),
+  const [carouselSlides, featuredDistricts, homeCollections, topContributorsResult] = await Promise.all([
+    getDistrictCarouselSlides(),
     getFeaturedDistricts(),
     getHomePageCollections(),
     query(
@@ -47,6 +51,7 @@ export default async function HomePage({ searchParams }) {
        ORDER BY contributions DESC`
     ).catch(() => ({ recordset: [] })),
   ]);
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -102,7 +107,7 @@ export default async function HomePage({ searchParams }) {
       />
       <HomePageClient
         featuredDistricts={featuredDistricts}
-        allDistricts={districts}
+        carouselSlides={carouselSlides}
         popularDistricts={homeCollections.popularDistricts}
         topContributors={topContributorsResult.recordset}
         topPlaces={homeCollections.topPlaces}

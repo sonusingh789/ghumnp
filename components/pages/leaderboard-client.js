@@ -113,9 +113,9 @@ export default function LeaderboardClient({ initialData, initialPeriod }) {
           <div style={{ flex: 1, minWidth: 0 }}>
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: "80px 0", color: "#94a3b8", fontSize: 15 }}>Loading...</div>
+              <div style={{ textAlign: "center", padding: "80px 0", color: "#6b7280", fontSize: 15 }}>Loading...</div>
             ) : leaders.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "80px 0", color: "#94a3b8", fontSize: 15 }}>No contributors yet for this period.</div>
+              <div style={{ textAlign: "center", padding: "80px 0", color: "#6b7280", fontSize: 15 }}>No contributors yet for this period.</div>
             ) : (
               <>
                 {/* Podium */}
@@ -157,7 +157,7 @@ export default function LeaderboardClient({ initialData, initialPeriod }) {
                       return (
                         <Link key={leader.id} href={`/contributors/${contributorSlug(leader.name, leader.id)}`}
                           style={{ textDecoration: "none", background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", padding: "14px 18px", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 2px 8px rgba(15,23,42,0.04)" }}>
-                          <div style={{ width: 32, textAlign: "center", fontWeight: 800, fontSize: 15, color: "#94a3b8", flexShrink: 0 }}>{rank}</div>
+                          <div style={{ width: 32, textAlign: "center", fontWeight: 800, fontSize: 15, color: "#6b7280", flexShrink: 0 }}>{rank}</div>
                           <Avatar src={leader.avatar_url} name={leader.name} size={44} />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <p style={{ fontWeight: 700, fontSize: 15, color: "#0f172a" }}>{leader.name}</p>
@@ -194,7 +194,7 @@ export default function LeaderboardClient({ initialData, initialPeriod }) {
 
             {/* District filter */}
             <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid #e2e8f0", padding: "18px", boxShadow: "0 2px 10px rgba(15,23,42,0.04)", marginBottom: 18 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#94a3b8", marginBottom: 12 }}>Filter by District</p>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6b7280", marginBottom: 12 }}>Filter by District</p>
               <select value={districtId} onChange={(e) => handleDistrict(e.target.value)}
                 style={{ width: "100%", padding: "11px 14px", borderRadius: 12, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#0f172a", background: "#fff", outline: "none" }}>
                 <option value="">All Districts</option>
@@ -247,9 +247,9 @@ export default function LeaderboardClient({ initialData, initialPeriod }) {
           </div>
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8", fontSize: 14 }}>Loading...</div>
+            <div style={{ textAlign: "center", padding: "48px 0", color: "#6b7280", fontSize: 14 }}>Loading...</div>
           ) : leaders.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8", fontSize: 14 }}>No contributors yet for this period.</div>
+            <div style={{ textAlign: "center", padding: "48px 0", color: "#6b7280", fontSize: 14 }}>No contributors yet for this period.</div>
           ) : (
             <>
               {top3.length > 0 && (
@@ -288,7 +288,7 @@ export default function LeaderboardClient({ initialData, initialPeriod }) {
                     return (
                       <Link key={leader.id} href={`/contributors/${contributorSlug(leader.name, leader.id)}`}
                         style={{ textDecoration: "none", background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 28, textAlign: "center", fontWeight: 800, fontSize: 14, color: "#94a3b8", flexShrink: 0 }}>{rank}</div>
+                        <div style={{ width: 28, textAlign: "center", fontWeight: 800, fontSize: 14, color: "#6b7280", flexShrink: 0 }}>{rank}</div>
                         <Avatar src={leader.avatar_url} name={leader.name} size={40} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>{leader.name}</p>

@@ -30,12 +30,13 @@ function SearchInput({ value, onChange, placeholder, style = {} }) {
   return (
     <div style={{ position: "relative", ...style }}>
       <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 1 }}>
-        <SearchIcon style={{ width: 15, height: 15, color: "#94a3b8" }} />
+        <SearchIcon style={{ width: 15, height: 15, color: "#6b7280" }} />
       </span>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-label={placeholder || "Search districts"}
         style={{
           width: "100%", padding: "11px 36px 11px 40px",
           borderRadius: 13, border: "1.5px solid #e2e8f0",
@@ -45,7 +46,7 @@ function SearchInput({ value, onChange, placeholder, style = {} }) {
         }}
       />
       {value ? (
-        <button type="button" onClick={() => onChange("")}
+        <button type="button" onClick={() => onChange("")} aria-label="Clear search"
           style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
           <XIcon style={{ width: 11, height: 11, color: "#64748b" }} />
         </button>
@@ -67,7 +68,7 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
       <div style={{ textAlign: "center", padding: "80px 20px", background: "#fff", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
         <p style={{ fontSize: 40, marginBottom: 12 }}>🔍</p>
         <p style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>No districts found</p>
-        <p style={{ fontSize: 14, color: "#94a3b8" }}>Try a different name</p>
+        <p style={{ fontSize: 14, color: "#6b7280" }}>Try a different name</p>
       </div>
     );
   }
@@ -100,12 +101,13 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
             <div style={{ width: 340, flexShrink: 0 }}>
               <div style={{ position: "relative" }}>
                 <span style={{ position: "absolute", left: 15, top: "50%", transform: "translateY(-50%)", display: "flex", pointerEvents: "none", zIndex: 1 }}>
-                  <SearchIcon style={{ width: 16, height: 16, color: "#94a3b8" }} />
+                  <SearchIcon style={{ width: 16, height: 16, color: "#6b7280" }} />
                 </span>
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search districts..."
+                  aria-label="Search districts"
                   style={{
                     width: "100%", padding: "14px 40px 14px 44px",
                     borderRadius: 16, border: "none",
@@ -115,7 +117,7 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
                   }}
                 />
                 {search ? (
-                  <button type="button" onClick={() => setSearch("")}
+                  <button type="button" onClick={() => setSearch("")} aria-label="Clear search"
                     style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
                     <XIcon style={{ width: 12, height: 12, color: "#64748b" }} />
                   </button>
@@ -134,7 +136,7 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
           <div style={{ display: "flex", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 4px rgba(15,23,42,0.06)" }}>
             {["grid", "list"].map((v) => (
               <button key={v} type="button" onClick={() => setView(v)} aria-label={`${v} view`}
-                style={{ width: 40, height: 36, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: view === v ? "#059669" : "transparent", color: view === v ? "#fff" : "#94a3b8", transition: "all 0.15s ease" }}>
+                style={{ width: 40, height: 36, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: view === v ? "#059669" : "transparent", color: view === v ? "#fff" : "#6b7280", transition: "all 0.15s ease" }}>
                 {VIEW_ICONS[v]}
               </button>
             ))}
@@ -149,10 +151,10 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
               if (detailed) return <DistrictCard key={name} district={detailed} />;
               return (
                 <div key={name} style={{ borderRadius: 20, border: "1.5px dashed #e2e8f0", background: "#fff", padding: "16px", minHeight: 110, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <span style={{ background: "#f1f5f9", color: "#94a3b8", borderRadius: 999, padding: "3px 10px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", alignSelf: "flex-start" }}>Coming Soon</span>
+                  <span style={{ background: "#f1f5f9", color: "#6b7280", borderRadius: 999, padding: "3px 10px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", alignSelf: "flex-start" }}>Coming Soon</span>
                   <div>
                     <p style={{ fontWeight: 700, fontSize: 15, color: "#0f172a", marginBottom: 3 }}>{name}</p>
-                    <p style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>Content coming in a future release.</p>
+                    <p style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>Content coming in a future release.</p>
                   </div>
                 </div>
               );
@@ -168,13 +170,13 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
                     <span style={{ width: 32, height: 32, borderRadius: 10, background: "#ecfdf5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#059669", flexShrink: 0 }}>{i + 1}</span>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: 15, color: "#0f172a", lineHeight: 1.2 }}>{name}</p>
-                      {detailed ? <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{detailed.province} · ★ {detailed.rating.toFixed(1)}</p> : null}
+                      {detailed ? <p style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{detailed.province} · ★ {detailed.rating.toFixed(1)}</p> : null}
                     </div>
                   </div>
                   {detailed ? (
                     <a href={`/districts/${detailed.id}`} style={{ fontSize: 13, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "6px 16px", whiteSpace: "nowrap", textDecoration: "none", border: "1px solid #d1fae5", flexShrink: 0 }}>View →</a>
                   ) : (
-                    <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600, flexShrink: 0 }}>Coming soon</span>
+                    <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, flexShrink: 0 }}>Coming soon</span>
                   )}
                 </div>
               );
@@ -200,12 +202,13 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
             </p>
             <div style={{ position: "relative", width: "100%" }}>
               <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 1 }}>
-                <SearchIcon style={{ width: 16, height: 16, color: "#94a3b8" }} />
+                <SearchIcon style={{ width: 16, height: 16, color: "#6b7280" }} />
               </span>
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search districts..."
+                aria-label="Search districts"
                 style={{ width: "100%", padding: "13px 40px 13px 42px", borderRadius: 14, border: "none", background: "rgba(255,255,255,0.95)", fontSize: 14, color: "#0f172a", outline: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", boxSizing: "border-box" }} />
               {search ? (
-                <button type="button" onClick={() => setSearch("")}
+                <button type="button" onClick={() => setSearch("")} aria-label="Clear search"
                   style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
                   <XIcon style={{ width: 12, height: 12, color: "#64748b" }} />
                 </button>
@@ -222,7 +225,7 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
           <div style={{ display: "flex", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 4px rgba(15,23,42,0.06)" }}>
             {["grid", "list"].map((v) => (
               <button key={v} type="button" onClick={() => setView(v)} aria-label={`${v} view`}
-                style={{ width: 38, height: 34, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: view === v ? "#059669" : "transparent", color: view === v ? "#fff" : "#94a3b8", transition: "all 0.15s ease" }}>
+                style={{ width: 38, height: 34, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: view === v ? "#059669" : "transparent", color: view === v ? "#fff" : "#6b7280", transition: "all 0.15s ease" }}>
                 {VIEW_ICONS[v]}
               </button>
             ))}
@@ -234,7 +237,7 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
             <div style={{ textAlign: "center", padding: "48px 20px", background: "#fff", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
               <p style={{ fontSize: 32, marginBottom: 10 }}>🔍</p>
               <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No districts found</p>
-              <p style={{ fontSize: 13, color: "#94a3b8" }}>Try a different name</p>
+              <p style={{ fontSize: 13, color: "#6b7280" }}>Try a different name</p>
             </div>
           ) : view === "grid" ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -243,10 +246,10 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
                 if (detailed) return <DistrictCard key={name} district={detailed} />;
                 return (
                   <div key={name} style={{ borderRadius: 20, border: "1.5px dashed #e2e8f0", background: "#fff", padding: "16px", minHeight: 110, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                    <span style={{ background: "#f1f5f9", color: "#94a3b8", borderRadius: 999, padding: "3px 10px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", alignSelf: "flex-start" }}>Coming Soon</span>
+                    <span style={{ background: "#f1f5f9", color: "#6b7280", borderRadius: 999, padding: "3px 10px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", alignSelf: "flex-start" }}>Coming Soon</span>
                     <div>
                       <p style={{ fontWeight: 700, fontSize: 15, color: "#0f172a", marginBottom: 3 }}>{name}</p>
-                      <p style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>Content coming in a future release.</p>
+                      <p style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>Content coming in a future release.</p>
                     </div>
                   </div>
                 );
@@ -262,13 +265,13 @@ export default function DistrictsPageClient({ allDistricts, districts }) {
                       <span style={{ width: 28, height: 28, borderRadius: 8, background: "#ecfdf5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#059669", flexShrink: 0 }}>{i + 1}</span>
                       <div style={{ minWidth: 0 }}>
                         <p style={{ fontWeight: 700, fontSize: 14, color: "#0f172a", lineHeight: 1.2 }}>{name}</p>
-                        {detailed ? <p style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{detailed.province} · ★ {detailed.rating.toFixed(1)}</p> : null}
+                        {detailed ? <p style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{detailed.province} · ★ {detailed.rating.toFixed(1)}</p> : null}
                       </div>
                     </div>
                     {detailed ? (
                       <a href={`/districts/${detailed.id}`} style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "#ecfdf5", borderRadius: 999, padding: "5px 14px", whiteSpace: "nowrap", textDecoration: "none", border: "1px solid #d1fae5", flexShrink: 0 }}>View →</a>
                     ) : (
-                      <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, flexShrink: 0 }}>Coming soon</span>
+                      <span style={{ fontSize: 11, color: "#6b7280", fontWeight: 600, flexShrink: 0 }}>Coming soon</span>
                     )}
                   </div>
                 );

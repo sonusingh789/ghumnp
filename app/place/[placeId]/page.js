@@ -1,7 +1,14 @@
 import { notFound } from "next/navigation";
 import PlaceDetailScreen from "@/components/screens/place-detail-screen";
-import { getApprovedPlaceBySlug } from "@/lib/content";
+import { getApprovedPlaceBySlug, getRecentPlaces } from "@/lib/content";
 import { buildMetadata, SITE_URL } from "@/lib/seo";
+
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const places = await getRecentPlaces(); // lightweight single-query, no enrichment
+  return places.map((p) => ({ placeId: p.id }));
+}
 
 export async function generateMetadata({ params }) {
   const { placeId } = await params;
@@ -75,6 +82,10 @@ export default async function PlaceDetailPage({ params }) {
   };
   const schemaType = SCHEMA_TYPE_MAP[place.category] || "TouristAttraction";
 
+  const dateModified = place.updatedAt
+    ? new Date(place.updatedAt).toISOString().split("T")[0]
+    : undefined;
+
   const schemaItems = [
     {
       "@context": "https://schema.org",
@@ -84,6 +95,7 @@ export default async function PlaceDetailPage({ params }) {
       image: place.images?.length ? place.images : [place.image],
       url: `${SITE_URL}/place/${place.id}`,
       touristType: place.category,
+      ...(dateModified ? { dateModified } : {}),
       address: {
         "@type": "PostalAddress",
         addressLocality: place.location,
@@ -101,6 +113,43 @@ export default async function PlaceDetailPage({ params }) {
             },
           }
         : {}),
+      ...(place.reviews?.length
+        ? {
+            review: place.reviews.slice(0, 5).map((r) => ({
+              "@type": "Review",
+              reviewRating: {
+                "@type": "Rating",
+                ratingValue: r.rating,
+                bestRating: 5,
+                worstRating: 1,
+              },
+              author: {
+                "@type": "Person",
+                name: r.author || "Visitor",
+              },
+              reviewBody: r.comment || "",
+              datePublished: r.date
+                ? new Date(r.date).toISOString().split("T")[0]
+                : undefined,
+            })),
+          }
+        : {}),
+      // ReviewAction enables "Write a Review" sitelink in Google SERP
+      potentialAction: {
+        "@type": "WriteAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/place/${place.id}#reviews`,
+          actionPlatform: [
+            "http://schema.org/DesktopWebPlatform",
+            "http://schema.org/MobileWebPlatform",
+          ],
+        },
+        result: {
+          "@type": "Review",
+          reviewAspect: "overall experience",
+        },
+      },
     },
     {
       "@context": "https://schema.org",
@@ -141,6 +190,18 @@ export default async function PlaceDetailPage({ params }) {
       mainEntity: faqItems,
     });
   }
+
+  // Speakable: marks which CSS selectors contain voice-search-worthy content
+  schemaItems.push({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `${place.name} — ${place.category} in ${place.location}`,
+    url: `${SITE_URL}/place/${place.id}`,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".place-description", ".place-meta"],
+    },
+  });
 
   return (
     <>

@@ -115,8 +115,9 @@ export default function SignupClient({ initialFrom = "/" }) {
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Full Name</label>
+            <label htmlFor="signup-name" style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Full Name</label>
             <input
+              id="signup-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -128,8 +129,9 @@ export default function SignupClient({ initialFrom = "/" }) {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Email Address</label>
+            <label htmlFor="signup-email" style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Email Address</label>
             <input
+              id="signup-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -141,11 +143,12 @@ export default function SignupClient({ initialFrom = "/" }) {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>
+            <label htmlFor="signup-password" style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>
               Password
-              <span style={{ fontSize: 11, fontWeight: 400, color: "#94a3b8", marginLeft: 6 }}>min 8 characters</span>
+              <span style={{ fontSize: 11, fontWeight: 400, color: "#6b7280", marginLeft: 6 }}>min 8 characters</span>
             </label>
             <input
+              id="signup-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -157,8 +160,9 @@ export default function SignupClient({ initialFrom = "/" }) {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Confirm Password</label>
+            <label htmlFor="signup-confirm-password" style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>Confirm Password</label>
             <input
+              id="signup-confirm-password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -176,7 +180,7 @@ export default function SignupClient({ initialFrom = "/" }) {
               padding: "14px",
               borderRadius: 14,
               border: "none",
-              background: loading ? "#94a3b8" : "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+              background: loading ? "#6b7280" : "linear-gradient(135deg, #059669 0%, #10b981 100%)",
               color: "#fff",
               fontSize: 15,
               fontWeight: 800,

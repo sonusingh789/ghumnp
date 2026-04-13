@@ -1,9 +1,22 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState } from "react";
+import Link from "next/link";
 import AppShell from "@/components/layout/app-shell";
 import PlaceCard from "@/components/cards/place-card";
 import { SearchIcon, XIcon } from "@/components/ui/icons";
+
+// Top districts for hub link cross-linking — drives crawlable internal links
+const HUB_LINKS = [
+  { district: "kathmandu",  type: "attraction", label: "Attractions in Kathmandu",   emoji: "🏛️" },
+  { district: "kathmandu",  type: "restaurant", label: "Restaurants in Kathmandu",   emoji: "🍽️" },
+  { district: "pokhara",    type: "attraction", label: "Attractions in Pokhara",     emoji: "⛰️" },
+  { district: "pokhara",    type: "hotel",      label: "Hotels in Pokhara",          emoji: "🏨" },
+  { district: "chitwan",    type: "attraction", label: "Attractions in Chitwan",     emoji: "🐘" },
+  { district: "lalitpur",   type: "food",       label: "Local Food in Lalitpur",     emoji: "🍜" },
+  { district: "bhaktapur",  type: "attraction", label: "Attractions in Bhaktapur",   emoji: "🏯" },
+  { district: "mustang",    type: "stay",       label: "Local Stays in Mustang",     emoji: "🏠" },
+];
 
 const PAGE_SIZE = 10;
 
@@ -79,16 +92,17 @@ export default function AllPlacesPageClient({ places = [] }) {
             <div style={{ width: 360, flexShrink: 0 }}>
               <div style={{ position: "relative" }}>
                 <span style={{ position: "absolute", left: 15, top: "50%", transform: "translateY(-50%)", display: "flex", pointerEvents: "none", zIndex: 1 }}>
-                  <SearchIcon style={{ width: 16, height: 16, color: "#94a3b8" }} />
+                  <SearchIcon style={{ width: 16, height: 16, color: "#6b7280" }} />
                 </span>
                 <input
                   value={query}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Search places, locations..."
+                  aria-label="Search places"
                   style={{ width: "100%", padding: "14px 40px 14px 44px", borderRadius: 16, border: "none", background: "rgba(255,255,255,0.95)", fontSize: 14, color: "#0f172a", outline: "none", boxShadow: "0 6px 24px rgba(0,0,0,0.2)", boxSizing: "border-box" }}
                 />
                 {query ? (
-                  <button type="button" onClick={() => handleSearch("")}
+                  <button type="button" onClick={() => handleSearch("")} aria-label="Clear search"
                     style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
                     <XIcon style={{ width: 12, height: 12, color: "#64748b" }} />
                   </button>
@@ -105,7 +119,7 @@ export default function AllPlacesPageClient({ places = [] }) {
           <div style={{ width: 200, flexShrink: 0, position: "sticky", top: 24 }}>
             <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.04)" }}>
               <div style={{ padding: "12px 14px", borderBottom: "1px solid #f1f5f9" }}>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#94a3b8" }}>Category</p>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6b7280" }}>Category</p>
               </div>
               {CATEGORIES.map((cat, i) => {
                 const active = activeCategory === cat;
@@ -117,10 +131,27 @@ export default function AllPlacesPageClient({ places = [] }) {
                     style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", border: "none", borderBottom: i < CATEGORIES.length - 1 ? "1px solid #f8fafc" : "none", background: active ? "linear-gradient(90deg, rgba(5,150,105,0.08), rgba(5,150,105,0.03))" : "transparent", cursor: "pointer", textAlign: "left", borderLeft: active ? "3px solid #059669" : "3px solid transparent", transition: "all 0.15s" }}>
                     <span style={{ fontSize: 14 }}>{CAT_EMOJIS[cat]}</span>
                     <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 700 : 500, color: active ? "#059669" : "#475569" }}>{cat}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#059669" : "#94a3b8", background: active ? "#ecfdf5" : "#f1f5f9", borderRadius: 999, padding: "2px 7px" }}>{count}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#059669" : "#6b7280", background: active ? "#ecfdf5" : "#f1f5f9", borderRadius: 999, padding: "2px 7px" }}>{count}</span>
                   </button>
                 );
               })}
+            </div>
+
+            {/* Hub links — popular district+category combos, crawlable by Google */}
+            <div style={{ marginTop: 16, background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.04)" }}>
+              <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6b7280" }}>Popular Searches</p>
+              </div>
+              {HUB_LINKS.map(({ district, type, label, emoji }) => (
+                <Link
+                  key={`${district}-${type}`}
+                  href={`/places/${district}/${type}`}
+                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", textDecoration: "none", borderBottom: "1px solid #f8fafc", fontSize: 12, fontWeight: 500, color: "#475569" }}
+                >
+                  <span style={{ fontSize: 13 }}>{emoji}</span>
+                  <span style={{ flex: 1, lineHeight: 1.3 }}>{label}</span>
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -138,7 +169,7 @@ export default function AllPlacesPageClient({ places = [] }) {
               <div style={{ textAlign: "center", padding: "80px 20px", background: "#fff", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
                 <p style={{ fontSize: 40, marginBottom: 12 }}>🔍</p>
                 <p style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>No places found</p>
-                <p style={{ fontSize: 14, color: "#94a3b8" }}>Try a different search or category</p>
+                <p style={{ fontSize: 14, color: "#6b7280" }}>Try a different search or category</p>
               </div>
             ) : (
               <>
@@ -178,12 +209,13 @@ export default function AllPlacesPageClient({ places = [] }) {
             </p>
             <div style={{ position: "relative", width: "100%" }}>
               <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 1 }}>
-                <SearchIcon style={{ width: 16, height: 16, color: "#94a3b8" }} />
+                <SearchIcon style={{ width: 16, height: 16, color: "#6b7280" }} />
               </span>
               <input value={query} onChange={(e) => handleSearch(e.target.value)} placeholder="Search places, locations, categories..."
+                aria-label="Search places"
                 style={{ width: "100%", padding: "13px 40px 13px 42px", borderRadius: 14, border: "none", background: "rgba(255,255,255,0.95)", fontSize: 14, color: "#0f172a", outline: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", boxSizing: "border-box" }} />
               {query ? (
-                <button type="button" onClick={() => handleSearch("")}
+                <button type="button" onClick={() => handleSearch("")} aria-label="Clear search"
                   style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
                   <XIcon style={{ width: 12, height: 12, color: "#64748b" }} />
                 </button>
@@ -219,7 +251,7 @@ export default function AllPlacesPageClient({ places = [] }) {
             <div style={{ textAlign: "center", padding: "48px 20px", background: "#fff", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
               <p style={{ fontSize: 32, marginBottom: 10 }}>🔍</p>
               <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No places found</p>
-              <p style={{ fontSize: 13, color: "#94a3b8" }}>Try a different search or category</p>
+              <p style={{ fontSize: 13, color: "#6b7280" }}>Try a different search or category</p>
             </div>
           ) : (
             <>
@@ -238,6 +270,21 @@ export default function AllPlacesPageClient({ places = [] }) {
               )}
             </>
           )}
+        {/* Hub links — mobile, crawlable by Google */}
+        <nav aria-label="Popular searches" style={{ padding: "16px 20px 8px" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6b7280", marginBottom: 10 }}>Popular Searches</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {HUB_LINKS.map(({ district, type, label, emoji }) => (
+              <Link
+                key={`${district}-${type}`}
+                href={`/places/${district}/${type}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "#475569", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 999, padding: "5px 10px", textDecoration: "none" }}
+              >
+                <span>{emoji}</span>{label}
+              </Link>
+            ))}
+          </div>
+        </nav>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useDeferredValue, useState } from "react";
+import Link from "next/link";
 import AppShell from "@/components/layout/app-shell";
 import DistrictCard from "@/components/cards/district-card";
 import { SearchIcon, ChevronRightIcon, XIcon } from "@/components/ui/icons";
@@ -93,12 +94,13 @@ export default function ExplorePageClient({
             {/* Search */}
             <div style={{ position: "relative", marginBottom: 18 }}>
               <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", display: "flex" }}>
-                <SearchIcon style={{ width: 15, height: 15, color: "#94a3b8" }} />
+                <SearchIcon style={{ width: 15, height: 15, color: "#6b7280" }} />
               </span>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search districts..."
+                aria-label="Search districts"
                 style={{
                   width: "100%", padding: "11px 36px 11px 38px",
                   borderRadius: 12, border: "1.5px solid #e2e8f0",
@@ -108,7 +110,7 @@ export default function ExplorePageClient({
                 }}
               />
               {query ? (
-                <button type="button" onClick={() => setQuery("")}
+                <button type="button" onClick={() => setQuery("")} aria-label="Clear search"
                   style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0 }}>
                   <XIcon style={{ width: 11, height: 11, color: "#64748b" }} />
                 </button>
@@ -118,7 +120,7 @@ export default function ExplorePageClient({
             {/* Province filter */}
             <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.04)" }}>
               <div style={{ padding: "12px 14px", borderBottom: "1px solid #f1f5f9" }}>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#94a3b8" }}>Filter by Province</p>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6b7280" }}>Filter by Province</p>
               </div>
               {allProvinces.map((province, i) => {
                 const active = activeProvince === province;
@@ -141,7 +143,7 @@ export default function ExplorePageClient({
                   >
                     <span style={{ fontSize: 15 }}>{emoji}</span>
                     <span style={{ flex: 1, fontSize: 13, fontWeight: active ? 700 : 500, color: active ? "#059669" : "#475569" }}>{province}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#059669" : "#94a3b8", background: active ? "#ecfdf5" : "#f1f5f9", borderRadius: 999, padding: "2px 8px", minWidth: 24, textAlign: "center" }}>{count}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#059669" : "#6b7280", background: active ? "#ecfdf5" : "#f1f5f9", borderRadius: 999, padding: "2px 8px", minWidth: 24, textAlign: "center" }}>{count}</span>
                   </button>
                 );
               })}
@@ -153,6 +155,33 @@ export default function ExplorePageClient({
                 Clear filters
               </button>
             )}
+
+            {/* Province guide links — crawlable by Google */}
+            <div style={{ marginTop: 16, background: "#fff", borderRadius: 16, border: "1.5px solid #e2e8f0", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.04)" }}>
+              <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#6b7280" }}>Province Guides</p>
+              </div>
+              {provinces.map((province) => {
+                const slug = province.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+                const emoji = PROVINCE_EMOJIS[province] || "📍";
+                return (
+                  <Link
+                    key={province}
+                    href={`/explore/${slug}`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "9px 14px", textDecoration: "none",
+                      borderBottom: "1px solid #f8fafc",
+                      fontSize: 12, fontWeight: 600, color: "#475569",
+                    }}
+                  >
+                    <span style={{ fontSize: 14 }}>{emoji}</span>
+                    <span style={{ flex: 1 }}>{province}</span>
+                    <ChevronRightIcon style={{ width: 13, height: 13, color: "#94a3b8" }} />
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           {/* ── Main content ────────────────────────────────── */}
@@ -173,7 +202,7 @@ export default function ExplorePageClient({
                   <div style={{ textAlign: "center", padding: "80px 20px", background: "#fff", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
                     <p style={{ fontSize: 40, marginBottom: 12 }}>🔍</p>
                     <p style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>No districts found</p>
-                    <p style={{ fontSize: 14, color: "#94a3b8" }}>Try a different name or province</p>
+                    <p style={{ fontSize: 14, color: "#6b7280" }}>Try a different name or province</p>
                   </div>
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
@@ -249,12 +278,13 @@ export default function ExplorePageClient({
             </p>
             <div style={{ position: "relative", width: "100%" }}>
               <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", pointerEvents: "none", zIndex: 1 }}>
-                <SearchIcon style={{ width: 16, height: 16, color: "#94a3b8" }} />
+                <SearchIcon style={{ width: 16, height: 16, color: "#6b7280" }} />
               </span>
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search districts..."
+                aria-label="Search districts"
                 style={{ width: "100%", padding: "13px 40px 13px 42px", borderRadius: 14, border: "none", background: "rgba(255,255,255,0.95)", fontSize: 14, color: "#0f172a", outline: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", boxSizing: "border-box", display: "block" }} />
               {query ? (
-                <button type="button" onClick={() => setQuery("")}
+                <button type="button" onClick={() => setQuery("")} aria-label="Clear search"
                   style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "#e2e8f0", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, zIndex: 1 }}>
                   <XIcon style={{ width: 12, height: 12, color: "#64748b" }} />
                 </button>
@@ -268,7 +298,7 @@ export default function ExplorePageClient({
           {[{ value: "7", label: "Provinces" }, { value: String(totalDistricts), label: "Districts" }, { value: "500+", label: "Places" }].map(({ value, label }) => (
             <div key={label} style={{ flex: 1, background: "#fff", borderRadius: 14, padding: "12px 8px", textAlign: "center", border: "1.5px solid #e2e8f0", boxShadow: "0 2px 8px rgba(15,23,42,0.04)" }}>
               <div style={{ fontSize: 20, fontWeight: 900, color: "#059669", lineHeight: 1 }}>{value}</div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", marginTop: 3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginTop: 3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
             </div>
           ))}
         </div>
@@ -283,6 +313,24 @@ export default function ExplorePageClient({
                 style={{ display: "flex", alignItems: "center", gap: 5, borderRadius: 999, padding: "8px 14px", border: active ? "none" : "1.5px solid #e2e8f0", cursor: "pointer", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0, background: active ? "#059669" : "#fff", color: active ? "#fff" : "#475569", boxShadow: active ? "0 4px 14px rgba(5,150,105,0.3)" : "0 1px 4px rgba(15,23,42,0.06)", transition: "all 0.15s ease" }}>
                 <span>{emoji}</span>{province}
               </button>
+            );
+          })}
+        </div>
+
+        {/* Province guide links — crawlable by Google */}
+        <div className="scrollbar-hide" style={{ display: "flex", gap: 6, padding: "8px 20px 0", overflowX: "auto" }}>
+          {provinces.map((province) => {
+            const slug = province.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+            const emoji = PROVINCE_EMOJIS[province] || "📍";
+            return (
+              <Link
+                key={province}
+                href={`/explore/${slug}`}
+                style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "#64748b", background: "transparent", borderRadius: 999, padding: "4px 10px", textDecoration: "none", border: "1px solid #e2e8f0", whiteSpace: "nowrap", flexShrink: 0 }}
+              >
+                <span aria-hidden="true">{emoji}</span>
+                {province} Guide
+              </Link>
             );
           })}
         </div>
@@ -305,7 +353,7 @@ export default function ExplorePageClient({
                 <div style={{ textAlign: "center", padding: "48px 20px", background: "#fff", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
                   <p style={{ fontSize: 32, marginBottom: 10 }}>🔍</p>
                   <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No districts found</p>
-                  <p style={{ fontSize: 13, color: "#94a3b8" }}>Try a different name or province</p>
+                  <p style={{ fontSize: 13, color: "#6b7280" }}>Try a different name or province</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

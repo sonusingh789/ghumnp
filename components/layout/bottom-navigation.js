@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Heart, House, Plus, User } from "lucide-react";
+import { CompassIcon, HeartIcon, HomeIcon, PlusIcon, UserIcon } from "@/components/ui/icons";
 
 const LEFT_ITEMS = [
-  { href: "/", label: "Home", icon: House },
-  { href: "/explore", label: "Explore", icon: Compass },
+  { href: "/",       label: "Home",    icon: HomeIcon    },
+  { href: "/explore",label: "Explore", icon: CompassIcon },
 ];
 
 const RIGHT_ITEMS = [
-  { href: "/favorites", label: "Saved", icon: Heart },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/favorites", label: "Saved",   icon: HeartIcon },
+  { href: "/profile",   label: "Profile", icon: UserIcon  },
 ];
 
 export default function BottomNavigation() {
@@ -33,7 +33,7 @@ export default function BottomNavigation() {
         {/* Left items */}
         {LEFT_ITEMS.map(({ href, label, icon: Icon }) => (
           <NavTab key={href} href={href} label={label} active={pathname === href}>
-            <Icon size={20} strokeWidth={pathname === href ? 2.5 : 2} />
+            <Icon style={{ width: 20, height: 20 }} />
           </NavTab>
         ))}
 
@@ -62,7 +62,7 @@ export default function BottomNavigation() {
             }}
             aria-label="Add a place"
           >
-            <Plus size={18} strokeWidth={2.5} />
+            <PlusIcon style={{ width: 18, height: 18 }} />
           </Link>
         </div>
 
@@ -71,11 +71,7 @@ export default function BottomNavigation() {
           const active = pathname === href;
           return (
             <NavTab key={href} href={href} label={label} active={active}>
-              <Icon
-                size={20}
-                strokeWidth={active ? 2.5 : 2}
-                fill={active && href === "/favorites" ? "currentColor" : "none"}
-              />
+              <Icon style={{ width: 20, height: 20 }} />
             </NavTab>
           );
         })}
@@ -97,7 +93,7 @@ function NavTab({ href, label, active, children }) {
         justifyContent: "center",
         gap: 3,
         textDecoration: "none",
-        color: active ? "#059669" : "#94a3b8",
+        color: active ? "#059669" : "#6b7280",
         padding: "6px 2px",
         transition: "color 0.15s ease",
       }}

@@ -34,21 +34,13 @@ const CATEGORY_LABELS = {
 };
 
 async function copyTextFallback(text) {
-  if (typeof document === "undefined") return false;
-  const textArea = document.createElement("textarea");
-  textArea.value = text;
-  textArea.setAttribute("readonly", "");
-  textArea.style.position = "fixed";
-  textArea.style.opacity = "0";
-  textArea.style.pointerEvents = "none";
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-  textArea.setSelectionRange(0, text.length);
-  let copied = false;
-  try { copied = document.execCommand("copy"); } catch { copied = false; }
-  document.body.removeChild(textArea);
-  return copied;
+  if (typeof navigator === "undefined") return false;
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function tryNativeShare(payloads) {
@@ -330,11 +322,11 @@ export default function PlaceDetailScreen({ place }) {
         <nav aria-label="Breadcrumb" style={{ marginBottom: 14 }}>
           <ol style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "2px 6px", fontSize: 11, color: "#64748b", listStyle: "none", padding: 0, margin: 0 }}>
             <li><Link href="/" style={{ color: "#64748b", textDecoration: "none" }}>Home</Link></li>
-            <li aria-hidden="true" style={{ color: "#94a3b8" }}>/</li>
+            <li aria-hidden="true" style={{ color: "#6b7280" }}>/</li>
             <li><Link href="/districts" style={{ color: "#64748b", textDecoration: "none" }}>Districts</Link></li>
-            <li aria-hidden="true" style={{ color: "#94a3b8" }}>/</li>
+            <li aria-hidden="true" style={{ color: "#6b7280" }}>/</li>
             <li><Link href={`/districts/${place.districtId}`} style={{ color: "#64748b", textDecoration: "none" }}>{place.districtId.charAt(0).toUpperCase() + place.districtId.slice(1)}</Link></li>
-            <li aria-hidden="true" style={{ color: "#94a3b8" }}>/</li>
+            <li aria-hidden="true" style={{ color: "#6b7280" }}>/</li>
             <li style={{ fontWeight: 600, color: "#1e293b" }} aria-current="page">{place.name}</li>
           </ol>
         </nav>
@@ -349,8 +341,8 @@ export default function PlaceDetailScreen({ place }) {
           {/* ── LEFT COLUMN ─────────────────────────────────── */}
           <div className="place-detail-main">
 
-            {/* Stats chips (mobile) */}
-            <div className="lg:hidden" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+            {/* Stats chips (mobile) — .place-meta used by Speakable schema */}
+            <div className="lg:hidden place-meta" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#b45309" }}>
                 <StarIcon style={{ width: 14, height: 14, color: "#f59e0b" }} />
                 {place.rating.toFixed(1)}
@@ -370,9 +362,9 @@ export default function PlaceDetailScreen({ place }) {
               </Link>
             </div>
 
-            {/* Description */}
+            {/* Description — .place-description used by Speakable schema */}
             {place.description ? (
-              <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.65, marginBottom: 20 }}>
+              <p className="place-description" style={{ fontSize: 14, color: "#475569", lineHeight: 1.65, marginBottom: 20 }}>
                 {place.description}
               </p>
             ) : null}
@@ -502,7 +494,7 @@ export default function PlaceDetailScreen({ place }) {
                     ))}
                   </div>
                 ) : (
-                  <p style={{ fontSize: 13, color: "#94a3b8" }}>No nearby spots added yet.</p>
+                  <p style={{ fontSize: 13, color: "#6b7280" }}>No nearby spots added yet.</p>
                 )}
               </InfoCard>
 
@@ -632,12 +624,20 @@ export default function PlaceDetailScreen({ place }) {
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <Link href={`/districts/${place.districtId}`}
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px 16px", borderRadius: 12, background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none", boxShadow: "0 4px 14px rgba(5,150,105,0.3)" }}>
-                  View {place.districtId} District →
+                  More in {place.districtId} District →
+                </Link>
+                <Link href={`/allplaces?q=${encodeURIComponent(place.districtId)}`}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 16px", borderRadius: 12, background: "#f0fdf4", border: "1.5px solid #bbf7d0", color: "#059669", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
+                  Browse similar places
                 </Link>
                 <button type="button" onClick={() => scrollToReviews({ openForm: true })}
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 16px", borderRadius: 12, background: "#f8fafc", border: "1.5px solid #e2e8f0", color: "#0f172a", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                   Write a Review
                 </button>
+                <Link href="/allplaces"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 16px", borderRadius: 12, background: "transparent", border: "1px solid #e2e8f0", color: "#64748b", fontWeight: 600, fontSize: 12, textDecoration: "none" }}>
+                  Browse all places
+                </Link>
               </div>
             </div>
 
@@ -672,6 +672,9 @@ export default function PlaceDetailScreen({ place }) {
               </div>
             ) : null}
 
+            {/* Badge embed widget */}
+            <BadgeWidget placeId={place.id} placeName={place.name} />
+
           </div>{/* end place-detail-aside */}
         </div>{/* end place-detail-grid */}
         </div>
@@ -705,7 +708,7 @@ export default function PlaceDetailScreen({ place }) {
             ) : (
               <>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#0f172a", marginBottom: 6 }}>
-                  What's the issue? <span style={{ color: "#94a3b8", fontWeight: 400 }}>(min 5 chars)</span>
+                  What's the issue? <span style={{ color: "#6b7280", fontWeight: 400 }}>(min 5 chars)</span>
                 </label>
                 <textarea
                   value={reportReason}
@@ -776,7 +779,7 @@ export default function PlaceDetailScreen({ place }) {
 
                   {/* ── PHOTO SUGGESTIONS ── */}
                   <div>
-                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#0f172a", marginBottom: 8 }}>Suggest Photos <span style={{ fontWeight: 400, color: "#94a3b8" }}>(optional)</span></label>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#0f172a", marginBottom: 8 }}>Suggest Photos <span style={{ fontWeight: 400, color: "#6b7280" }}>(optional)</span></label>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {suggestImages.map((img, i) => (
                         <div key={img.id} style={{ position: "relative", width: 72, height: 72, borderRadius: 10, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
@@ -791,7 +794,7 @@ export default function PlaceDetailScreen({ place }) {
                       <button
                         type="button"
                         onClick={() => suggestFileRef.current?.click()}
-                        style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#94a3b8", fontSize: 11, fontWeight: 600, flexShrink: 0 }}
+                        style={{ width: 72, height: 72, borderRadius: 10, border: "1.5px dashed #cbd5e1", background: "#fff", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, color: "#6b7280", fontSize: 11, fontWeight: 600, flexShrink: 0 }}
                       >
                         <PlusCircleIcon style={{ width: 18, height: 18 }} />
                         Add
@@ -829,6 +832,47 @@ export default function PlaceDetailScreen({ place }) {
         </div>
       ) : null}
     </AppShell>
+  );
+}
+
+function BadgeWidget({ placeId, placeName }) {
+  const [copied, setCopied] = useState(false);
+  const badgeUrl = `https://www.visitnepal77.com/badge/${placeId}`;
+  const embedCode = `<a href="https://www.visitnepal77.com/place/${placeId}" target="_blank" rel="noopener noreferrer"><img src="${badgeUrl}" alt="${placeName} on visitNepal77" width="220" height="68" loading="lazy" /></a>`;
+
+  async function copyEmbed() {
+    try {
+      await navigator.clipboard.writeText(embedCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 20, padding: "16px 18px", boxShadow: "0 4px 16px rgba(15,23,42,0.04)", marginBottom: 16 }}>
+      <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#64748b", marginBottom: 10 }}>Embed on your website</p>
+      {/* Badge preview */}
+      <div style={{ marginBottom: 12, borderRadius: 12, overflow: "hidden", display: "inline-block" }}>
+        <img src={badgeUrl} alt={`${placeName} on visitNepal77`} width={220} height={68} loading="lazy" style={{ display: "block" }} />
+      </div>
+      <p style={{ fontSize: 11, color: "#6b7280", lineHeight: 1.5, marginBottom: 10 }}>
+        Copy and paste this badge onto your website to link back to this listing.
+      </p>
+      <button
+        type="button"
+        onClick={copyEmbed}
+        style={{
+          width: "100%", padding: "9px 14px", borderRadius: 10,
+          border: "1.5px solid #d1fae5", background: copied ? "#ecfdf5" : "#f8fafc",
+          color: copied ? "#059669" : "#475569", fontWeight: 700, fontSize: 12,
+          cursor: "pointer", transition: "all 0.15s",
+        }}
+      >
+        {copied ? "✓ Copied!" : "Copy embed code"}
+      </button>
+    </div>
   );
 }
 

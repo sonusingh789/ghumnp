@@ -134,7 +134,7 @@ export default function FavoritesPageClient({
             ].map(({ value, label }) => (
               <div key={label} style={{ flex: 1, background: "#fff", borderRadius: 14, padding: "12px 8px", textAlign: "center", border: "1.5px solid #e2e8f0", boxShadow: "0 2px 8px rgba(15,23,42,0.04)" }}>
                 <div style={{ fontSize: 20, fontWeight: 900, color: "#059669", lineHeight: 1 }}>{value}</div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8", marginTop: 3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginTop: 3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
               </div>
             ))}
           </div>
@@ -232,7 +232,7 @@ export default function FavoritesPageClient({
               <div style={{ textAlign: "center", padding: "40px 20px", background: "#fff", borderRadius: 20, border: "1.5px dashed #e2e8f0" }}>
                 <p style={{ fontSize: 28, marginBottom: 8 }}>{activeTab === "Places" ? "📍" : "🗺️"}</p>
                 <p style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>No saved {activeTab.toLowerCase()} yet</p>
-                <p style={{ fontSize: 13, color: "#94a3b8" }}>Tap the heart icon to save {activeTab.toLowerCase()}.</p>
+                <p style={{ fontSize: 13, color: "#6b7280" }}>Tap the heart icon to save {activeTab.toLowerCase()}.</p>
               </div>
             ) : null}
           </div>
