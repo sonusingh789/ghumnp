@@ -62,6 +62,17 @@ const TAB_EMOJIS = {
   "Local Stay": "🏡",
 };
 
+// Maps each category tab to its dedicated SEO page slug.
+// "All" has no dedicated page so it stays null.
+const TAB_SLUG = {
+  All: null,
+  "Tourist Attraction": "attraction",
+  "Local Food": "food",
+  Restaurant: "restaurant",
+  Hotel: "hotel",
+  "Local Stay": "stay",
+};
+
 async function copyTextFallback(text) {
   if (typeof navigator === "undefined") return false;
   try {
@@ -354,29 +365,57 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
           </div>
         </div>
 
-        {/* ── CATEGORY TABS ──────────────────────────────────── */}
+        {/* ── CATEGORY TABS ──────────────────────────────────────
+             Each tab does double duty:
+             • Normal click  → filters inline (preventDefault keeps user on page)
+             • href present  → Google crawls the dedicated category page
+             • Cmd/middle-click → opens dedicated page in new tab naturally
+        ─────────────────────────────────────────────────────── */}
         <div role="tablist" className="scrollbar-hide" style={{ display: "flex", gap: 8, padding: "16px 20px 0", overflowX: "auto" }}>
           {tabs.map((tab) => {
             const active = activeTab === tab;
-            return (
+            const slug = TAB_SLUG[tab];
+            const tabStyle = {
+              display: "flex", alignItems: "center", gap: 5,
+              borderRadius: 999, padding: "8px 14px",
+              border: active ? "none" : "1.5px solid rgba(226,232,240,0.55)",
+              cursor: "pointer", fontSize: 12, fontWeight: 700,
+              whiteSpace: "nowrap", flexShrink: 0,
+              background: active ? "#059669" : "rgba(255,255,255,0.65)",
+              WebkitBackdropFilter: active ? "none" : "blur(10px)",
+              color: active ? "#fff" : "#475569",
+              boxShadow: active ? "0 4px 14px rgba(5,150,105,0.3)" : "0 1px 4px rgba(15,23,42,0.04)",
+              transition: "all 0.15s ease",
+              textDecoration: "none",
+            };
+            const handleClick = (e) => {
+              // Let cmd/ctrl/middle-click open the dedicated page naturally
+              if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
+              e.preventDefault();
+              setActiveTab(tab);
+              setCurrentPage(1);
+              triggerCardsLoading();
+            };
+            return slug ? (
+              <Link
+                key={tab}
+                href={`/places/${district.id}/${slug}`}
+                role="tab"
+                aria-selected={active}
+                onClick={handleClick}
+                style={tabStyle}
+              >
+                <span aria-hidden="true">{TAB_EMOJIS[tab]}</span>
+                {tab}
+              </Link>
+            ) : (
               <button
                 key={tab}
                 type="button"
                 role="tab"
                 aria-selected={active}
                 onClick={() => { setActiveTab(tab); setCurrentPage(1); triggerCardsLoading(); }}
-                style={{
-                  display: "flex", alignItems: "center", gap: 5,
-                  borderRadius: 999, padding: "8px 14px",
-                  border: active ? "none" : "1.5px solid rgba(226,232,240,0.55)",
-                  cursor: "pointer", fontSize: 12, fontWeight: 700,
-                  whiteSpace: "nowrap", flexShrink: 0,
-                  background: active ? "#059669" : "rgba(255,255,255,0.65)",
-                                    WebkitBackdropFilter: active ? "none" : "blur(10px)",
-                  color: active ? "#fff" : "#475569",
-                  boxShadow: active ? "0 4px 14px rgba(5,150,105,0.3)" : "0 1px 4px rgba(15,23,42,0.04)",
-                  transition: "all 0.15s ease",
-                }}
+                style={tabStyle}
               >
                 <span aria-hidden="true">{TAB_EMOJIS[tab]}</span>
                 {tab}
@@ -384,32 +423,6 @@ export default function DistrictDetailScreen({ district, districtPlaces }) {
             );
           })}
         </div>
-
-        {/* ── TYPED CATEGORY LINKS (crawlable by Google) ─────── */}
-        <nav aria-label="Browse by category" className="scrollbar-hide" style={{ display: "flex", gap: 6, padding: "8px 20px 0", overflowX: "auto" }}>
-          {[
-            { type: "attraction", label: "All Attractions",   emoji: "🏛️" },
-            { type: "food",       label: "Local Food",         emoji: "🍜" },
-            { type: "restaurant", label: "Restaurants",        emoji: "🍽️" },
-            { type: "hotel",      label: "Hotels",             emoji: "🏨" },
-            { type: "stay",       label: "Local Stays",        emoji: "🏠" },
-          ].map(({ type, label, emoji }) => (
-            <Link
-              key={type}
-              href={`/places/${district.id}/${type}`}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                fontSize: 11, fontWeight: 600, color: "#64748b",
-                background: "transparent", borderRadius: 999,
-                padding: "4px 10px", textDecoration: "none",
-                border: "1px solid #e2e8f0", whiteSpace: "nowrap", flexShrink: 0,
-              }}
-            >
-              <span aria-hidden="true">{emoji}</span>
-              {label}
-            </Link>
-          ))}
-        </nav>
 
         {/* ── PLACES LIST ────────────────────────────────────── */}
         <div style={{ padding: "20px 16px" }}>

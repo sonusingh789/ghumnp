@@ -203,9 +203,9 @@ export default function DesktopHomeLayout({ featuredDistricts, popularDistricts,
                   style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", textDecoration: "none", borderBottom: i < topContributors.length - 1 ? "1px solid #f1f5f9" : "none", background: i === 0 ? "linear-gradient(90deg, rgba(5,150,105,0.04) 0%, transparent 100%)" : "#fff" }}
                 >
                   <span style={{ fontSize: i === 0 ? 24 : 18, width: 28, textAlign: "center", flexShrink: 0 }}>{MEDAL[i]}</span>
-                  <div style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: i === 0 ? "2.5px solid #059669" : "2px solid #e2e8f0", background: "#d1fae5", position: "relative" }}>
+                  <div style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: i === 0 ? "2.5px solid #059669" : "2px solid #e2e8f0", background: "#d1fae5" }}>
                     {c.avatar_url ? (
-                      <Image src={c.avatar_url} alt={c.name} width={38} height={38} style={{ objectFit: "cover", borderRadius: "50%" }} />
+                      <Image src={c.avatar_url} alt={c.name} width={38} height={38} style={{ width: 38, height: 38, objectFit: "cover", display: "block" }} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#059669" }}>
                         {c.name[0].toUpperCase()}

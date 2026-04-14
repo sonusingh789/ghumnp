@@ -34,6 +34,13 @@ export default function LoginClient({ initialFrom = "/" }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Map ?error= query params set by the Google callback route
+  const errorParam = searchParams.get("error");
+  const googleError =
+    errorParam === "google_failed"   ? "Google sign-in failed. Please try again." :
+    errorParam === "google_no_email" ? "Your Google account has no email address." :
+    null;
+
   function handleBack() {
     if (typeof window === "undefined") { router.push("/"); return; }
     const referrer = document.referrer;
@@ -103,11 +110,43 @@ export default function LoginClient({ initialFrom = "/" }) {
       {/* Card */}
       <div style={{ width: "100%", maxWidth: 400, background: "#fff", borderRadius: 24, padding: "28px 24px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
 
-        {error ? (
+        {(error || googleError) ? (
           <div style={{ background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 12, padding: "11px 14px", fontSize: 13, color: "#dc2626", marginBottom: 20 }}>
-            {error}
+            {error || googleError}
           </div>
         ) : null}
+
+        {/* ── Continue with Google ── */}
+        <a
+          href={`/api/auth/google?from=${encodeURIComponent(from)}`}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+            width: "100%", padding: "13px 16px", borderRadius: 14,
+            border: "1.5px solid #e2e8f0", background: "#fff",
+            fontSize: 14, fontWeight: 700, color: "#0f172a",
+            textDecoration: "none", boxSizing: "border-box",
+            boxShadow: "0 1px 4px rgba(15,23,42,0.06)",
+            transition: "box-shadow 0.15s, border-color 0.15s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(15,23,42,0.1)"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(15,23,42,0.06)"; }}
+        >
+          {/* Google "G" logo */}
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.96L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/>
+          </svg>
+          Continue with Google
+        </a>
+
+        {/* Divider */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0" }}>
+          <div style={{ flex: 1, height: 1, background: "#f1f5f9" }} />
+          <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600 }}>or sign in with email</span>
+          <div style={{ flex: 1, height: 1, background: "#f1f5f9" }} />
+        </div>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>

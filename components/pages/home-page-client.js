@@ -35,13 +35,16 @@ function HeroSection({ initialQuery, carouselImages = [] }) {
   const [mapOpen, setMapOpen] = useState(false);
   const [slide, setSlide] = useState(0);
 
+  // Server already returns ≤5 random slides; slice is a safeguard only
+  const slides = carouselImages.slice(0, 5);
+
   useEffect(() => {
-    if (carouselImages.length < 2) return;
+    if (slides.length < 2) return;
     // Respect OS-level "reduce motion" preference
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     let t;
     function start() {
-      t = setInterval(() => setSlide(s => (s + 1) % carouselImages.length), 3500);
+      t = setInterval(() => setSlide(s => (s + 1) % slides.length), 3500);
     }
     function handleVisibility() {
       if (document.hidden) { clearInterval(t); t = undefined; }
@@ -53,9 +56,9 @@ function HeroSection({ initialQuery, carouselImages = [] }) {
       clearInterval(t);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [carouselImages.length]);
+  }, [slides.length]);
 
-  const current = carouselImages[slide];
+  const current = slides[slide];
 
   return (
     <div className="fade-up" style={{ position: "relative", padding: "0 0 0" }}>
@@ -68,27 +71,33 @@ function HeroSection({ initialQuery, carouselImages = [] }) {
         minHeight: 220,
         background: "#064e35",
       }}>
-        {carouselImages.length > 0 && (
+        {/* All slides are mounted together so the browser can download them in
+            the background while slide 0 is visible. Only the active slide is
+            shown (opacity 1); the rest are opacity 0 but already in the DOM
+            so there is no loading wait when the carousel advances.
+            Slide 0 gets priority; slides 1-4 load eagerly in the background. */}
+        {slides.map((img, i) => (
           <div
-            key={slide}
+            key={i}
             style={{
               position: "absolute", inset: 0,
               filter: mapOpen ? "blur(8px) brightness(0.55)" : "none",
               zIndex: 0,
-              animation: "heroFadeIn 0.8s ease forwards",
+              opacity: i === slide ? 1 : 0,
+              transition: "opacity 0.8s ease",
             }}
+            aria-hidden={i !== slide}
           >
             <Image
-              src={carouselImages[slide].src}
-              alt={carouselImages[slide].label}
+              src={img.src}
+              alt={img.label}
               fill
               style={{ objectFit: "cover", objectPosition: "center" }}
               sizes="100vw"
-              priority={slide === 0}
-              fetchPriority={slide === 0 ? "high" : "low"}
+              priority={i === 0}
             />
           </div>
-        )}
+        ))}
 
         {/* Dark overlay */}
         <div style={{
@@ -133,7 +142,7 @@ function HeroSection({ initialQuery, carouselImages = [] }) {
                 </span>
               )}
               <div style={{ display: "flex", gap: 5 }}>
-                {carouselImages.map((_, i) => (
+                {slides.map((_, i) => (
                   <button key={i} onClick={() => setSlide(i)} aria-label={`Slide ${i + 1}`} style={{ width: i === slide ? 18 : 6, height: 6, borderRadius: 999, background: i === slide ? "#86efac" : "rgba(255,255,255,0.45)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.3s" }} />
                 ))}
               </div>
@@ -266,7 +275,7 @@ export default function HomePageClient({
                   <span style={{ fontSize: idx === 0 ? 26 : 20, width: 30, textAlign: "center", flexShrink: 0, lineHeight: 1 }}>{MEDAL[idx]}</span>
                   <div style={{ width: 42, height: 42, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: idx === 0 ? "2.5px solid #059669" : "2px solid #e2e8f0", background: "#d1fae5" }}>
                     {contributor.avatar_url ? (
-                      <Image src={contributor.avatar_url} alt={contributor.name} width={42} height={42} style={{ objectFit: "cover", borderRadius: "50%" }} />
+                      <Image src={contributor.avatar_url} alt={contributor.name} width={42} height={42} style={{ width: 42, height: 42, objectFit: "cover", display: "block" }} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, fontWeight: 800, color: "#059669" }}>
                         {contributor.name[0].toUpperCase()}
