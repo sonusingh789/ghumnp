@@ -25,7 +25,7 @@ export const allDistricts = [
   "Udayapur",
   "Saptari",
   "Siraha",
-  "Dhanusa",
+  "Dhanusha",
   "Mahottari",
   "Sarlahi",
   "Rautahat",
@@ -160,8 +160,8 @@ export const districts = [
     visitorsCount: 43000,
   },
   {
-    id: "dhanusa",
-    name: "Dhanusa",
+    id: "dhanusha",
+    name: "Dhanusha",
     tagline: "Janakpur's mythic palaces, Maithili culture, and vivid temple life.",
     image:
       "https://images.unsplash.com/photo-1605640840605-14ac1855827b?w=1200&auto=format&fit=crop",
@@ -349,7 +349,7 @@ export const places = [
   {
     id: "janaki-mandir",
     name: "Janaki Mandir",
-    districtId: "dhanusa",
+    districtId: "dhanusha",
     category: "attraction",
     image:
       "https://images.unsplash.com/photo-1605640840605-14ac1855827b?w=1200&auto=format&fit=crop",
@@ -359,7 +359,7 @@ export const places = [
     rating: 4.7,
     description:
       "A palatial temple glowing in white and pastel tones, central to Janakpur's spiritual and cultural identity.",
-    location: "Janakpur, Dhanusa",
+    location: "Janakpur, Dhanusha",
     isFeatured: true,
     reviews: [],
   },
