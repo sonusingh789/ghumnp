@@ -1,6 +1,13 @@
 import { getDistrictCards, getRecentPlaces } from "@/lib/content";
 import { SITE_URL, toAbsoluteUrl } from "@/lib/seo";
 
+/** Ensure image URLs are XML-safe: bare & in query strings breaks sitemap parsing.
+ *  Next.js writes image entries verbatim — it does not escape & for us. */
+function sitemapImage(url) {
+  if (!url) return undefined;
+  return [toAbsoluteUrl(url).replace(/&/g, "&amp;")];
+}
+
 const PLACE_TYPES = ["attraction", "food", "restaurant", "hotel", "stay"];
 
 function provinceToSlug(name) {
@@ -58,7 +65,7 @@ export default async function sitemap() {
     lastModified: now,
     changeFrequency: "weekly",
     priority: 0.85,
-    images: district.image ? [toAbsoluteUrl(district.image)] : undefined,
+    images: sitemapImage(district.image),
   }));
 
   const placeRoutes = places.map((place) => ({
@@ -66,7 +73,7 @@ export default async function sitemap() {
     lastModified: place.updatedAt ? new Date(place.updatedAt) : now,
     changeFrequency: "weekly",
     priority: place.isFeatured ? 0.9 : 0.8,
-    images: place.image ? [toAbsoluteUrl(place.image)] : undefined,
+    images: sitemapImage(place.image),
   }));
 
   // Typed category pages: /places/[district]/[type] — programmatic SEO surface
