@@ -265,9 +265,11 @@ function TrekModal({ trek, onClose }) {
         <button
           onClick={onClose}
           aria-label="Close"
-          style={{ position: "absolute", top: 14, right: 16, width: 32, height: 32, borderRadius: "50%", border: "1.5px solid #e2e8f0", background: "#f8fafc", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontWeight: 700 }}
+          style={{ position: "absolute", top: 14, right: 16, width: 34, height: 34, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
         >
-          ×
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M1 1L13 13M13 1L1 13" stroke="#475569" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
         </button>
 
         {/* Route map */}
@@ -349,7 +351,7 @@ export default function TrekkingClient() {
   const [selected, setSelected] = useState(null);
 
   return (
-    <div style={{ padding: "20px 0 48px" }}>
+    <div style={{ padding: "10px 0 48px" }}>
 
       {/* ── TREK CARDS GRID ───────────────────────────── */}
       <div style={{ padding: "0 20px" }}>
