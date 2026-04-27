@@ -212,19 +212,88 @@ export default function HomePageClient({
 
         <HeroSection initialQuery={initialQuery} carouselImages={slides} />
 
-        {/* Quick Stats */}
+        {/* Feature Shortcuts */}
         <div className="fade-up-1 scrollbar-hide" style={{ display: "flex", gap: 10, padding: "20px 20px 0", overflowX: "auto" }}>
           {[
-            { icon: "🏔️", value: "77",   label: "Districts"   },
-            { icon: "📍", value: "500+", label: "Places"      },
-            { icon: "⭐", value: "Real", label: "Reviews"     },
-            { icon: "💎", value: "Local",label: "Hidden Gems" },
-          ].map(({ icon, value, label }) => (
-            <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 16, padding: "12px 16px", minWidth: 76, flexShrink: 0, boxShadow: "0 2px 12px rgba(15,23,42,0.05)" }}>
-              <span style={{ fontSize: 20 }}>{icon}</span>
-              <span style={{ fontSize: 14, fontWeight: 900, color: "#059669", marginTop: 4, lineHeight: 1 }}>{value}</span>
-              <span style={{ fontSize: 10, color: "#6b7280", fontWeight: 600, marginTop: 2, letterSpacing: "0.04em" }}>{label}</span>
-            </div>
+            {
+              href: "/trekking",
+              iconBg: "#e6f4ec",
+              icon: (
+                <svg viewBox="0 0 36 36" fill="none" style={{ width: 28, height: 28 }}>
+                  <path d="M18 4C18 4 8 14.5 8 22a10 10 0 0 0 20 0C28 14.5 18 4 18 4Z" fill="#22c55e" opacity=".18"/>
+                  <path d="M18 6C18 6 9 15.8 9 22a9 9 0 0 0 18 0C27 15.8 18 6 18 6Z" stroke="#16a34a" strokeWidth="1.6" strokeLinejoin="round"/>
+                  <path d="M13 22c0-3.5 3-8 5-11 2 3 5 7.5 5 11a5 5 0 0 1-10 0Z" fill="#4ade80" opacity=".35"/>
+                  <circle cx="22" cy="10" r="2" fill="#f97316"/>
+                  <path d="M22 10 l0 -3" stroke="#f97316" strokeWidth="1.4" strokeLinecap="round"/>
+                </svg>
+              ),
+              title: "Trekking",
+              sub: "Explore Trails",
+            },
+            {
+              href: "/ai-trip-planner",
+              iconBg: "#ede9fe",
+              icon: (
+                <svg viewBox="0 0 36 36" fill="none" style={{ width: 28, height: 28 }}>
+                  <rect x="8" y="10" width="20" height="16" rx="5" fill="#a78bfa" opacity=".25"/>
+                  <rect x="8" y="10" width="20" height="16" rx="5" stroke="#7c3aed" strokeWidth="1.6"/>
+                  <circle cx="14" cy="18" r="2" fill="#7c3aed"/>
+                  <circle cx="22" cy="18" r="2" fill="#7c3aed"/>
+                  <path d="M15 23c.8.8 5.2.8 6 0" stroke="#7c3aed" strokeWidth="1.4" strokeLinecap="round"/>
+                  <path d="M14 10 l-2-3M22 10 l2-3" stroke="#7c3aed" strokeWidth="1.4" strokeLinecap="round"/>
+                  <circle cx="12" cy="7" r="1.2" fill="#7c3aed"/>
+                  <circle cx="24" cy="7" r="1.2" fill="#7c3aed"/>
+                </svg>
+              ),
+              title: "AI Trip Planner",
+              sub: "Plan Smart Trips",
+            },
+            {
+              href: "/blog",
+              iconBg: "#fff7ed",
+              icon: (
+                <svg viewBox="0 0 36 36" fill="none" style={{ width: 28, height: 28 }}>
+                  <rect x="9" y="7" width="18" height="22" rx="3" fill="#fed7aa" opacity=".5"/>
+                  <rect x="9" y="7" width="18" height="22" rx="3" stroke="#ea580c" strokeWidth="1.6"/>
+                  <path d="M13 13h10M13 17h10M13 21h6" stroke="#ea580c" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="14" y="5" width="2.5" height="4" rx="1" fill="#ea580c"/>
+                  <rect x="19.5" y="5" width="2.5" height="4" rx="1" fill="#ea580c"/>
+                </svg>
+              ),
+              title: "Blog",
+              sub: "Travel Stories",
+            },
+            {
+              href: "/calendar",
+              iconBg: "#eff6ff",
+              icon: (
+                <svg viewBox="0 0 36 36" fill="none" style={{ width: 28, height: 28 }}>
+                  <rect x="8" y="11" width="20" height="17" rx="3" fill="#bfdbfe" opacity=".5"/>
+                  <rect x="8" y="11" width="20" height="17" rx="3" stroke="#2563eb" strokeWidth="1.6"/>
+                  <path d="M8 16h20" stroke="#2563eb" strokeWidth="1.4"/>
+                  <rect x="13" y="5" width="2.5" height="5" rx="1" fill="#2563eb"/>
+                  <rect x="20.5" y="5" width="2.5" height="5" rx="1" fill="#2563eb"/>
+                  <rect x="12" y="20" width="4" height="4" rx="1" fill="#2563eb" opacity=".6"/>
+                  <rect x="20" y="20" width="4" height="4" rx="1" fill="#2563eb" opacity=".6"/>
+                </svg>
+              ),
+              title: "Calendar",
+              sub: "Upcoming Events",
+            },
+          ].map(({ href, iconBg, icon, title, sub }) => (
+            <Link
+              key={title}
+              href={href}
+              style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 16, padding: "11px 14px", minWidth: 148, flexShrink: 0, boxShadow: "0 2px 10px rgba(15,23,42,0.05)", textDecoration: "none" }}
+            >
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {icon}
+              </div>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>{title}</p>
+                <p style={{ fontSize: 11, color: "#6b7280", marginTop: 2, fontWeight: 500 }}>{sub}</p>
+              </div>
+            </Link>
           ))}
         </div>
 
