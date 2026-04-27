@@ -44,6 +44,7 @@ export default function DistrictCard({ district, compact = false, imagePriority 
       onClick={openDistrict}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDistrict(); } }}
       style={{
+        position: "relative",
         cursor: "pointer",
         borderRadius: 20,
         overflow: "hidden",
@@ -141,7 +142,20 @@ export default function DistrictCard({ district, compact = false, imagePriority 
             {formatVisitors(district.visitorsCount)}
           </Link>
         </div>
-      ) : null}
+      ) : (
+        /* Compact mode: no visible footer, but include a real <a> so Googlebot
+           can discover and crawl this district's URL. The link is visually
+           hidden and removed from tab order — users navigate via onClick above. */
+        <Link
+          href={href}
+          onClick={(e) => e.stopPropagation()}
+          tabIndex={-1}
+          aria-hidden="true"
+          style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap" }}
+        >
+          {district.name}
+        </Link>
+      )}
     </article>
   );
 }

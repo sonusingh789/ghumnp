@@ -11,9 +11,9 @@ const NepalMap = dynamic(() => import("@/components/ui/nepalmap"), { ssr: false 
 import DistrictCard from "@/components/cards/district-card";
 import PlaceCard from "@/components/cards/place-card";
 import HomeSearch from "@/components/forms/home-search";
-// HomeTopPlaces is always below the fold — load it lazily to keep the initial bundle smaller
+// HomeTopPlaces is below the fold but SSR'd so Googlebot finds place links in
+// the initial HTML without needing a deferred JS render pass.
 const HomeTopPlaces = dynamic(() => import("@/components/sections/home-top-places"), {
-  ssr: false,
   loading: () => <div style={{ height: 240 }} />,
 });
 // DesktopHomeLayout uses carousel images whose slide order can only be known
