@@ -437,11 +437,11 @@ export default function TrekkingClient() {
         </div>
 
         {/* CTA */}
-        <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-          <Link href="/districts" style={{ flex: 1, textAlign: "center", background: "#059669", color: "#fff", borderRadius: 999, padding: "12px 16px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
-            Browse All Districts
+        <div style={{ display: "flex", gap: 8, marginTop: 20, justifyContent: "center" }}>
+          <Link href="/districts" style={{ background: "#059669", color: "#fff", borderRadius: 999, padding: "9px 18px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+            Browse Districts
           </Link>
-          <Link href="/allplaces" style={{ flex: 1, textAlign: "center", background: "#fff", border: "1.5px solid #e2e8f0", color: "#0f172a", borderRadius: 999, padding: "12px 16px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+          <Link href="/allplaces" style={{ background: "#fff", border: "1.5px solid #e2e8f0", color: "#0f172a", borderRadius: 999, padding: "9px 18px", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
             All Places
           </Link>
         </div>
