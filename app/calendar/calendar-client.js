@@ -299,8 +299,9 @@ export default function CalendarClient() {
             const holiday = HOLIDAYS[key];
             const hs      = holiday ? HOLIDAY_STYLE[holiday.type] : null;
 
-            const bg     = today ? "#059669" : hs ? hs.bg   : isSat ? "#fff1f2" : isSun ? "#fff7ed" : "#fff";
-            const border = today ? "1.5px solid #047857" : hs ? `1.5px solid ${hs.border}` : isSat ? "1.5px solid #fecdd3" : isSun ? "1.5px solid #fed7aa" : "1.5px solid #f1f5f9";
+            // Only TODAY gets a full background; holidays use a small dot only
+            const bg     = today ? "#059669" : isSat ? "#fff1f2" : isSun ? "#fff7ed" : "#fff";
+            const border = today ? "1.5px solid #047857" : isSat ? "1.5px solid #fecdd3" : isSun ? "1.5px solid #fed7aa" : "1.5px solid #f1f5f9";
             const primaryColor   = today ? "#fff" : isSat ? "#dc2626" : isSun ? "#ea580c" : "#0f172a";
             const secondaryColor = today ? "rgba(255,255,255,0.75)" : "#94a3b8";
 
@@ -314,7 +315,7 @@ export default function CalendarClient() {
                 <span style={{ fontSize: 16, fontWeight: 900, lineHeight: 1, color: primaryColor }}>{primary}</span>
                 <span style={{ fontSize: 9, fontWeight: 500, lineHeight: 1, color: secondaryColor, textAlign: "center" }}>{secondary}</span>
                 {holiday && !today && (
-                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: hs.dot, marginTop: 2, flexShrink: 0 }} />
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: hs.dot, marginTop: 3, flexShrink: 0 }} />
                 )}
                 {today && (
                   <span style={{ fontSize: 7, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: "0.05em", marginTop: 1 }}>TODAY</span>
